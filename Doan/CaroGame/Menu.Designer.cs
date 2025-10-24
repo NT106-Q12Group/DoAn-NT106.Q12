@@ -61,6 +61,7 @@
             btn_pause.TabIndex = 2;
             btn_pause.Text = "Tạm dừng";
             btn_pause.UseVisualStyleBackColor = true;
+            btn_pause.Click += btn_pause_Click;
             // 
             // btn_return
             // 

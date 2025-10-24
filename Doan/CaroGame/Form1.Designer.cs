@@ -56,7 +56,7 @@
             pnlLeaderBoard.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             pnlLeaderBoard.BackColor = SystemColors.ButtonHighlight;
             pnlLeaderBoard.Location = new Point(834, 465);
-            pnlLeaderBoard.Margin = new Padding(4, 4, 4, 4);
+            pnlLeaderBoard.Margin = new Padding(4);
             pnlLeaderBoard.Name = "pnlLeaderBoard";
             pnlLeaderBoard.Size = new Size(476, 321);
             pnlLeaderBoard.TabIndex = 2;
@@ -78,7 +78,7 @@
             pnlInfo.Controls.Add(pgbP1);
             pnlInfo.Controls.Add(ptbX);
             pnlInfo.Location = new Point(799, 15);
-            pnlInfo.Margin = new Padding(4, 4, 4, 4);
+            pnlInfo.Margin = new Padding(4);
             pnlInfo.Name = "pnlInfo";
             pnlInfo.Size = new Size(531, 384);
             pnlInfo.TabIndex = 1;
@@ -88,7 +88,7 @@
             ptbAvaP2.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             ptbAvaP2.BackgroundImageLayout = ImageLayout.Stretch;
             ptbAvaP2.Location = new Point(399, 159);
-            ptbAvaP2.Margin = new Padding(4, 4, 4, 4);
+            ptbAvaP2.Margin = new Padding(4);
             ptbAvaP2.Name = "ptbAvaP2";
             ptbAvaP2.Size = new Size(112, 126);
             ptbAvaP2.TabIndex = 10;
@@ -99,7 +99,7 @@
             ptbAvaP1.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             ptbAvaP1.BackgroundImageLayout = ImageLayout.Stretch;
             ptbAvaP1.Location = new Point(21, 15);
-            ptbAvaP1.Margin = new Padding(4, 4, 4, 4);
+            ptbAvaP1.Margin = new Padding(4);
             ptbAvaP1.Name = "ptbAvaP1";
             ptbAvaP1.Size = new Size(112, 124);
             ptbAvaP1.TabIndex = 9;
@@ -111,11 +111,12 @@
             btnExit.BackgroundImage = Properties.Resources.Caro_Game__7_;
             btnExit.BackgroundImageLayout = ImageLayout.Stretch;
             btnExit.Location = new Point(409, 292);
-            btnExit.Margin = new Padding(4, 4, 4, 4);
+            btnExit.Margin = new Padding(4);
             btnExit.Name = "btnExit";
             btnExit.Size = new Size(102, 79);
             btnExit.TabIndex = 8;
             btnExit.UseVisualStyleBackColor = true;
+            btnExit.Click += btnExit_Click;
             // 
             // btnChat
             // 
@@ -123,7 +124,7 @@
             btnChat.BackgroundImage = Properties.Resources.Caro_Game__6_;
             btnChat.BackgroundImageLayout = ImageLayout.Stretch;
             btnChat.Location = new Point(280, 292);
-            btnChat.Margin = new Padding(4, 4, 4, 4);
+            btnChat.Margin = new Padding(4);
             btnChat.Name = "btnChat";
             btnChat.Size = new Size(102, 79);
             btnChat.TabIndex = 7;
@@ -135,7 +136,7 @@
             btnUndo.BackgroundImage = Properties.Resources.Caro_Game__5_;
             btnUndo.BackgroundImageLayout = ImageLayout.Stretch;
             btnUndo.Location = new Point(151, 292);
-            btnUndo.Margin = new Padding(4, 4, 4, 4);
+            btnUndo.Margin = new Padding(4);
             btnUndo.Name = "btnUndo";
             btnUndo.Size = new Size(102, 79);
             btnUndo.TabIndex = 6;
@@ -147,7 +148,7 @@
             btnMenu.BackgroundImage = Properties.Resources.Caro_Game__4_;
             btnMenu.BackgroundImageLayout = ImageLayout.Stretch;
             btnMenu.Location = new Point(21, 292);
-            btnMenu.Margin = new Padding(4, 4, 4, 4);
+            btnMenu.Margin = new Padding(4);
             btnMenu.Name = "btnMenu";
             btnMenu.Size = new Size(102, 79);
             btnMenu.TabIndex = 5;
@@ -182,7 +183,7 @@
             // 
             pgbP2.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             pgbP2.Location = new Point(4, 249);
-            pgbP2.Margin = new Padding(4, 4, 4, 4);
+            pgbP2.Margin = new Padding(4);
             pgbP2.Name = "pgbP2";
             pgbP2.Size = new Size(379, 36);
             pgbP2.TabIndex = 3;
@@ -193,7 +194,7 @@
             ptbO.BackgroundImage = Properties.Resources.Caro_Game__3_;
             ptbO.BackgroundImageLayout = ImageLayout.Stretch;
             ptbO.Location = new Point(21, 161);
-            ptbO.Margin = new Padding(4, 4, 4, 4);
+            ptbO.Margin = new Padding(4);
             ptbO.Name = "ptbO";
             ptbO.Size = new Size(112, 80);
             ptbO.TabIndex = 2;
@@ -203,7 +204,7 @@
             // 
             pgbP1.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             pgbP1.Location = new Point(151, 102);
-            pgbP1.Margin = new Padding(4, 4, 4, 4);
+            pgbP1.Margin = new Padding(4);
             pgbP1.Name = "pgbP1";
             pgbP1.Size = new Size(404, 36);
             pgbP1.TabIndex = 1;
@@ -214,7 +215,7 @@
             ptbX.BackgroundImage = Properties.Resources.Caro_Game__2_;
             ptbX.BackgroundImageLayout = ImageLayout.Stretch;
             ptbX.Location = new Point(399, 15);
-            ptbX.Margin = new Padding(4, 4, 4, 4);
+            ptbX.Margin = new Padding(4);
             ptbX.Name = "ptbX";
             ptbX.Size = new Size(112, 80);
             ptbX.TabIndex = 0;
@@ -224,7 +225,7 @@
             // 
             pnlChessBoard.BackColor = SystemColors.ActiveCaptionText;
             pnlChessBoard.Location = new Point(16, 15);
-            pnlChessBoard.Margin = new Padding(4, 4, 4, 4);
+            pnlChessBoard.Margin = new Padding(4);
             pnlChessBoard.Name = "pnlChessBoard";
             pnlChessBoard.Size = new Size(775, 775);
             pnlChessBoard.TabIndex = 0;
@@ -252,7 +253,7 @@
             Controls.Add(pnlLeaderBoard);
             Controls.Add(pnlInfo);
             Controls.Add(pnlChessBoard);
-            Margin = new Padding(4, 4, 4, 4);
+            Margin = new Padding(4);
             Name = "Form1";
             Text = "Form1";
             pnlInfo.ResumeLayout(false);

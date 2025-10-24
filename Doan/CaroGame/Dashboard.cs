@@ -16,5 +16,12 @@ namespace CaroGame
         {
             InitializeComponent();
         }
+
+        private void btnStart_Click(object sender, EventArgs e)
+        {
+            var newGameForm = new Form1();
+            newGameForm.Show();
+            this.Hide();
+        }
     }
 }
