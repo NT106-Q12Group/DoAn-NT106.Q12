@@ -1,7 +1,20 @@
 {
   "Version": 1,
   "WorkspaceRootPath": "D:\\UIT_(BaiHoc-BaiTap)\\Github\\DoAn-NT106.Q12\\",
-  "Documents": [],
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\UIT_(BaiHoc-BaiTap)\\Github\\DoAn-NT106.Q12\\Doan\\CaroGame\\Menu.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Doan\\CaroGame\\Menu.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\UIT_(BaiHoc-BaiTap)\\Github\\DoAn-NT106.Q12\\Doan\\CaroGame\\Manager.Designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Doan\\CaroGame\\Manager.Designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\UIT_(BaiHoc-BaiTap)\\Github\\DoAn-NT106.Q12\\Doan\\CaroGame\\Manager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Doan\\CaroGame\\Manager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
   "DocumentGroupContainers": [
     {
       "Orientation": 0,
@@ -9,7 +22,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": -1,
+          "SelectedChildIndex": 6,
           "Children": [
             {
               "$type": "Bookmark",
@@ -26,6 +39,45 @@
             {
               "$type": "Bookmark",
               "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "Manager.cs",
+              "DocumentMoniker": "D:\\UIT_(BaiHoc-BaiTap)\\Github\\DoAn-NT106.Q12\\Doan\\CaroGame\\Manager.cs",
+              "RelativeDocumentMoniker": "Doan\\CaroGame\\Manager.cs",
+              "ToolTip": "D:\\UIT_(BaiHoc-BaiTap)\\Github\\DoAn-NT106.Q12\\Doan\\CaroGame\\Manager.cs",
+              "RelativeToolTip": "Doan\\CaroGame\\Manager.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-24T12:09:53.729Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Manager.Designer.cs",
+              "DocumentMoniker": "D:\\UIT_(BaiHoc-BaiTap)\\Github\\DoAn-NT106.Q12\\Doan\\CaroGame\\Manager.Designer.cs",
+              "RelativeDocumentMoniker": "Doan\\CaroGame\\Manager.Designer.cs",
+              "ToolTip": "D:\\UIT_(BaiHoc-BaiTap)\\Github\\DoAn-NT106.Q12\\Doan\\CaroGame\\Manager.Designer.cs",
+              "RelativeToolTip": "Doan\\CaroGame\\Manager.Designer.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-24T12:09:51.205Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Menu.cs",
+              "DocumentMoniker": "D:\\UIT_(BaiHoc-BaiTap)\\Github\\DoAn-NT106.Q12\\Doan\\CaroGame\\Menu.cs",
+              "RelativeDocumentMoniker": "Doan\\CaroGame\\Menu.cs",
+              "ToolTip": "D:\\UIT_(BaiHoc-BaiTap)\\Github\\DoAn-NT106.Q12\\Doan\\CaroGame\\Menu.cs",
+              "RelativeToolTip": "Doan\\CaroGame\\Menu.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-24T12:09:44.706Z",
+              "EditorCaption": ""
             }
           ]
         }

@@ -1,9 +1,9 @@
 {
   "ExpandedNodes": [
     "",
-    "\\Doan",
-    "\\Doan\\CaroGame"
+    "\\Doan\\CaroGame\\bin",
+    "\\Doan\\CaroGame\\obj"
   ],
-  "SelectedNode": "\\Doan\\CaroGame\\CaroGame.sln",
+  "SelectedNode": "\\Doan",
   "PreviewInSolutionExplorer": false
 }
