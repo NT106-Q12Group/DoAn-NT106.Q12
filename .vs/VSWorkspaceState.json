@@ -1,9 +1,9 @@
 {
   "ExpandedNodes": [
     "",
-    "\\Doan\\CaroGame\\bin",
-    "\\Doan\\CaroGame\\obj"
+    "\\Doan",
+    "\\Doan\\CaroGame"
   ],
-  "SelectedNode": "\\Doan",
+  "SelectedNode": "\\Doan\\CaroGame\\Dashboard.cs",
   "PreviewInSolutionExplorer": false
 }

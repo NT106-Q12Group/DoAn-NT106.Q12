@@ -6,5 +6,10 @@ namespace CaroGame
         {
             InitializeComponent();
         }
+
+        private void btnMenu_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }
