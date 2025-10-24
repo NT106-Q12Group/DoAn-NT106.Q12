@@ -3,9 +3,8 @@
     "",
     "\\Doan",
     "\\Doan\\CaroGame",
-    "\\Doan\\CaroGame\\obj",
     "\\Doan\\CaroGame\\Properties"
   ],
-  "SelectedNode": "\\Doan\\CaroGame\\CaroGame.sln",
+  "SelectedNode": "\\Doan\\CaroGame\\ChessBoardManager.cs",
   "PreviewInSolutionExplorer": false
 }

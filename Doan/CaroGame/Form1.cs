@@ -36,5 +36,10 @@ namespace CaroGame
             var DashBoard = new Dashboard();
             DashBoard.Show();
         }
+
+        private void btnExit_Click_1(object sender, EventArgs e)
+        {
+
+        }
     }
 }

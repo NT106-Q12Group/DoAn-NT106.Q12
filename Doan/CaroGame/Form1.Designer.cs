@@ -111,6 +111,7 @@
             btnExit.Size = new Size(82, 63);
             btnExit.TabIndex = 8;
             btnExit.UseVisualStyleBackColor = true;
+            btnExit.Click += btnExit_Click_1;
             // 
             // btnChat
             // 
