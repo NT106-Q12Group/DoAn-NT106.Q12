@@ -37,10 +37,6 @@ namespace CaroGame
             DashBoard.Show();
         }
 
-        private void btnExit_Click_1(object sender, EventArgs e)
-        {
-
-        }
 
         private void btnChat_Click(object sender, EventArgs e)
         {

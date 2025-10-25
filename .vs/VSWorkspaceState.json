@@ -5,6 +5,10 @@
     "\\Doan\\CaroGame",
     "\\Doan\\CaroGame\\Properties"
   ],
+<<<<<<< HEAD
   "SelectedNode": "\\Doan\\CaroGame\\Cons.cs",
+=======
+  "SelectedNode": "\\Doan\\CaroGame\\ChessBoardManager.cs",
+>>>>>>> parent of 79870f4 (lan4)
   "PreviewInSolutionExplorer": false
 }
