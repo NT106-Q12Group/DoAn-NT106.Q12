@@ -2,13 +2,8 @@
   "ExpandedNodes": [
     "",
     "\\Doan",
-    "\\Doan\\CaroGame",
-    "\\Doan\\CaroGame\\Properties"
+    "\\Doan\\CaroGame"
   ],
-<<<<<<< HEAD
-  "SelectedNode": "\\Doan\\CaroGame\\Cons.cs",
-=======
-  "SelectedNode": "\\Doan\\CaroGame\\ChessBoardManager.cs",
->>>>>>> parent of 79870f4 (lan4)
+  "SelectedNode": "\\Doan\\CaroGame\\Form1.cs",
   "PreviewInSolutionExplorer": false
 }
