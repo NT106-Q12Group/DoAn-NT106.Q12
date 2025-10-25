@@ -22,8 +22,6 @@ namespace CaroGame
             Button btn = sender as Button;
         }
 
-
-
         private void btnMenu_Click(object sender, EventArgs e)
         {
             var menuForm = new Menu();
@@ -32,14 +30,9 @@ namespace CaroGame
 
         private void btnExit_Click(object sender, EventArgs e)
         {
-            ActiveForm.Close();
+            this.Close();
             var DashBoard = new Dashboard();
             DashBoard.Show();
-        }
-
-        private void btnExit_Click_1(object sender, EventArgs e)
-        {
-
         }
     }
 }
