@@ -35,11 +35,11 @@ namespace CaroGame
         private void btn_newgame_Click(object sender, EventArgs e)
         {
             var Openform = Application.OpenForms.OfType<Form1>().ToList();
-                foreach (var f in Openform)
-                {
-                    f.Close();
-                }
-                this.Close();
+            foreach (var f in Openform)
+            {
+                f.Close();
+            }
+            this.Close();
             var form = new Form1();
             form.Show();
         }
