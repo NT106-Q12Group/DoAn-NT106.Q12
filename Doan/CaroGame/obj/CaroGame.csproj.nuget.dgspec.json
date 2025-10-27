@@ -1,23 +1,23 @@
 {
   "format": 1,
   "restore": {
-    "D:\\UIT_(BaiHoc-BaiTap)\\Github\\DoAn-NT106.Q12\\Doan\\CaroGame\\CaroGame.csproj": {}
+    "D:\\LeNhat\\Hoctap\\Laptrinhmangcanban\\Doan-git\\DoAn-NT106.Q12\\Doan\\CaroGame\\CaroGame.csproj": {}
   },
   "projects": {
-    "D:\\UIT_(BaiHoc-BaiTap)\\Github\\DoAn-NT106.Q12\\Doan\\CaroGame\\CaroGame.csproj": {
+    "D:\\LeNhat\\Hoctap\\Laptrinhmangcanban\\Doan-git\\DoAn-NT106.Q12\\Doan\\CaroGame\\CaroGame.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\UIT_(BaiHoc-BaiTap)\\Github\\DoAn-NT106.Q12\\Doan\\CaroGame\\CaroGame.csproj",
+        "projectUniqueName": "D:\\LeNhat\\Hoctap\\Laptrinhmangcanban\\Doan-git\\DoAn-NT106.Q12\\Doan\\CaroGame\\CaroGame.csproj",
         "projectName": "CaroGame",
-        "projectPath": "D:\\UIT_(BaiHoc-BaiTap)\\Github\\DoAn-NT106.Q12\\Doan\\CaroGame\\CaroGame.csproj",
-        "packagesPath": "C:\\Users\\Admin\\.nuget\\packages\\",
-        "outputPath": "D:\\UIT_(BaiHoc-BaiTap)\\Github\\DoAn-NT106.Q12\\Doan\\CaroGame\\obj\\",
+        "projectPath": "D:\\LeNhat\\Hoctap\\Laptrinhmangcanban\\Doan-git\\DoAn-NT106.Q12\\Doan\\CaroGame\\CaroGame.csproj",
+        "packagesPath": "C:\\Users\\LENOVO\\.nuget\\packages\\",
+        "outputPath": "D:\\LeNhat\\Hoctap\\Laptrinhmangcanban\\Doan-git\\DoAn-NT106.Q12\\Doan\\CaroGame\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\Admin\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\LENOVO\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],

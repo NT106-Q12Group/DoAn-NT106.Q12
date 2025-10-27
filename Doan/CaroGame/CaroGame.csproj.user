@@ -4,7 +4,7 @@
     <Compile Update="Dashboard.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Update="Form1.cs">
+    <Compile Update="UIMainGame.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Update="Manager.cs">

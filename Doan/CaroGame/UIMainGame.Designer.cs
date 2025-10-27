@@ -1,6 +1,6 @@
 ﻿namespace CaroGame
 {
-    partial class Form1
+    partial class UIMainGame
     {
         /// <summary>
         ///  Required designer variable.

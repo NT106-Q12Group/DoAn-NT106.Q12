@@ -20,27 +20,27 @@ namespace CaroGame
         private void btn_return_Click(object sender, EventArgs e)
         {
             this.Hide();
-            var main = Application.OpenForms.OfType<Form1>().FirstOrDefault();
+            var main = Application.OpenForms.OfType<UIMainGame>().FirstOrDefault();
             if (main != null)
             {
                 main.Show();
             }
             else
             {
-                var newMain = new Form1();
+                var newMain = new UIMainGame();
                 newMain.Show();
             }
         }
 
         private void btn_newgame_Click(object sender, EventArgs e)
         {
-            var Openform = Application.OpenForms.OfType<Form1>().ToList();
+            var Openform = Application.OpenForms.OfType<UIMainGame>().ToList();
                 foreach (var f in Openform)
                 {
                     f.Close();
                 }
                 this.Close();
-            var form = new Form1();
+            var form = new UIMainGame();
             form.Show();
         }
 

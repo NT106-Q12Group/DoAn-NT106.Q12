@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -30,7 +31,12 @@ namespace CaroGame
             set { currentPlayer = value; }
         }
 
-
+        private List<List<Button>> matrix;
+        public List<List<Button>> Matrix
+        {
+            get { return matrix; }
+            set { matrix = value; }
+        }
         #endregion
 
         #region Initialize
@@ -51,6 +57,8 @@ namespace CaroGame
         #region Methods
         public void DrawChessBoard()
         {
+            matrix = new List<List<Button>>();
+
             Button oldButton = new Button()
             {
                 Width = 0,
@@ -59,6 +67,7 @@ namespace CaroGame
 
             for (int i = 0; i < Cons.CHESS_BOARD_HEIGHT; i++)
             {
+                matrix.Add(new List<Button>());
                 for (int j = 0; j < Cons.CHESS_BOARD_WIDTH; j++)
                 {
                     Button btn = new Button()
@@ -67,11 +76,14 @@ namespace CaroGame
                         Height = Cons.CHESS_HEIGHT,
                         Location = new Point(oldButton.Location.X + oldButton.Width, oldButton.Location.Y),
                         BackgroundImageLayout = ImageLayout.Stretch,
+                        Tag = i.ToString()
                     };
 
                     btn.Click += Btn_Click;
 
                     chessBoard.Controls.Add(btn);
+
+                    matrix[i].Add(btn);
 
                     oldButton = btn;
                 }
@@ -89,7 +101,191 @@ namespace CaroGame
                 return;
              
             btn.BackgroundImage = Player[CurrentPlayer].Mark;
-            CurrentPlayer = CurrentPlayer == 1 ? 0 : 1;  
+            CurrentPlayer = CurrentPlayer == 1 ? 0 : 1;
+
+            if (isEndGame(btn))
+            {
+                EndGame();
+            }
+        }
+
+        private void EndGame()
+        {
+            MessageBox.Show("Trò chơi kết thúc!");
+        }
+
+        private bool isEndGame(Button btn)
+        {
+            return isEndHorizontal(btn) || isEndVertical(btn) || isEndMainDiagonal(btn) || isEndSecondaryDiagonal(btn);
+        }
+
+        private Point getChessPoint(Button btn)
+        {  
+            int column = Convert.ToInt32(btn.Tag);
+            int row = matrix[column].IndexOf(btn);
+
+            Point point = new Point(row, column);
+
+            return point;
+        }
+        private bool isEndHorizontal(Button btn)
+        {
+            Point point = getChessPoint(btn);
+
+            int countLeft = 0;
+            for (int i = point.X; i >= 0; i--)
+            {
+                if (matrix[point.Y][i].BackgroundImage == btn.BackgroundImage)
+                {
+                    countLeft++;
+                }
+                else
+                {
+                    break;
+                }
+
+            }
+
+            int countRight = 0;
+            for (int i = point.X + 1; i < Cons.CHESS_BOARD_WIDTH; i++)
+            {
+                if (matrix[point.Y][i].BackgroundImage == btn.BackgroundImage)
+                {
+                    countRight++;
+                }
+                else
+                {
+                    break;
+                }
+
+            }
+
+            return countLeft + countRight >= 5;
+        }
+
+        private bool isEndVertical(Button btn)
+        {
+            Point point = getChessPoint(btn);
+
+            int countTop = 0;
+            for (int i = point.Y; i >= 0; i--)
+            {
+                if (matrix[i][point.X].BackgroundImage == btn.BackgroundImage)
+                {
+                    countTop++;
+                }
+                else
+                {
+                    break;
+                }
+
+            }
+
+            int countBottom = 0;
+            for (int i = point.Y + 1; i < Cons.CHESS_BOARD_HEIGHT; i++)
+            {
+                if (matrix[i][point.X].BackgroundImage == btn.BackgroundImage)
+                {
+                    countBottom++;
+                }
+                else
+                {
+                    break;
+                }
+
+            }
+
+            return countTop + countBottom >= 5;
+        }
+
+        private bool isEndMainDiagonal(Button btn)
+        {
+            Point point = getChessPoint(btn);
+
+            int countTop = 0;
+            for (int i = 0; i <= point.X; i++)
+            {
+                if (point.X - i < 0 || point.Y - i < 0)
+                {
+                    break;
+                }
+
+                if (matrix[point.Y - i][point.X - i].BackgroundImage == btn.BackgroundImage)
+                {
+                    countTop++;
+                }
+                else
+                {
+                    break;
+                }
+
+            }
+
+            int countBottom = 0;
+            for (int i = 1; i <= Cons.CHESS_WIDTH - point.X; i++)
+            {
+                if (point.Y + i >= Cons.CHESS_BOARD_HEIGHT || point.X + i >= Cons.CHESS_BOARD_WIDTH)
+                {
+                    break;
+                }
+
+                if (matrix[point.Y + i][point.X + i].BackgroundImage == btn.BackgroundImage)
+                {
+                    countBottom++;
+                }
+                else
+                {
+                    break;
+                }
+
+            }
+
+            return countTop + countBottom >= 5;
+        }
+
+        private bool isEndSecondaryDiagonal(Button btn)
+        {
+            Point point = getChessPoint(btn);
+
+            int countTop = 0;
+            for (int i = 0; i <= point.X; i++)
+            {
+                if (point.X + i > Cons.CHESS_BOARD_WIDTH || point.Y - i < 0)
+                {
+                    break;
+                }
+
+                if (matrix[point.Y - i][point.X + i].BackgroundImage == btn.BackgroundImage)
+                {
+                    countTop++;
+                }
+                else
+                {
+                    break;
+                }
+
+            }
+
+            int countBottom = 0;
+            for (int i = 1; i <= Cons.CHESS_WIDTH - point.X; i++)
+            {
+                if (point.Y + i >= Cons.CHESS_BOARD_HEIGHT || point.X - i < 0)
+                {
+                    break;
+                }
+
+                if (matrix[point.Y + i][point.X - i].BackgroundImage == btn.BackgroundImage)
+                {
+                    countBottom++;
+                }
+                else
+                {
+                    break;
+                }
+
+            }
+
+            return countTop + countBottom >= 5;
         }
         #endregion
     }

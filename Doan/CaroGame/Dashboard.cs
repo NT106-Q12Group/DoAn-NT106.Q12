@@ -19,7 +19,7 @@ namespace CaroGame
 
         private void btnStart_Click(object sender, EventArgs e)
         {
-            var newGameForm = new Form1();
+            var newGameForm = new UIMainGame();
             newGameForm.Show();
             this.Hide();
         }

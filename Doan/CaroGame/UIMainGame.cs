@@ -2,13 +2,13 @@
 
 namespace CaroGame
 {
-    public partial class Form1 : Form
+    public partial class UIMainGame : Form
     {
         #region Properties
         ChessBoardManager ChessBoard;
         #endregion
 
-        public Form1()
+        public UIMainGame()
         {
             InitializeComponent();
 
