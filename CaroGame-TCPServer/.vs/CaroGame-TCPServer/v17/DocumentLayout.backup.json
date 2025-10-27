@@ -1,0 +1,123 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\Nh\u00E2n\\Desktop\\UIT Leraning\\T\u00E0i Li\u1EC7u S\u1EB5n\\K\u00EC 3\\L\u1EADp Tr\u00ECnh M\u1EA1ng C\u0103n B\u1EA3n\\GitHub\\CaroGame-TCPServer\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{5EBC7A31-3D83-4B7D-83B9-AEEAC9553B38}|CaroGame-TCPServer\\CaroGame-TCPServer.csproj|c:\\users\\nh\u00E2n\\desktop\\uit leraning\\t\u00E0i li\u1EC7u s\u1EB5n\\k\u00EC 3\\l\u1EADp tr\u00ECnh m\u1EA1ng c\u0103n b\u1EA3n\\github\\carogame-tcpserver\\carogame-tcpserver\\player\\player.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5EBC7A31-3D83-4B7D-83B9-AEEAC9553B38}|CaroGame-TCPServer\\CaroGame-TCPServer.csproj|solutionrelative:carogame-tcpserver\\player\\player.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{5EBC7A31-3D83-4B7D-83B9-AEEAC9553B38}|CaroGame-TCPServer\\CaroGame-TCPServer.csproj|c:\\users\\nh\u00E2n\\desktop\\uit leraning\\t\u00E0i li\u1EC7u s\u1EB5n\\k\u00EC 3\\l\u1EADp tr\u00ECnh m\u1EA1ng c\u0103n b\u1EA3n\\github\\carogame-tcpserver\\carogame-tcpserver\\player\\playerado.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5EBC7A31-3D83-4B7D-83B9-AEEAC9553B38}|CaroGame-TCPServer\\CaroGame-TCPServer.csproj|solutionrelative:carogame-tcpserver\\player\\playerado.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{5EBC7A31-3D83-4B7D-83B9-AEEAC9553B38}|CaroGame-TCPServer\\CaroGame-TCPServer.csproj|c:\\users\\nh\u00E2n\\desktop\\uit leraning\\t\u00E0i li\u1EC7u s\u1EB5n\\k\u00EC 3\\l\u1EADp tr\u00ECnh m\u1EA1ng c\u0103n b\u1EA3n\\github\\carogame-tcpserver\\carogame-tcpserver\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5EBC7A31-3D83-4B7D-83B9-AEEAC9553B38}|CaroGame-TCPServer\\CaroGame-TCPServer.csproj|solutionrelative:carogame-tcpserver\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{5EBC7A31-3D83-4B7D-83B9-AEEAC9553B38}|CaroGame-TCPServer\\CaroGame-TCPServer.csproj|c:\\users\\nh\u00E2n\\desktop\\uit leraning\\t\u00E0i li\u1EC7u s\u1EB5n\\k\u00EC 3\\l\u1EADp tr\u00ECnh m\u1EA1ng c\u0103n b\u1EA3n\\github\\carogame-tcpserver\\carogame-tcpserver\\tcpserver.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5EBC7A31-3D83-4B7D-83B9-AEEAC9553B38}|CaroGame-TCPServer\\CaroGame-TCPServer.csproj|solutionrelative:carogame-tcpserver\\tcpserver.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{5EBC7A31-3D83-4B7D-83B9-AEEAC9553B38}|CaroGame-TCPServer\\CaroGame-TCPServer.csproj|c:\\users\\nh\u00E2n\\desktop\\uit leraning\\t\u00E0i li\u1EC7u s\u1EB5n\\k\u00EC 3\\l\u1EADp tr\u00ECnh m\u1EA1ng c\u0103n b\u1EA3n\\github\\carogame-tcpserver\\carogame-tcpserver\\databases\\databases.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5EBC7A31-3D83-4B7D-83B9-AEEAC9553B38}|CaroGame-TCPServer\\CaroGame-TCPServer.csproj|solutionrelative:carogame-tcpserver\\databases\\databases.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 1,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedHeight": 279,
+          "SelectedChildIndex": 5,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{eefa5220-e298-11d0-8f78-00a0c9110057}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{3ae79031-e1bc-11d0-8f78-00a0c9110057}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{40ea2e6b-2121-4bb8-a43e-c83c04b51041}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "Databases.cs",
+              "DocumentMoniker": "C:\\Users\\Nh\u00E2n\\Desktop\\UIT Leraning\\T\u00E0i Li\u1EC7u S\u1EB5n\\K\u00EC 3\\L\u1EADp Tr\u00ECnh M\u1EA1ng C\u0103n B\u1EA3n\\GitHub\\CaroGame-TCPServer\\CaroGame-TCPServer\\Databases\\Databases.cs",
+              "RelativeDocumentMoniker": "CaroGame-TCPServer\\Databases\\Databases.cs",
+              "ToolTip": "C:\\Users\\Nh\u00E2n\\Desktop\\UIT Leraning\\T\u00E0i Li\u1EC7u S\u1EB5n\\K\u00EC 3\\L\u1EADp Tr\u00ECnh M\u1EA1ng C\u0103n B\u1EA3n\\GitHub\\CaroGame-TCPServer\\CaroGame-TCPServer\\Databases\\Databases.cs",
+              "RelativeToolTip": "CaroGame-TCPServer\\Databases\\Databases.cs",
+              "ViewState": "AgIAABAAAAAAAAAAAAAQwEIAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-26T06:53:18.642Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "PlayerADO.cs",
+              "DocumentMoniker": "C:\\Users\\Nh\u00E2n\\Desktop\\UIT Leraning\\T\u00E0i Li\u1EC7u S\u1EB5n\\K\u00EC 3\\L\u1EADp Tr\u00ECnh M\u1EA1ng C\u0103n B\u1EA3n\\GitHub\\CaroGame-TCPServer\\CaroGame-TCPServer\\Player\\PlayerADO.cs",
+              "RelativeDocumentMoniker": "CaroGame-TCPServer\\Player\\PlayerADO.cs",
+              "ToolTip": "C:\\Users\\Nh\u00E2n\\Desktop\\UIT Leraning\\T\u00E0i Li\u1EC7u S\u1EB5n\\K\u00EC 3\\L\u1EADp Tr\u00ECnh M\u1EA1ng C\u0103n B\u1EA3n\\GitHub\\CaroGame-TCPServer\\CaroGame-TCPServer\\Player\\PlayerADO.cs",
+              "RelativeToolTip": "CaroGame-TCPServer\\Player\\PlayerADO.cs",
+              "ViewState": "AgIAANoAAAAAAAAAAAAgwOAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-26T06:53:12.053Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Player.cs",
+              "DocumentMoniker": "C:\\Users\\Nh\u00E2n\\Desktop\\UIT Leraning\\T\u00E0i Li\u1EC7u S\u1EB5n\\K\u00EC 3\\L\u1EADp Tr\u00ECnh M\u1EA1ng C\u0103n B\u1EA3n\\GitHub\\CaroGame-TCPServer\\CaroGame-TCPServer\\Player\\Player.cs",
+              "RelativeDocumentMoniker": "CaroGame-TCPServer\\Player\\Player.cs",
+              "ToolTip": "C:\\Users\\Nh\u00E2n\\Desktop\\UIT Leraning\\T\u00E0i Li\u1EC7u S\u1EB5n\\K\u00EC 3\\L\u1EADp Tr\u00ECnh M\u1EA1ng C\u0103n B\u1EA3n\\GitHub\\CaroGame-TCPServer\\CaroGame-TCPServer\\Player\\Player.cs",
+              "RelativeToolTip": "CaroGame-TCPServer\\Player\\Player.cs",
+              "ViewState": "AgIAABQAAAAAAAAAAAAqwCIAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-26T06:53:03.626Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "TCPServer.cs",
+              "DocumentMoniker": "C:\\Users\\Nh\u00E2n\\Desktop\\UIT Leraning\\T\u00E0i Li\u1EC7u S\u1EB5n\\K\u00EC 3\\L\u1EADp Tr\u00ECnh M\u1EA1ng C\u0103n B\u1EA3n\\GitHub\\CaroGame-TCPServer\\CaroGame-TCPServer\\TCPServer.cs",
+              "RelativeDocumentMoniker": "CaroGame-TCPServer\\TCPServer.cs",
+              "ToolTip": "C:\\Users\\Nh\u00E2n\\Desktop\\UIT Leraning\\T\u00E0i Li\u1EC7u S\u1EB5n\\K\u00EC 3\\L\u1EADp Tr\u00ECnh M\u1EA1ng C\u0103n B\u1EA3n\\GitHub\\CaroGame-TCPServer\\CaroGame-TCPServer\\TCPServer.cs",
+              "RelativeToolTip": "CaroGame-TCPServer\\TCPServer.cs",
+              "ViewState": "AgIAAFoBAAAAAAAAAAAAAEkBAABEAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-26T06:52:58.163Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\Nh\u00E2n\\Desktop\\UIT Leraning\\T\u00E0i Li\u1EC7u S\u1EB5n\\K\u00EC 3\\L\u1EADp Tr\u00ECnh M\u1EA1ng C\u0103n B\u1EA3n\\GitHub\\CaroGame-TCPServer\\CaroGame-TCPServer\\Program.cs",
+              "RelativeDocumentMoniker": "CaroGame-TCPServer\\Program.cs",
+              "ToolTip": "C:\\Users\\Nh\u00E2n\\Desktop\\UIT Leraning\\T\u00E0i Li\u1EC7u S\u1EB5n\\K\u00EC 3\\L\u1EADp Tr\u00ECnh M\u1EA1ng C\u0103n B\u1EA3n\\GitHub\\CaroGame-TCPServer\\CaroGame-TCPServer\\Program.cs",
+              "RelativeToolTip": "CaroGame-TCPServer\\Program.cs",
+              "ViewState": "AgIAABsAAAAAAAAAAAAAADAAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-26T06:52:34.091Z"
+            }
+          ]
+        },
+        {
+          "DockedHeight": 101,
+          "SelectedChildIndex": -1,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{d78612c7-9962-4b83-95d9-268046dad23a}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
