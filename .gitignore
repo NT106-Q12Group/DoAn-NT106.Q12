@@ -1,11 +1,38 @@
-# Bỏ qua các thư mục build
-[Bb]in/
-[Oo]bj/
+# Build results
+bin/
+obj/
 
-# Bỏ qua file cấu hình người dùng Visual Studio
+# Visual Studio
 .vs/
-*.user
 
-# Bỏ qua file tạm của Windows
-Thumbs.db
-Desktop.ini
+# User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Build logs
+*.log
+
+# NuGet
+*.nupkg
+packages/
+*.snupkg
+
+# Other
+*.cache
+*.ide
+*.tmp
+*.db
+*.opendb
+*.ilk
+*.pdb
+
+# Backup & common junk
+*.bak
+*.old
+*.orig
+
+# Rider / JetBrains
+.idea/
+*.sln.iml
