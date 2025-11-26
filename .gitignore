@@ -1,38 +1,63 @@
-# Build results
+## Build results
 bin/
 obj/
+[Bb]uild/
+[Ll]og/
+[Ll]ogs/
 
-# Visual Studio
+## Visual Studio folder
 .vs/
 
-# User-specific files
+## User-specific files
 *.user
+*.rsuser
 *.suo
 *.userosscache
 *.sln.docstates
 
-# Build logs
-*.log
-
-# NuGet
+## NuGet
 *.nupkg
-packages/
 *.snupkg
+packages/
+**/[Pp]ackages/*
+!**/[Pp]ackages/build/
+*.nuget.props
+*.nuget.targets
 
-# Other
-*.cache
-*.ide
-*.tmp
-*.db
-*.opendb
-*.ilk
-*.pdb
+## VS Code / Rider / JetBrains
+.vscode/
+.idea/
+*.sln.iml
 
-# Backup & common junk
+## Test results
+[Tt]est[Rr]esult*/
+[Tt]est[Rr]esults*/
+*.trx
+*.coverage
+*.coveragexml
+
+## Backup & temp files
 *.bak
 *.old
 *.orig
+*.tmp
+*~
+~$*
 
-# Rider / JetBrains
-.idea/
-*.sln.iml
+## Cache and DB
+*.[Cc]ache
+!?*.[Cc]ache/
+*.db
+*.dbmdl
+*.opendb
+
+## Publish artifacts
+[Pp]ublish/
+[Ll]ogs/publish/
+*.pubxml
+*.publishproj
+
+## Others (optional)
+_ReSharper*/
+*.resharper
+*.DotSettings.user
