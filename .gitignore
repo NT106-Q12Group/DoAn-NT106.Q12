@@ -1,0 +1,11 @@
+# Bỏ qua các thư mục build
+[Bb]in/
+[Oo]bj/
+
+# Bỏ qua file cấu hình người dùng Visual Studio
+.vs/
+*.user
+
+# Bỏ qua file tạm của Windows
+Thumbs.db
+Desktop.ini
