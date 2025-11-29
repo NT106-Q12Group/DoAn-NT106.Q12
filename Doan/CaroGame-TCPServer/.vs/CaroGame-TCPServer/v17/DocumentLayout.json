@@ -1,0 +1,105 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\Admins\\Downloads\\DoAn-NT106.Q12-CaroGame_TCP-Protocol\\DoAn-NT106.Q12-CaroGame_TCP-Protocol\\CaroGame-TCPServer\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{5EBC7A31-3D83-4B7D-83B9-AEEAC9553B38}|CaroGame-TCPServer\\CaroGame-TCPServer.csproj|c:\\users\\admins\\downloads\\doan-nt106.q12-carogame_tcp-protocol\\doan-nt106.q12-carogame_tcp-protocol\\carogame-tcpserver\\carogame-tcpserver\\player\\playerado.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5EBC7A31-3D83-4B7D-83B9-AEEAC9553B38}|CaroGame-TCPServer\\CaroGame-TCPServer.csproj|solutionrelative:carogame-tcpserver\\player\\playerado.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{5EBC7A31-3D83-4B7D-83B9-AEEAC9553B38}|CaroGame-TCPServer\\CaroGame-TCPServer.csproj|c:\\users\\admins\\downloads\\doan-nt106.q12-carogame_tcp-protocol\\doan-nt106.q12-carogame_tcp-protocol\\carogame-tcpserver\\carogame-tcpserver\\databases\\databases.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5EBC7A31-3D83-4B7D-83B9-AEEAC9553B38}|CaroGame-TCPServer\\CaroGame-TCPServer.csproj|solutionrelative:carogame-tcpserver\\databases\\databases.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{5EBC7A31-3D83-4B7D-83B9-AEEAC9553B38}|CaroGame-TCPServer\\CaroGame-TCPServer.csproj|c:\\users\\admins\\downloads\\doan-nt106.q12-carogame_tcp-protocol\\doan-nt106.q12-carogame_tcp-protocol\\carogame-tcpserver\\carogame-tcpserver\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5EBC7A31-3D83-4B7D-83B9-AEEAC9553B38}|CaroGame-TCPServer\\CaroGame-TCPServer.csproj|solutionrelative:carogame-tcpserver\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{5EBC7A31-3D83-4B7D-83B9-AEEAC9553B38}|CaroGame-TCPServer\\CaroGame-TCPServer.csproj|c:\\users\\admins\\downloads\\doan-nt106.q12-carogame_tcp-protocol\\doan-nt106.q12-carogame_tcp-protocol\\carogame-tcpserver\\carogame-tcpserver\\player\\player.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5EBC7A31-3D83-4B7D-83B9-AEEAC9553B38}|CaroGame-TCPServer\\CaroGame-TCPServer.csproj|solutionrelative:carogame-tcpserver\\player\\player.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{5EBC7A31-3D83-4B7D-83B9-AEEAC9553B38}|CaroGame-TCPServer\\CaroGame-TCPServer.csproj|c:\\users\\admins\\downloads\\doan-nt106.q12-carogame_tcp-protocol\\doan-nt106.q12-carogame_tcp-protocol\\carogame-tcpserver\\carogame-tcpserver\\tcpserver.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5EBC7A31-3D83-4B7D-83B9-AEEAC9553B38}|CaroGame-TCPServer\\CaroGame-TCPServer.csproj|solutionrelative:carogame-tcpserver\\tcpserver.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 1,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedHeight": 279,
+          "SelectedChildIndex": 1,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Databases.cs",
+              "DocumentMoniker": "C:\\Users\\Admins\\Downloads\\DoAn-NT106.Q12-CaroGame_TCP-Protocol\\DoAn-NT106.Q12-CaroGame_TCP-Protocol\\CaroGame-TCPServer\\CaroGame-TCPServer\\Databases\\Databases.cs",
+              "RelativeDocumentMoniker": "CaroGame-TCPServer\\Databases\\Databases.cs",
+              "ToolTip": "C:\\Users\\Admins\\Downloads\\DoAn-NT106.Q12-CaroGame_TCP-Protocol\\DoAn-NT106.Q12-CaroGame_TCP-Protocol\\CaroGame-TCPServer\\CaroGame-TCPServer\\Databases\\Databases.cs",
+              "RelativeToolTip": "CaroGame-TCPServer\\Databases\\Databases.cs",
+              "ViewState": "AgIAABAAAAAAAAAAAAAQwEIAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-26T06:53:18.642Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "PlayerADO.cs",
+              "DocumentMoniker": "C:\\Users\\Admins\\Downloads\\DoAn-NT106.Q12-CaroGame_TCP-Protocol\\DoAn-NT106.Q12-CaroGame_TCP-Protocol\\CaroGame-TCPServer\\CaroGame-TCPServer\\Player\\PlayerADO.cs",
+              "RelativeDocumentMoniker": "CaroGame-TCPServer\\Player\\PlayerADO.cs",
+              "ToolTip": "C:\\Users\\Admins\\Downloads\\DoAn-NT106.Q12-CaroGame_TCP-Protocol\\DoAn-NT106.Q12-CaroGame_TCP-Protocol\\CaroGame-TCPServer\\CaroGame-TCPServer\\Player\\PlayerADO.cs",
+              "RelativeToolTip": "CaroGame-TCPServer\\Player\\PlayerADO.cs",
+              "ViewState": "AgIAACYAAAAAAAAAAAAawB8AAAAeAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-26T06:53:12.053Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "Player.cs",
+              "DocumentMoniker": "C:\\Users\\Admins\\Downloads\\DoAn-NT106.Q12-CaroGame_TCP-Protocol\\DoAn-NT106.Q12-CaroGame_TCP-Protocol\\CaroGame-TCPServer\\CaroGame-TCPServer\\Player\\Player.cs",
+              "RelativeDocumentMoniker": "CaroGame-TCPServer\\Player\\Player.cs",
+              "ToolTip": "C:\\Users\\Admins\\Downloads\\DoAn-NT106.Q12-CaroGame_TCP-Protocol\\DoAn-NT106.Q12-CaroGame_TCP-Protocol\\CaroGame-TCPServer\\CaroGame-TCPServer\\Player\\Player.cs",
+              "RelativeToolTip": "CaroGame-TCPServer\\Player\\Player.cs",
+              "ViewState": "AgIAAAgAAAAAAAAAAAA9wAcAAAA+AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-26T06:53:03.626Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "TCPServer.cs",
+              "DocumentMoniker": "C:\\Users\\Admins\\Downloads\\DoAn-NT106.Q12-CaroGame_TCP-Protocol\\DoAn-NT106.Q12-CaroGame_TCP-Protocol\\CaroGame-TCPServer\\CaroGame-TCPServer\\TCPServer.cs",
+              "RelativeDocumentMoniker": "CaroGame-TCPServer\\TCPServer.cs",
+              "ToolTip": "C:\\Users\\Admins\\Downloads\\DoAn-NT106.Q12-CaroGame_TCP-Protocol\\DoAn-NT106.Q12-CaroGame_TCP-Protocol\\CaroGame-TCPServer\\CaroGame-TCPServer\\TCPServer.cs",
+              "RelativeToolTip": "CaroGame-TCPServer\\TCPServer.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABQBAAAJAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-26T06:52:58.163Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\Admins\\Downloads\\DoAn-NT106.Q12-CaroGame_TCP-Protocol\\DoAn-NT106.Q12-CaroGame_TCP-Protocol\\CaroGame-TCPServer\\CaroGame-TCPServer\\Program.cs",
+              "RelativeDocumentMoniker": "CaroGame-TCPServer\\Program.cs",
+              "ToolTip": "C:\\Users\\Admins\\Downloads\\DoAn-NT106.Q12-CaroGame_TCP-Protocol\\DoAn-NT106.Q12-CaroGame_TCP-Protocol\\CaroGame-TCPServer\\CaroGame-TCPServer\\Program.cs",
+              "RelativeToolTip": "CaroGame-TCPServer\\Program.cs",
+              "ViewState": "AgIAAAYAAAAAAAAAAAAqwDAAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-26T06:52:34.091Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
