@@ -22,12 +22,22 @@ namespace CaroGame
             Button btn = sender as Button;
         }
 
-
-
+        private Menu menuForm;
         private void btnMenu_Click(object sender, EventArgs e)
         {
-            var menuForm = new Menu();
-            menuForm.Show();
+            if (menuForm == null || menuForm.IsDisposed)
+            {
+                menuForm = new Menu();
+                menuForm.StartPosition = FormStartPosition.Manual;
+                menuForm.Location = new Point(this.Left + 22, this.Top + 50);
+
+                menuForm.Show(this);
+            }
+            else
+            {
+                menuForm.Close();
+                menuForm = null;
+            }
         }
 
         private void btnExit_Click(object sender, EventArgs e)
@@ -36,7 +46,6 @@ namespace CaroGame
             var DashBoard = new Dashboard();
             DashBoard.Show();
         }
-
 
         private void btnChat_Click(object sender, EventArgs e)
         {
@@ -58,6 +67,7 @@ namespace CaroGame
             };
             t.Start();
         }
+
         private void AppendMessage(string sender, string message, Color color)
         {
             rtbChat.SelectionStart = rtbChat.TextLength;
@@ -71,6 +81,5 @@ namespace CaroGame
 
             rtbChat.ScrollToCaret();
         }
-
     }
 }

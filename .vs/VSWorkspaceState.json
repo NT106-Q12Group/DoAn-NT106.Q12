@@ -1,6 +1,9 @@
 {
   "ExpandedNodes": [
-    ""
+    "",
+    "\\Doan",
+    "\\Doan\\CaroGame"
   ],
+  "SelectedNode": "\\Doan\\CaroGame\\UIMainGame.cs",
   "PreviewInSolutionExplorer": false
 }

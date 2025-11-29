@@ -45,10 +45,9 @@
             // 
             btnOnline.BackgroundImage = Properties.Resources.Caro_Game__10_;
             btnOnline.BackgroundImageLayout = ImageLayout.Stretch;
-            btnOnline.Location = new Point(30, 4);
-            btnOnline.Margin = new Padding(4, 4, 4, 4);
+            btnOnline.Location = new Point(24, 3);
             btnOnline.Name = "btnOnline";
-            btnOnline.Size = new Size(84, 62);
+            btnOnline.Size = new Size(67, 50);
             btnOnline.TabIndex = 1;
             btnOnline.UseVisualStyleBackColor = true;
             // 
@@ -58,20 +57,18 @@
             pnlNaviBar.Controls.Add(btnLeaderboard);
             pnlNaviBar.Controls.Add(btnOffline);
             pnlNaviBar.Controls.Add(btnOnline);
-            pnlNaviBar.Location = new Point(15, 15);
-            pnlNaviBar.Margin = new Padding(4, 4, 4, 4);
+            pnlNaviBar.Location = new Point(12, 12);
             pnlNaviBar.Name = "pnlNaviBar";
-            pnlNaviBar.Size = new Size(146, 279);
+            pnlNaviBar.Size = new Size(117, 223);
             pnlNaviBar.TabIndex = 3;
             // 
             // btnSettings
             // 
             btnSettings.BackgroundImage = Properties.Resources.Caro_Game__8_;
             btnSettings.BackgroundImageLayout = ImageLayout.Stretch;
-            btnSettings.Location = new Point(30, 214);
-            btnSettings.Margin = new Padding(4, 4, 4, 4);
+            btnSettings.Location = new Point(24, 171);
             btnSettings.Name = "btnSettings";
-            btnSettings.Size = new Size(84, 62);
+            btnSettings.Size = new Size(67, 50);
             btnSettings.TabIndex = 4;
             btnSettings.UseVisualStyleBackColor = true;
             // 
@@ -79,10 +76,9 @@
             // 
             btnLeaderboard.BackgroundImage = Properties.Resources.Caro_Game__9_;
             btnLeaderboard.BackgroundImageLayout = ImageLayout.Stretch;
-            btnLeaderboard.Location = new Point(30, 144);
-            btnLeaderboard.Margin = new Padding(4, 4, 4, 4);
+            btnLeaderboard.Location = new Point(24, 115);
             btnLeaderboard.Name = "btnLeaderboard";
-            btnLeaderboard.Size = new Size(84, 62);
+            btnLeaderboard.Size = new Size(67, 50);
             btnLeaderboard.TabIndex = 3;
             btnLeaderboard.UseVisualStyleBackColor = true;
             // 
@@ -90,10 +86,9 @@
             // 
             btnOffline.BackgroundImage = Properties.Resources.Caro_Game__11_;
             btnOffline.BackgroundImageLayout = ImageLayout.Stretch;
-            btnOffline.Location = new Point(30, 74);
-            btnOffline.Margin = new Padding(4, 4, 4, 4);
+            btnOffline.Location = new Point(24, 59);
             btnOffline.Name = "btnOffline";
-            btnOffline.Size = new Size(84, 62);
+            btnOffline.Size = new Size(67, 50);
             btnOffline.TabIndex = 2;
             btnOffline.UseVisualStyleBackColor = true;
             // 
@@ -101,20 +96,18 @@
             // 
             pnlWorkPlace.Controls.Add(ptbAvaGame);
             pnlWorkPlace.Controls.Add(btnStart);
-            pnlWorkPlace.Location = new Point(169, 15);
-            pnlWorkPlace.Margin = new Padding(4, 4, 4, 4);
+            pnlWorkPlace.Location = new Point(135, 12);
             pnlWorkPlace.Name = "pnlWorkPlace";
-            pnlWorkPlace.Size = new Size(654, 279);
+            pnlWorkPlace.Size = new Size(317, 223);
             pnlWorkPlace.TabIndex = 4;
             // 
             // ptbAvaGame
             // 
             ptbAvaGame.BackgroundImage = Properties.Resources.Caro_Game__12_;
             ptbAvaGame.BackgroundImageLayout = ImageLayout.Zoom;
-            ptbAvaGame.Location = new Point(208, 31);
-            ptbAvaGame.Margin = new Padding(4, 4, 4, 4);
+            ptbAvaGame.Location = new Point(59, 25);
             ptbAvaGame.Name = "ptbAvaGame";
-            ptbAvaGame.Size = new Size(245, 162);
+            ptbAvaGame.Size = new Size(196, 130);
             ptbAvaGame.TabIndex = 1;
             ptbAvaGame.TabStop = false;
             // 
@@ -123,10 +116,9 @@
             btnStart.BackColor = Color.Lime;
             btnStart.FlatStyle = FlatStyle.Flat;
             btnStart.Font = new Font("Segoe UI", 18F, FontStyle.Bold);
-            btnStart.Location = new Point(232, 201);
-            btnStart.Margin = new Padding(4, 4, 4, 4);
+            btnStart.Location = new Point(81, 161);
             btnStart.Name = "btnStart";
-            btnStart.Size = new Size(199, 70);
+            btnStart.Size = new Size(159, 56);
             btnStart.TabIndex = 0;
             btnStart.Text = "Start";
             btnStart.UseVisualStyleBackColor = false;
@@ -134,14 +126,17 @@
             // 
             // Dashboard
             // 
-            AutoScaleDimensions = new SizeF(10F, 25F);
+            AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.DodgerBlue;
-            ClientSize = new Size(838, 310);
+            ClientSize = new Size(464, 248);
             Controls.Add(pnlWorkPlace);
             Controls.Add(pnlNaviBar);
-            Margin = new Padding(4, 4, 4, 4);
+            Font = new Font("Segoe UI", 9F);
+            FormBorderStyle = FormBorderStyle.FixedSingle;
+            MaximizeBox = false;
             Name = "Dashboard";
+            StartPosition = FormStartPosition.CenterScreen;
             Text = "Dashboard";
             pnlNaviBar.ResumeLayout(false);
             pnlWorkPlace.ResumeLayout(false);

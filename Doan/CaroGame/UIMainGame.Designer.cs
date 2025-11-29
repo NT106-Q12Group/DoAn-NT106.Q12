@@ -54,23 +54,21 @@
             ((System.ComponentModel.ISupportInitialize)ptbAvaP1).BeginInit();
             ((System.ComponentModel.ISupportInitialize)ptbO).BeginInit();
             ((System.ComponentModel.ISupportInitialize)ptbX).BeginInit();
-            pnlChessBoard.SuspendLayout();
             panelChat.SuspendLayout();
             SuspendLayout();
             // 
             // pnlLeaderBoard
             // 
-            pnlLeaderBoard.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            pnlLeaderBoard.Anchor = AnchorStyles.Top;
             pnlLeaderBoard.BackColor = SystemColors.ButtonHighlight;
-            pnlLeaderBoard.Location = new Point(726, 279);
-            pnlLeaderBoard.Margin = new Padding(3, 2, 3, 2);
+            pnlLeaderBoard.Location = new Point(669, 372);
             pnlLeaderBoard.Name = "pnlLeaderBoard";
-            pnlLeaderBoard.Size = new Size(333, 193);
+            pnlLeaderBoard.Size = new Size(381, 241);
             pnlLeaderBoard.TabIndex = 2;
             // 
             // pnlInfo
             // 
-            pnlInfo.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            pnlInfo.Anchor = AnchorStyles.Top;
             pnlInfo.BackColor = SystemColors.ButtonHighlight;
             pnlInfo.Controls.Add(ptbAvaP2);
             pnlInfo.Controls.Add(ptbAvaP1);
@@ -84,20 +82,18 @@
             pnlInfo.Controls.Add(ptbO);
             pnlInfo.Controls.Add(pgbP1);
             pnlInfo.Controls.Add(ptbX);
-            pnlInfo.Location = new Point(701, 9);
-            pnlInfo.Margin = new Padding(3, 2, 3, 2);
+            pnlInfo.Location = new Point(634, 12);
             pnlInfo.Name = "pnlInfo";
-            pnlInfo.Size = new Size(388, 233);
+            pnlInfo.Size = new Size(449, 311);
             pnlInfo.TabIndex = 1;
             // 
             // ptbAvaP2
             // 
             ptbAvaP2.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             ptbAvaP2.BackgroundImageLayout = ImageLayout.Stretch;
-            ptbAvaP2.Location = new Point(302, 95);
-            ptbAvaP2.Margin = new Padding(3, 2, 3, 2);
+            ptbAvaP2.Location = new Point(351, 127);
             ptbAvaP2.Name = "ptbAvaP2";
-            ptbAvaP2.Size = new Size(78, 76);
+            ptbAvaP2.Size = new Size(89, 101);
             ptbAvaP2.TabIndex = 10;
             ptbAvaP2.TabStop = false;
             // 
@@ -105,10 +101,9 @@
             // 
             ptbAvaP1.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             ptbAvaP1.BackgroundImageLayout = ImageLayout.Stretch;
-            ptbAvaP1.Location = new Point(31, 9);
-            ptbAvaP1.Margin = new Padding(3, 2, 3, 2);
+            ptbAvaP1.Location = new Point(351, 12);
             ptbAvaP1.Name = "ptbAvaP1";
-            ptbAvaP1.Size = new Size(78, 74);
+            ptbAvaP1.Size = new Size(89, 99);
             ptbAvaP1.TabIndex = 9;
             ptbAvaP1.TabStop = false;
             // 
@@ -117,10 +112,10 @@
             btnExit.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             btnExit.BackgroundImage = Properties.Resources.Caro_Game__7_;
             btnExit.BackgroundImageLayout = ImageLayout.Stretch;
-            btnExit.Location = new Point(302, 175);
-            btnExit.Margin = new Padding(3, 2, 3, 2);
+            btnExit.FlatAppearance.BorderSize = 0;
+            btnExit.Location = new Point(351, 239);
             btnExit.Name = "btnExit";
-            btnExit.Size = new Size(71, 47);
+            btnExit.Size = new Size(81, 63);
             btnExit.TabIndex = 8;
             btnExit.UseVisualStyleBackColor = true;
             btnExit.Click += btnExit_Click;
@@ -130,10 +125,10 @@
             btnChat.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             btnChat.BackgroundImage = Properties.Resources.Caro_Game__6_;
             btnChat.BackgroundImageLayout = ImageLayout.Stretch;
-            btnChat.Location = new Point(211, 175);
-            btnChat.Margin = new Padding(3, 2, 3, 2);
+            btnChat.FlatAppearance.BorderSize = 0;
+            btnChat.Location = new Point(248, 239);
             btnChat.Name = "btnChat";
-            btnChat.Size = new Size(71, 47);
+            btnChat.Size = new Size(81, 63);
             btnChat.TabIndex = 7;
             btnChat.UseVisualStyleBackColor = true;
             btnChat.Click += btnChat_Click;
@@ -141,24 +136,25 @@
             // btnUndo
             // 
             btnUndo.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            btnUndo.BackColor = SystemColors.ButtonHighlight;
             btnUndo.BackgroundImage = Properties.Resources.Caro_Game__5_;
             btnUndo.BackgroundImageLayout = ImageLayout.Stretch;
-            btnUndo.Location = new Point(122, 175);
-            btnUndo.Margin = new Padding(3, 2, 3, 2);
+            btnUndo.FlatAppearance.BorderSize = 0;
+            btnUndo.Location = new Point(145, 239);
             btnUndo.Name = "btnUndo";
-            btnUndo.Size = new Size(71, 47);
+            btnUndo.Size = new Size(81, 63);
             btnUndo.TabIndex = 6;
-            btnUndo.UseVisualStyleBackColor = true;
+            btnUndo.UseVisualStyleBackColor = false;
             // 
             // btnMenu
             // 
             btnMenu.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             btnMenu.BackgroundImage = Properties.Resources.Caro_Game__4_;
             btnMenu.BackgroundImageLayout = ImageLayout.Stretch;
-            btnMenu.Location = new Point(31, 175);
-            btnMenu.Margin = new Padding(3, 2, 3, 2);
+            btnMenu.FlatAppearance.BorderSize = 0;
+            btnMenu.Location = new Point(41, 239);
             btnMenu.Name = "btnMenu";
-            btnMenu.Size = new Size(71, 47);
+            btnMenu.Size = new Size(81, 63);
             btnMenu.TabIndex = 5;
             btnMenu.UseVisualStyleBackColor = true;
             btnMenu.Click += btnMenu_Click;
@@ -168,9 +164,9 @@
             label2.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             label2.AutoSize = true;
             label2.Font = new Font("Showcard Gothic", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            label2.Location = new Point(189, 95);
+            label2.Location = new Point(222, 127);
             label2.Name = "label2";
-            label2.Size = new Size(88, 20);
+            label2.Size = new Size(108, 26);
             label2.TabIndex = 4;
             label2.Text = "Player 2";
             // 
@@ -179,19 +175,18 @@
             label1.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             label1.AutoSize = true;
             label1.Font = new Font("Showcard Gothic", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            label1.Location = new Point(122, 9);
+            label1.Location = new Point(222, 12);
             label1.Name = "label1";
-            label1.Size = new Size(88, 20);
+            label1.Size = new Size(107, 26);
             label1.TabIndex = 2;
             label1.Text = "Player 1";
             // 
             // pgbP2
             // 
             pgbP2.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            pgbP2.Location = new Point(18, 149);
-            pgbP2.Margin = new Padding(3, 2, 3, 2);
+            pgbP2.Location = new Point(27, 199);
             pgbP2.Name = "pgbP2";
-            pgbP2.Size = new Size(265, 22);
+            pgbP2.Size = new Size(303, 29);
             pgbP2.TabIndex = 3;
             // 
             // ptbO
@@ -199,20 +194,18 @@
             ptbO.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             ptbO.BackgroundImage = Properties.Resources.Caro_Game__3_;
             ptbO.BackgroundImageLayout = ImageLayout.Stretch;
-            ptbO.Location = new Point(31, 97);
-            ptbO.Margin = new Padding(3, 2, 3, 2);
+            ptbO.Location = new Point(41, 129);
             ptbO.Name = "ptbO";
-            ptbO.Size = new Size(78, 48);
+            ptbO.Size = new Size(89, 64);
             ptbO.TabIndex = 2;
             ptbO.TabStop = false;
             // 
             // pgbP1
             // 
             pgbP1.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            pgbP1.Location = new Point(122, 61);
-            pgbP1.Margin = new Padding(3, 2, 3, 2);
+            pgbP1.Location = new Point(27, 82);
             pgbP1.Name = "pgbP1";
-            pgbP1.Size = new Size(283, 22);
+            pgbP1.Size = new Size(303, 29);
             pgbP1.TabIndex = 1;
             // 
             // ptbX
@@ -220,53 +213,49 @@
             ptbX.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             ptbX.BackgroundImage = Properties.Resources.Caro_Game__2_;
             ptbX.BackgroundImageLayout = ImageLayout.Stretch;
-            ptbX.Location = new Point(295, 9);
-            ptbX.Margin = new Padding(3, 2, 3, 2);
+            ptbX.Location = new Point(41, 12);
             ptbX.Name = "ptbX";
-            ptbX.Size = new Size(78, 48);
+            ptbX.Size = new Size(89, 64);
             ptbX.TabIndex = 0;
             ptbX.TabStop = false;
             // 
             // pnlChessBoard
             // 
             pnlChessBoard.BackColor = SystemColors.ControlLightLight;
-            pnlChessBoard.Controls.Add(panelChat);
             pnlChessBoard.ForeColor = Color.Black;
-            pnlChessBoard.Location = new Point(11, 9);
-            pnlChessBoard.Margin = new Padding(3, 2, 3, 2);
+            pnlChessBoard.Location = new Point(13, 12);
             pnlChessBoard.Name = "pnlChessBoard";
-            pnlChessBoard.Size = new Size(602, 607);
+            pnlChessBoard.Size = new Size(601, 601);
             pnlChessBoard.TabIndex = 0;
             // 
             // panelChat
             // 
-            panelChat.BackColor = SystemColors.MenuHighlight;
+            panelChat.BackColor = Color.DeepSkyBlue;
             panelChat.Controls.Add(label4);
             panelChat.Controls.Add(btnSend);
             panelChat.Controls.Add(txtMessage);
             panelChat.Controls.Add(rtbChat);
-            panelChat.Location = new Point(114, 175);
-            panelChat.Margin = new Padding(3, 2, 3, 2);
+            panelChat.Location = new Point(634, 329);
             panelChat.Name = "panelChat";
-            panelChat.Size = new Size(329, 249);
+            panelChat.Size = new Size(449, 284);
             panelChat.TabIndex = 1;
             panelChat.Visible = false;
             // 
             // label4
             // 
             label4.AutoSize = true;
-            label4.Location = new Point(25, 12);
+            label4.Font = new Font("Segoe UI", 15F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            label4.Location = new Point(185, 6);
             label4.Name = "label4";
-            label4.Size = new Size(54, 15);
+            label4.Size = new Size(65, 35);
             label4.TabIndex = 3;
-            label4.Text = "Box Chat";
+            label4.Text = "Chat";
             // 
             // btnSend
             // 
-            btnSend.Location = new Point(251, 182);
-            btnSend.Margin = new Padding(3, 2, 3, 2);
+            btnSend.Location = new Point(335, 243);
             btnSend.Name = "btnSend";
-            btnSend.Size = new Size(52, 41);
+            btnSend.Size = new Size(81, 37);
             btnSend.TabIndex = 2;
             btnSend.Text = "Send";
             btnSend.UseVisualStyleBackColor = true;
@@ -274,55 +263,55 @@
             // 
             // txtMessage
             // 
-            txtMessage.Location = new Point(25, 182);
-            txtMessage.Margin = new Padding(3, 2, 3, 2);
+            txtMessage.Location = new Point(29, 243);
             txtMessage.Multiline = true;
             txtMessage.Name = "txtMessage";
-            txtMessage.Size = new Size(197, 42);
+            txtMessage.Size = new Size(301, 37);
             txtMessage.TabIndex = 1;
             // 
             // rtbChat
             // 
-            rtbChat.Location = new Point(25, 37);
-            rtbChat.Margin = new Padding(3, 2, 3, 2);
+            rtbChat.Location = new Point(29, 43);
             rtbChat.Name = "rtbChat";
             rtbChat.ReadOnly = true;
-            rtbChat.Size = new Size(278, 135);
+            rtbChat.Size = new Size(387, 185);
             rtbChat.TabIndex = 0;
             rtbChat.Text = "";
             // 
             // label3
             // 
-            label3.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            label3.Anchor = AnchorStyles.Top;
             label3.AutoSize = true;
             label3.Font = new Font("Snap ITC", 19.8000011F, FontStyle.Italic, GraphicsUnit.Point, 0);
             label3.ForeColor = Color.Yellow;
-            label3.Location = new Point(784, 244);
+            label3.Location = new Point(736, 326);
             label3.Name = "label3";
-            label3.Size = new Size(202, 35);
+            label3.Size = new Size(251, 44);
             label3.TabIndex = 9;
             label3.Text = "Leaderboard";
             // 
             // UIMainGame
             // 
-            AutoScaleDimensions = new SizeF(7F, 15F);
+            AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.MidnightBlue;
-            ClientSize = new Size(1090, 627);
+            ClientSize = new Size(1103, 624);
+            Controls.Add(panelChat);
             Controls.Add(label3);
             Controls.Add(pnlLeaderBoard);
             Controls.Add(pnlInfo);
             Controls.Add(pnlChessBoard);
-            Margin = new Padding(3, 2, 3, 2);
+            FormBorderStyle = FormBorderStyle.FixedSingle;
+            MaximizeBox = false;
             Name = "UIMainGame";
-            Text = "Form1";
+            StartPosition = FormStartPosition.CenterScreen;
+            Text = "Cờ Caro";
             pnlInfo.ResumeLayout(false);
             pnlInfo.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)ptbAvaP2).EndInit();
             ((System.ComponentModel.ISupportInitialize)ptbAvaP1).EndInit();
             ((System.ComponentModel.ISupportInitialize)ptbO).EndInit();
             ((System.ComponentModel.ISupportInitialize)ptbX).EndInit();
-            pnlChessBoard.ResumeLayout(false);
             panelChat.ResumeLayout(false);
             panelChat.PerformLayout();
             ResumeLayout(false);

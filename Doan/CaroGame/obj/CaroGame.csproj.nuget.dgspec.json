@@ -1,23 +1,23 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Admins\\Documents\\GitHub\\DoAn-NT106.Q12\\Doan\\CaroGame\\CaroGame.csproj": {}
+    "D:\\LeNhat\\Hoctap\\Laptrinhmangcanban\\Doan-git\\DoAn-NT106.Q12\\Doan\\CaroGame\\CaroGame.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Admins\\Documents\\GitHub\\DoAn-NT106.Q12\\Doan\\CaroGame\\CaroGame.csproj": {
+    "D:\\LeNhat\\Hoctap\\Laptrinhmangcanban\\Doan-git\\DoAn-NT106.Q12\\Doan\\CaroGame\\CaroGame.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Admins\\Documents\\GitHub\\DoAn-NT106.Q12\\Doan\\CaroGame\\CaroGame.csproj",
+        "projectUniqueName": "D:\\LeNhat\\Hoctap\\Laptrinhmangcanban\\Doan-git\\DoAn-NT106.Q12\\Doan\\CaroGame\\CaroGame.csproj",
         "projectName": "CaroGame",
-        "projectPath": "C:\\Users\\Admins\\Documents\\GitHub\\DoAn-NT106.Q12\\Doan\\CaroGame\\CaroGame.csproj",
-        "packagesPath": "C:\\Users\\Admins\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Admins\\Documents\\GitHub\\DoAn-NT106.Q12\\Doan\\CaroGame\\obj\\",
+        "projectPath": "D:\\LeNhat\\Hoctap\\Laptrinhmangcanban\\Doan-git\\DoAn-NT106.Q12\\Doan\\CaroGame\\CaroGame.csproj",
+        "packagesPath": "C:\\Users\\LENOVO\\.nuget\\packages\\",
+        "outputPath": "D:\\LeNhat\\Hoctap\\Laptrinhmangcanban\\Doan-git\\DoAn-NT106.Q12\\Doan\\CaroGame\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\Admins\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\LENOVO\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -26,7 +26,6 @@
         ],
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-          "C:\\Program Files\\dotnet\\library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -45,7 +44,7 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "9.0.200"
+        "SdkAnalysisLevel": "9.0.300"
       },
       "frameworks": {
         "net8.0-windows7.0": {
@@ -69,7 +68,7 @@
               "privateAssets": "none"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.203/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.305/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

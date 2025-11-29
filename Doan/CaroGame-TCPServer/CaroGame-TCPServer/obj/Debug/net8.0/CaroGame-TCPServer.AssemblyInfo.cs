@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("CaroGame-TCPServer")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e50940776bf08bb987278b040a3be6bc3292b34e")]
 [assembly: System.Reflection.AssemblyProductAttribute("CaroGame-TCPServer")]
 [assembly: System.Reflection.AssemblyTitleAttribute("CaroGame-TCPServer")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
