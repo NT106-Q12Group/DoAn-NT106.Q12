@@ -36,9 +36,11 @@
             // 
             // btn_newgame
             // 
-            btn_newgame.Location = new Point(176, 108);
+            btn_newgame.Cursor = Cursors.Hand;
+            btn_newgame.Location = new Point(33, 11);
+            btn_newgame.Margin = new Padding(2);
             btn_newgame.Name = "btn_newgame";
-            btn_newgame.Size = new Size(176, 34);
+            btn_newgame.Size = new Size(261, 53);
             btn_newgame.TabIndex = 0;
             btn_newgame.Text = "Game mới";
             btn_newgame.UseVisualStyleBackColor = true;
@@ -46,18 +48,22 @@
             // 
             // btn_diffselect
             // 
-            btn_diffselect.Location = new Point(176, 176);
+            btn_diffselect.Cursor = Cursors.Hand;
+            btn_diffselect.Location = new Point(33, 68);
+            btn_diffselect.Margin = new Padding(2);
             btn_diffselect.Name = "btn_diffselect";
-            btn_diffselect.Size = new Size(176, 34);
+            btn_diffselect.Size = new Size(261, 53);
             btn_diffselect.TabIndex = 1;
             btn_diffselect.Text = "Chọn chế độ";
             btn_diffselect.UseVisualStyleBackColor = true;
             // 
             // btn_pause
             // 
-            btn_pause.Location = new Point(176, 47);
+            btn_pause.Cursor = Cursors.Hand;
+            btn_pause.Location = new Point(33, 125);
+            btn_pause.Margin = new Padding(2);
             btn_pause.Name = "btn_pause";
-            btn_pause.Size = new Size(176, 34);
+            btn_pause.Size = new Size(261, 53);
             btn_pause.TabIndex = 2;
             btn_pause.Text = "Tạm dừng";
             btn_pause.UseVisualStyleBackColor = true;
@@ -65,9 +71,11 @@
             // 
             // btn_return
             // 
-            btn_return.Location = new Point(176, 242);
+            btn_return.Cursor = Cursors.Hand;
+            btn_return.Location = new Point(92, 194);
+            btn_return.Margin = new Padding(2);
             btn_return.Name = "btn_return";
-            btn_return.Size = new Size(176, 34);
+            btn_return.Size = new Size(141, 27);
             btn_return.TabIndex = 3;
             btn_return.Text = "Quay lại";
             btn_return.UseVisualStyleBackColor = true;
@@ -75,14 +83,18 @@
             // 
             // Menu
             // 
-            AutoScaleDimensions = new SizeF(10F, 25F);
+            AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(538, 350);
+            BackColor = SystemColors.ActiveCaption;
+            ClientSize = new Size(327, 231);
             Controls.Add(btn_return);
             Controls.Add(btn_pause);
             Controls.Add(btn_diffselect);
             Controls.Add(btn_newgame);
+            FormBorderStyle = FormBorderStyle.None;
+            Margin = new Padding(2);
             Name = "Menu";
+            StartPosition = FormStartPosition.CenterParent;
             Text = "Menu";
             ResumeLayout(false);
         }
