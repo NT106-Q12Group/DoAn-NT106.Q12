@@ -62,4 +62,17 @@ _ReSharper*/
 *.resharper
 *.DotSettings.user
 
+# Dấu chấm than (!) nghĩa là KHÔNG ĐƯỢC BỎ QUA (Giữ lại)
+
+# Giữ lại thư mục Resources (đường dẫn tương đối)
+!Resources/
+!**/Resources/
+
+# Giữ lại cụ thể các file hình ảnh (bất kể nằm ở đâu)
+!*.png
+!*.jpg
+!*.jpeg
+!*.ico
+!*.bmp
+
 
