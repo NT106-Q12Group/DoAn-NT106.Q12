@@ -192,7 +192,7 @@
             // ptbO
             // 
             ptbO.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            ptbO.BackgroundImage = Properties.Resources.Caro_Game__3_;
+            ptbO.BackgroundImage = Properties.Resources.Caro_Game__1_;
             ptbO.BackgroundImageLayout = ImageLayout.Stretch;
             ptbO.Location = new Point(41, 129);
             ptbO.Name = "ptbO";
@@ -211,7 +211,7 @@
             // ptbX
             // 
             ptbX.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            ptbX.BackgroundImage = Properties.Resources.Caro_Game__2_;
+            ptbX.BackgroundImage = Properties.Resources.Caro_Game;
             ptbX.BackgroundImageLayout = ImageLayout.Stretch;
             ptbX.Location = new Point(41, 12);
             ptbX.Name = "ptbX";
