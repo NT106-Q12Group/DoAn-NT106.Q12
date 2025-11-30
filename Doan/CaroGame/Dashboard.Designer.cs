@@ -103,7 +103,7 @@
             // 
             // ptbAvaGame
             // 
-            ptbAvaGame.BackgroundImage = Properties.Resources.Caro_Game__12_;
+            ptbAvaGame.BackgroundImage = Properties.Resources.CaroPicGame;
             ptbAvaGame.BackgroundImageLayout = ImageLayout.Zoom;
             ptbAvaGame.Location = new Point(59, 25);
             ptbAvaGame.Name = "ptbAvaGame";
