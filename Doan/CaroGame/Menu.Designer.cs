@@ -37,6 +37,7 @@
             // btn_newgame
             // 
             btn_newgame.Cursor = Cursors.Hand;
+            btn_newgame.Font = new Font("Segoe UI", 13F);
             btn_newgame.Location = new Point(33, 11);
             btn_newgame.Margin = new Padding(2);
             btn_newgame.Name = "btn_newgame";
@@ -49,6 +50,7 @@
             // btn_diffselect
             // 
             btn_diffselect.Cursor = Cursors.Hand;
+            btn_diffselect.Font = new Font("Segoe UI", 13F);
             btn_diffselect.Location = new Point(33, 68);
             btn_diffselect.Margin = new Padding(2);
             btn_diffselect.Name = "btn_diffselect";
@@ -60,6 +62,7 @@
             // btn_pause
             // 
             btn_pause.Cursor = Cursors.Hand;
+            btn_pause.Font = new Font("Segoe UI", 13F);
             btn_pause.Location = new Point(33, 125);
             btn_pause.Margin = new Padding(2);
             btn_pause.Name = "btn_pause";
@@ -72,10 +75,10 @@
             // btn_return
             // 
             btn_return.Cursor = Cursors.Hand;
-            btn_return.Location = new Point(92, 194);
+            btn_return.Location = new Point(97, 194);
             btn_return.Margin = new Padding(2);
             btn_return.Name = "btn_return";
-            btn_return.Size = new Size(141, 27);
+            btn_return.Size = new Size(141, 31);
             btn_return.TabIndex = 3;
             btn_return.Text = "Quay lại";
             btn_return.UseVisualStyleBackColor = true;
@@ -86,7 +89,7 @@
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = SystemColors.ActiveCaption;
-            ClientSize = new Size(327, 231);
+            ClientSize = new Size(327, 236);
             Controls.Add(btn_return);
             Controls.Add(btn_pause);
             Controls.Add(btn_diffselect);
@@ -94,7 +97,7 @@
             FormBorderStyle = FormBorderStyle.None;
             Margin = new Padding(2);
             Name = "Menu";
-            StartPosition = FormStartPosition.CenterParent;
+            StartPosition = FormStartPosition.CenterScreen;
             Text = "Menu";
             ResumeLayout(false);
         }
