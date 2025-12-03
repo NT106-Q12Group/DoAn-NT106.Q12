@@ -34,8 +34,8 @@
             btnLeaderboard = new Button();
             btnOffline = new Button();
             pnlWorkPlace = new Panel();
-            ptbAvaGame = new PictureBox();
             btnStart = new Button();
+            ptbAvaGame = new PictureBox();
             pnlNaviBar.SuspendLayout();
             pnlWorkPlace.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)ptbAvaGame).BeginInit();
@@ -57,7 +57,7 @@
             pnlNaviBar.Controls.Add(btnLeaderboard);
             pnlNaviBar.Controls.Add(btnOffline);
             pnlNaviBar.Controls.Add(btnOnline);
-            pnlNaviBar.Location = new Point(12, 12);
+            pnlNaviBar.Location = new Point(470, 12);
             pnlNaviBar.Name = "pnlNaviBar";
             pnlNaviBar.Size = new Size(117, 223);
             pnlNaviBar.TabIndex = 3;
@@ -96,40 +96,43 @@
             // 
             pnlWorkPlace.Controls.Add(ptbAvaGame);
             pnlWorkPlace.Controls.Add(btnStart);
-            pnlWorkPlace.Location = new Point(135, 12);
+            pnlWorkPlace.Location = new Point(344, 165);
             pnlWorkPlace.Name = "pnlWorkPlace";
             pnlWorkPlace.Size = new Size(317, 223);
             pnlWorkPlace.TabIndex = 4;
+            // 
+            // btnStart
+            // 
+            btnStart.BackColor = Color.DodgerBlue;
+            btnStart.BackgroundImage = Properties.Resources.play_button;
+            btnStart.BackgroundImageLayout = ImageLayout.Stretch;
+            btnStart.Cursor = Cursors.Hand;
+            btnStart.FlatAppearance.BorderSize = 0;
+            btnStart.FlatStyle = FlatStyle.Flat;
+            btnStart.Font = new Font("Segoe UI", 18F, FontStyle.Bold);
+            btnStart.Location = new Point(126, 164);
+            btnStart.Name = "btnStart";
+            btnStart.Size = new Size(62, 56);
+            btnStart.TabIndex = 0;
+            btnStart.UseVisualStyleBackColor = false;
+            btnStart.Click += btnStart_Click;
             // 
             // ptbAvaGame
             // 
             ptbAvaGame.BackgroundImage = Properties.Resources.CaroPicGame;
             ptbAvaGame.BackgroundImageLayout = ImageLayout.Zoom;
-            ptbAvaGame.Location = new Point(59, 25);
+            ptbAvaGame.Location = new Point(109, 18);
             ptbAvaGame.Name = "ptbAvaGame";
-            ptbAvaGame.Size = new Size(196, 130);
+            ptbAvaGame.Size = new Size(117, 121);
             ptbAvaGame.TabIndex = 1;
             ptbAvaGame.TabStop = false;
-            // 
-            // btnStart
-            // 
-            btnStart.BackColor = Color.Lime;
-            btnStart.FlatStyle = FlatStyle.Flat;
-            btnStart.Font = new Font("Segoe UI", 18F, FontStyle.Bold);
-            btnStart.Location = new Point(81, 161);
-            btnStart.Name = "btnStart";
-            btnStart.Size = new Size(159, 56);
-            btnStart.TabIndex = 0;
-            btnStart.Text = "Start";
-            btnStart.UseVisualStyleBackColor = false;
-            btnStart.Click += btnStart_Click;
             // 
             // Dashboard
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.DodgerBlue;
-            ClientSize = new Size(464, 248);
+            ClientSize = new Size(696, 412);
             Controls.Add(pnlWorkPlace);
             Controls.Add(pnlNaviBar);
             Font = new Font("Segoe UI", 9F);
