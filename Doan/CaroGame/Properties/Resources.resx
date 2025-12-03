@@ -121,11 +121,14 @@
   <data name="Caro Game (2)" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Caro Game (2).png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="menuCaro" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\menuCaro.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
   <data name="Caro Game (11)" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Caro Game (11).png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="folder" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\folder.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="play-button" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\play-button.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="Caro Game" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Caro Game.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -139,20 +142,35 @@
   <data name="Caro Game (12)" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Caro Game (12).png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Caro Game (4)" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Caro Game (4).png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="menuCaro" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\menuCaro.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="pause" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\pause.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="Caro Game (1)" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Caro Game (1).png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="pvp" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\pvp.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Caro Game (4)" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Caro Game (4).png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="Caro Game (8)" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Caro Game (8).png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Caro Game (7)" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Caro Game (7).png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="match" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\match.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="play" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\play.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="Caro Game (5)" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Caro Game (5).png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Caro Game (7)" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Caro Game (7).png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="Caro Game (3)" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Caro Game (3).png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -163,7 +181,7 @@
   <data name="CaroPicGame" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\CaroPicGame.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="play-button" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\play-button.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="file" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\file.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
 </root>

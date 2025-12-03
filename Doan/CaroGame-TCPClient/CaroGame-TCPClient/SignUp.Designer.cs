@@ -119,6 +119,7 @@
             // linkedlb_signin
             // 
             linkedlb_signin.AutoSize = true;
+            linkedlb_signin.Cursor = Cursors.Hand;
             linkedlb_signin.Location = new Point(307, 640);
             linkedlb_signin.Name = "linkedlb_signin";
             linkedlb_signin.Size = new Size(54, 20);
@@ -131,7 +132,7 @@
             // 
             cb_showpsw.AutoSize = true;
             cb_showpsw.Cursor = Cursors.Hand;
-            cb_showpsw.Location = new Point(340, 396);
+            cb_showpsw.Location = new Point(340, 328);
             cb_showpsw.Margin = new Padding(3, 4, 3, 4);
             cb_showpsw.Name = "cb_showpsw";
             cb_showpsw.Size = new Size(134, 24);
@@ -144,7 +145,7 @@
             // 
             cb_showcfpsw.AutoSize = true;
             cb_showcfpsw.Cursor = Cursors.Hand;
-            cb_showcfpsw.Location = new Point(340, 328);
+            cb_showcfpsw.Location = new Point(340, 396);
             cb_showcfpsw.Margin = new Padding(3, 4, 3, 4);
             cb_showcfpsw.Name = "cb_showcfpsw";
             cb_showcfpsw.Size = new Size(134, 24);
@@ -217,6 +218,7 @@
             // 
             pictureBox1.BackgroundImage = Properties.Resources.CaroPicGame;
             pictureBox1.BackgroundImageLayout = ImageLayout.Stretch;
+            pictureBox1.BorderStyle = BorderStyle.Fixed3D;
             pictureBox1.Location = new Point(192, 12);
             pictureBox1.Name = "pictureBox1";
             pictureBox1.Size = new Size(120, 120);
@@ -245,7 +247,7 @@
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            BackColor = SystemColors.ActiveCaption;
+            BackColor = Color.LightBlue;
             ClientSize = new Size(505, 669);
             Controls.Add(lblFullName);
             Controls.Add(tb_fullname);

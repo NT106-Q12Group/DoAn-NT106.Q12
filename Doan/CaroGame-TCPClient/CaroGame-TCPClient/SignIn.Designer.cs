@@ -102,6 +102,7 @@
             // 
             linkedlb_signup.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             linkedlb_signup.AutoSize = true;
+            linkedlb_signup.Cursor = Cursors.Hand;
             linkedlb_signup.Location = new Point(208, 390);
             linkedlb_signup.Name = "linkedlb_signup";
             linkedlb_signup.Size = new Size(64, 20);
@@ -136,6 +137,7 @@
             // 
             pictureBox1.BackgroundImage = Properties.Resources.CaroPicGame;
             pictureBox1.BackgroundImageLayout = ImageLayout.Stretch;
+            pictureBox1.BorderStyle = BorderStyle.Fixed3D;
             pictureBox1.Location = new Point(66, 15);
             pictureBox1.Name = "pictureBox1";
             pictureBox1.Size = new Size(158, 163);
@@ -145,6 +147,7 @@
             // linkLabel1
             // 
             linkLabel1.AutoSize = true;
+            linkLabel1.Cursor = Cursors.Hand;
             linkLabel1.Location = new Point(23, 325);
             linkLabel1.Name = "linkLabel1";
             linkLabel1.Size = new Size(125, 20);
@@ -156,7 +159,7 @@
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            BackColor = SystemColors.ActiveCaption;
+            BackColor = Color.LightBlue;
             ClientSize = new Size(295, 424);
             Controls.Add(linkLabel1);
             Controls.Add(pictureBox1);

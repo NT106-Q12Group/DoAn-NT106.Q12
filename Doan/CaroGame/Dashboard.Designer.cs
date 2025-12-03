@@ -28,102 +28,150 @@
         /// </summary>
         private void InitializeComponent()
         {
-            btnOnline = new Button();
             pnlNaviBar = new Panel();
-            btnSettings = new Button();
+            btnPvE = new Button();
             btnLeaderboard = new Button();
-            btnOffline = new Button();
-            pnlWorkPlace = new Panel();
-            btnStart = new Button();
+            label4 = new Label();
+            btnSettings = new Button();
+            label3 = new Label();
+            btnPvP = new Button();
+            label2 = new Label();
+            label1 = new Label();
             ptbAvaGame = new PictureBox();
             pnlNaviBar.SuspendLayout();
-            pnlWorkPlace.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)ptbAvaGame).BeginInit();
             SuspendLayout();
             // 
-            // btnOnline
-            // 
-            btnOnline.BackgroundImage = Properties.Resources.Caro_Game__10_;
-            btnOnline.BackgroundImageLayout = ImageLayout.Stretch;
-            btnOnline.Location = new Point(24, 3);
-            btnOnline.Name = "btnOnline";
-            btnOnline.Size = new Size(67, 50);
-            btnOnline.TabIndex = 1;
-            btnOnline.UseVisualStyleBackColor = true;
-            // 
             // pnlNaviBar
             // 
-            pnlNaviBar.Controls.Add(btnSettings);
+            pnlNaviBar.Controls.Add(btnPvE);
             pnlNaviBar.Controls.Add(btnLeaderboard);
-            pnlNaviBar.Controls.Add(btnOffline);
-            pnlNaviBar.Controls.Add(btnOnline);
-            pnlNaviBar.Location = new Point(470, 12);
+            pnlNaviBar.Controls.Add(label4);
+            pnlNaviBar.Controls.Add(btnSettings);
+            pnlNaviBar.Controls.Add(label3);
+            pnlNaviBar.Controls.Add(btnPvP);
+            pnlNaviBar.Controls.Add(label2);
+            pnlNaviBar.Controls.Add(label1);
+            pnlNaviBar.Location = new Point(259, 12);
             pnlNaviBar.Name = "pnlNaviBar";
-            pnlNaviBar.Size = new Size(117, 223);
+            pnlNaviBar.Size = new Size(391, 241);
             pnlNaviBar.TabIndex = 3;
             // 
-            // btnSettings
+            // btnPvE
             // 
-            btnSettings.BackgroundImage = Properties.Resources.Caro_Game__8_;
-            btnSettings.BackgroundImageLayout = ImageLayout.Stretch;
-            btnSettings.Location = new Point(24, 171);
-            btnSettings.Name = "btnSettings";
-            btnSettings.Size = new Size(67, 50);
-            btnSettings.TabIndex = 4;
-            btnSettings.UseVisualStyleBackColor = true;
+            btnPvE.BackColor = Color.LightBlue;
+            btnPvE.BackgroundImage = Properties.Resources.match;
+            btnPvE.BackgroundImageLayout = ImageLayout.Stretch;
+            btnPvE.Cursor = Cursors.Hand;
+            btnPvE.FlatAppearance.BorderSize = 0;
+            btnPvE.FlatAppearance.MouseDownBackColor = Color.LightBlue;
+            btnPvE.FlatAppearance.MouseOverBackColor = Color.LightBlue;
+            btnPvE.FlatStyle = FlatStyle.Flat;
+            btnPvE.Font = new Font("Segoe UI", 18F, FontStyle.Bold);
+            btnPvE.Location = new Point(70, 16);
+            btnPvE.Name = "btnPvE";
+            btnPvE.Size = new Size(67, 56);
+            btnPvE.TabIndex = 0;
+            btnPvE.UseVisualStyleBackColor = false;
+            btnPvE.Click += btnStart_Click;
             // 
             // btnLeaderboard
             // 
             btnLeaderboard.BackgroundImage = Properties.Resources.Caro_Game__9_;
             btnLeaderboard.BackgroundImageLayout = ImageLayout.Stretch;
-            btnLeaderboard.Location = new Point(24, 115);
+            btnLeaderboard.Cursor = Cursors.Hand;
+            btnLeaderboard.FlatAppearance.BorderSize = 0;
+            btnLeaderboard.FlatAppearance.MouseDownBackColor = Color.LightBlue;
+            btnLeaderboard.FlatAppearance.MouseOverBackColor = Color.LightBlue;
+            btnLeaderboard.FlatStyle = FlatStyle.Flat;
+            btnLeaderboard.Location = new Point(70, 145);
             btnLeaderboard.Name = "btnLeaderboard";
-            btnLeaderboard.Size = new Size(67, 50);
+            btnLeaderboard.Size = new Size(67, 48);
             btnLeaderboard.TabIndex = 3;
             btnLeaderboard.UseVisualStyleBackColor = true;
             // 
-            // btnOffline
+            // label4
             // 
-            btnOffline.BackgroundImage = Properties.Resources.Caro_Game__11_;
-            btnOffline.BackgroundImageLayout = ImageLayout.Stretch;
-            btnOffline.Location = new Point(24, 59);
-            btnOffline.Name = "btnOffline";
-            btnOffline.Size = new Size(67, 50);
-            btnOffline.TabIndex = 2;
-            btnOffline.UseVisualStyleBackColor = true;
+            label4.AutoSize = true;
+            label4.Font = new Font("Segoe UI", 16F, FontStyle.Bold);
+            label4.Location = new Point(257, 196);
+            label4.Name = "label4";
+            label4.Size = new Size(122, 37);
+            label4.TabIndex = 8;
+            label4.Text = "Settings";
             // 
-            // pnlWorkPlace
+            // btnSettings
             // 
-            pnlWorkPlace.Controls.Add(ptbAvaGame);
-            pnlWorkPlace.Controls.Add(btnStart);
-            pnlWorkPlace.Location = new Point(344, 165);
-            pnlWorkPlace.Name = "pnlWorkPlace";
-            pnlWorkPlace.Size = new Size(317, 223);
-            pnlWorkPlace.TabIndex = 4;
+            btnSettings.BackgroundImage = Properties.Resources.Caro_Game__8_;
+            btnSettings.BackgroundImageLayout = ImageLayout.Stretch;
+            btnSettings.Cursor = Cursors.Hand;
+            btnSettings.FlatAppearance.BorderSize = 0;
+            btnSettings.FlatAppearance.MouseDownBackColor = Color.LightBlue;
+            btnSettings.FlatAppearance.MouseOverBackColor = Color.LightBlue;
+            btnSettings.FlatStyle = FlatStyle.Flat;
+            btnSettings.Location = new Point(279, 145);
+            btnSettings.Name = "btnSettings";
+            btnSettings.Size = new Size(67, 48);
+            btnSettings.TabIndex = 4;
+            btnSettings.UseVisualStyleBackColor = true;
             // 
-            // btnStart
+            // label3
             // 
-            btnStart.BackColor = Color.DodgerBlue;
-            btnStart.BackgroundImage = Properties.Resources.play_button;
-            btnStart.BackgroundImageLayout = ImageLayout.Stretch;
-            btnStart.Cursor = Cursors.Hand;
-            btnStart.FlatAppearance.BorderSize = 0;
-            btnStart.FlatStyle = FlatStyle.Flat;
-            btnStart.Font = new Font("Segoe UI", 18F, FontStyle.Bold);
-            btnStart.Location = new Point(126, 164);
-            btnStart.Name = "btnStart";
-            btnStart.Size = new Size(62, 56);
-            btnStart.TabIndex = 0;
-            btnStart.UseVisualStyleBackColor = false;
-            btnStart.Click += btnStart_Click;
+            label3.AutoSize = true;
+            label3.Font = new Font("Segoe UI", 16F, FontStyle.Bold);
+            label3.Location = new Point(11, 196);
+            label3.Name = "label3";
+            label3.Size = new Size(181, 37);
+            label3.TabIndex = 7;
+            label3.Text = "Leaderboard";
+            // 
+            // btnPvP
+            // 
+            btnPvP.BackColor = Color.LightBlue;
+            btnPvP.BackgroundImage = Properties.Resources.pvp;
+            btnPvP.BackgroundImageLayout = ImageLayout.Stretch;
+            btnPvP.CausesValidation = false;
+            btnPvP.Cursor = Cursors.Hand;
+            btnPvP.FlatAppearance.BorderSize = 0;
+            btnPvP.FlatAppearance.MouseDownBackColor = Color.LightBlue;
+            btnPvP.FlatAppearance.MouseOverBackColor = Color.LightBlue;
+            btnPvP.FlatStyle = FlatStyle.Flat;
+            btnPvP.Font = new Font("Segoe UI", 18F, FontStyle.Bold);
+            btnPvP.Location = new Point(279, 16);
+            btnPvP.Name = "btnPvP";
+            btnPvP.Size = new Size(67, 56);
+            btnPvP.TabIndex = 4;
+            btnPvP.TextAlign = ContentAlignment.MiddleLeft;
+            btnPvP.UseVisualStyleBackColor = false;
+            // 
+            // label2
+            // 
+            label2.AutoSize = true;
+            label2.Font = new Font("Segoe UI", 16F, FontStyle.Bold);
+            label2.Location = new Point(236, 75);
+            label2.Name = "label2";
+            label2.Size = new Size(148, 37);
+            label2.TabIndex = 6;
+            label2.Text = "PvP Mode";
+            // 
+            // label1
+            // 
+            label1.AutoSize = true;
+            label1.Font = new Font("Segoe UI", 16F, FontStyle.Bold);
+            label1.Location = new Point(29, 75);
+            label1.Name = "label1";
+            label1.Size = new Size(145, 37);
+            label1.TabIndex = 5;
+            label1.Text = "PvE Mode";
             // 
             // ptbAvaGame
             // 
             ptbAvaGame.BackgroundImage = Properties.Resources.CaroPicGame;
             ptbAvaGame.BackgroundImageLayout = ImageLayout.Zoom;
-            ptbAvaGame.Location = new Point(109, 18);
+            ptbAvaGame.BorderStyle = BorderStyle.Fixed3D;
+            ptbAvaGame.Location = new Point(12, 12);
             ptbAvaGame.Name = "ptbAvaGame";
-            ptbAvaGame.Size = new Size(117, 121);
+            ptbAvaGame.Size = new Size(240, 241);
             ptbAvaGame.TabIndex = 1;
             ptbAvaGame.TabStop = false;
             // 
@@ -131,9 +179,9 @@
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            BackColor = Color.DodgerBlue;
-            ClientSize = new Size(696, 412);
-            Controls.Add(pnlWorkPlace);
+            BackColor = Color.LightBlue;
+            ClientSize = new Size(660, 261);
+            Controls.Add(ptbAvaGame);
             Controls.Add(pnlNaviBar);
             Font = new Font("Segoe UI", 9F);
             FormBorderStyle = FormBorderStyle.FixedSingle;
@@ -142,19 +190,21 @@
             StartPosition = FormStartPosition.CenterScreen;
             Text = "Dashboard";
             pnlNaviBar.ResumeLayout(false);
-            pnlWorkPlace.ResumeLayout(false);
+            pnlNaviBar.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)ptbAvaGame).EndInit();
             ResumeLayout(false);
         }
 
         #endregion
-        private Button btnOnline;
         private Panel pnlNaviBar;
-        private Panel pnlWorkPlace;
         private Button btnSettings;
         private Button btnLeaderboard;
-        private Button btnOffline;
         private PictureBox ptbAvaGame;
-        private Button btnStart;
+        private Button btnPvE;
+        private Button btnPvP;
+        private Label label3;
+        private Label label2;
+        private Label label1;
+        private Label label4;
     }
 }
