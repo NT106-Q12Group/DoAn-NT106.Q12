@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -55,6 +56,8 @@ namespace CaroGame
         #endregion
 
         #region Methods
+        private int lastHumanRow = -1;
+        private int lastHumanCol = -1;
         public void DrawChessBoard()
         {
             matrix = new List<List<Button>>();
@@ -97,6 +100,33 @@ namespace CaroGame
         {
             Button btn = sender as Button;
 
+            //Phần PVE
+            if (btn.BackgroundImage != null)
+                return;
+
+            // Người chơi luôn là Player[0], bot là Player[1]
+            if (CurrentPlayer != 0)
+                return;
+
+            btn.BackgroundImage = Player[CurrentPlayer].Mark;
+
+            Point p = getChessPoint(btn);
+            lastHumanRow = p.Y;
+            lastHumanCol = p.X;
+
+            if (isEndGame(btn))
+            {
+                EndGame();
+                return;
+            }
+
+            CurrentPlayer = 1;
+
+            BotPlay();
+
+
+            //Phần PVP
+            /*
             if (btn.BackgroundImage != null)
                 return;
              
@@ -107,6 +137,7 @@ namespace CaroGame
             {
                 EndGame();
             }
+            */
         }
 
         private void EndGame()
@@ -287,6 +318,174 @@ namespace CaroGame
 
             return countTop + countBottom >= 5;
         }
+
+        long[] AttackScore = new long[] { 0, 8, 80, 800, 8000, 80000, 80000, 800000 };
+        long[] DefendScore = new long[] { 0, 10, 100, 1000, 10000, 100000, 1000000 };
+        private void BotPlay()
+        {
+            long maxScore = long.MinValue;
+            int bestRow = -1;
+            int bestCol = -1;
+
+            for (int i = 0; i < Cons.CHESS_BOARD_HEIGHT; i++)
+            {
+                for (int j = 0; j < Cons.CHESS_BOARD_WIDTH; j++)
+                {
+                    if (matrix[i][j].BackgroundImage != null)
+                        continue;
+
+                    long atk = DiemTanCong(i, j);
+                    long def = DiemPhongThu(i, j);
+
+                    long score = Math.Max(atk, def);
+
+                    if (lastHumanRow != -1 && lastHumanCol != -1)
+                    {
+                        int dist = Math.Abs(i - lastHumanRow) + Math.Abs(j - lastHumanCol); 
+
+                        int maxDist = 5;
+                        if (dist <= maxDist)
+                        {
+                            long proximityBonus = 600 - dist * 100;
+                            score += proximityBonus;
+                        }
+                    }
+
+                    if (score > maxScore)
+                    {
+                        maxScore = score;
+                        bestRow = i;
+                        bestCol = j;
+                    }
+                }
+            }
+
+            if (bestRow != -1)
+            {
+                matrix[bestRow][bestCol].BackgroundImage = Player[1].Mark;
+                CurrentPlayer = 0;
+
+                if (isEndGame(matrix[bestRow][bestCol]))
+                    EndGame();
+            }
+        }
+
+
+
+        long DiemTanCong(int dong, int cot)
+        {
+            long Diem = 0;
+            Diem += CheckDirectionAttack(dong, cot, 1, 0); 
+            Diem += CheckDirectionAttack(dong, cot, 0, 1); 
+            Diem += CheckDirectionAttack(dong, cot, 1, 1) * 2; 
+            Diem += CheckDirectionAttack(dong, cot, 1, -1) * 2; 
+            return Diem;
+        }
+
+        long DiemPhongThu(int dong, int cot)
+        {
+            long Diem = 0;
+            Diem += CheckDirectionDefend(dong, cot, 1, 0);
+            Diem += CheckDirectionDefend(dong, cot, 0, 1);
+            Diem += CheckDirectionDefend(dong, cot, 1, 1) * 2;
+            Diem += CheckDirectionDefend(dong, cot, 1, -1) * 2;
+            return Diem;
+        }
+
+        long CheckDirectionAttack(int dong, int cot, int drow, int dcol)
+        {
+            if (matrix[dong][cot].BackgroundImage != null)
+            {
+                return 0;
+            }
+
+            Image botMark = Player[1].Mark;
+            Image humanMark = Player[0].Mark;
+
+            int SoQuanTa = 0;
+            int SoQuanDich = 0;
+
+            for (int i = 1; i < 6; i++)
+            {
+                int nd = dong + drow * i;
+                int nc = cot + dcol * i;
+                if (!InBounds(nd, nc)) break;
+
+                var img = matrix[nd][nc].BackgroundImage;
+                if (img == botMark) SoQuanTa++;
+                else if (img == humanMark) { SoQuanDich++; break; }
+                else break;
+            }
+
+            // hướng -1
+            for (int i = 1; i < 6; i++)
+            {
+                int nd = dong - drow * i;
+                int nc = cot - dcol * i;
+                if (!InBounds(nd, nc)) break;
+
+                var img = matrix[nd][nc].BackgroundImage;
+                if (img == botMark) SoQuanTa++;
+                else if (img == humanMark) { SoQuanDich++; break; }
+                else break;
+            }
+
+            if (SoQuanDich >= 2) return 0;
+
+            int atkIndex = Math.Min(SoQuanTa, AttackScore.Length - 1);
+            return AttackScore[atkIndex];
+        }
+
+        long CheckDirectionDefend(int dong, int cot, int drow, int dcol)
+        {
+            if (matrix[dong][cot].BackgroundImage != null)
+            {
+                return 0;
+            }
+
+            Image botMark = Player[1].Mark;
+            Image humanMark = Player[0].Mark;
+
+            int SoQuanTa = 0;
+            int SoQuanDich = 0;
+
+            // hướng +1
+            for (int i = 1; i < 6; i++)
+            {
+                int nd = dong + drow * i;
+                int nc = cot + dcol * i;
+                if (!InBounds(nd, nc)) break;
+
+                var img = matrix[nd][nc].BackgroundImage;
+                if (img == humanMark) SoQuanDich++;
+                else if (img == botMark) { SoQuanTa++; break; }
+                else break;
+            }
+
+            // hướng -1
+            for (int i = 1; i < 6; i++)
+            {
+                int nd = dong - drow * i;
+                int nc = cot - dcol * i;
+                if (!InBounds(nd, nc)) break;
+
+                var img = matrix[nd][nc].BackgroundImage;
+                if (img == humanMark) SoQuanDich++;
+                else if (img == botMark) { SoQuanTa++; break; }
+                else break;
+            }
+
+            if (SoQuanTa >= 2) return 0;
+
+            int defIndex = Math.Min(SoQuanDich, DefendScore.Length - 1);
+            return DefendScore[defIndex];
+        }
+
+        bool InBounds(int dong, int cot)
+        {
+            return dong >= 0 && dong < Cons.CHESS_BOARD_HEIGHT && cot >= 0 && cot < Cons.CHESS_BOARD_WIDTH;
+        }
+
         #endregion
     }
 }
