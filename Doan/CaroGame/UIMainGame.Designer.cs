@@ -101,7 +101,7 @@
             // 
             ptbAvaP1.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             ptbAvaP1.BackgroundImageLayout = ImageLayout.Stretch;
-            ptbAvaP1.Location = new Point(351, 12);
+            ptbAvaP1.Location = new Point(7, 12);
             ptbAvaP1.Name = "ptbAvaP1";
             ptbAvaP1.Size = new Size(89, 99);
             ptbAvaP1.TabIndex = 9;
@@ -193,7 +193,7 @@
             label1.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             label1.AutoSize = true;
             label1.Font = new Font("Showcard Gothic", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            label1.Location = new Point(222, 12);
+            label1.Location = new Point(113, 12);
             label1.Name = "label1";
             label1.Size = new Size(107, 26);
             label1.TabIndex = 2;
@@ -221,7 +221,7 @@
             // pgbP1
             // 
             pgbP1.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            pgbP1.Location = new Point(27, 82);
+            pgbP1.Location = new Point(137, 82);
             pgbP1.Name = "pgbP1";
             pgbP1.Size = new Size(303, 29);
             pgbP1.TabIndex = 1;
@@ -231,7 +231,7 @@
             ptbX.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             ptbX.BackgroundImage = Properties.Resources.Caro_Game;
             ptbX.BackgroundImageLayout = ImageLayout.Stretch;
-            ptbX.Location = new Point(41, 12);
+            ptbX.Location = new Point(351, 12);
             ptbX.Name = "ptbX";
             ptbX.Size = new Size(89, 64);
             ptbX.TabIndex = 0;
