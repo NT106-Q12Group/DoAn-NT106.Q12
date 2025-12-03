@@ -61,6 +61,7 @@
             // 
             pnlLeaderBoard.Anchor = AnchorStyles.Top;
             pnlLeaderBoard.BackColor = SystemColors.ButtonHighlight;
+            pnlLeaderBoard.BorderStyle = BorderStyle.Fixed3D;
             pnlLeaderBoard.Location = new Point(666, 372);
             pnlLeaderBoard.Name = "pnlLeaderBoard";
             pnlLeaderBoard.Size = new Size(381, 241);
@@ -91,6 +92,7 @@
             // 
             ptbAvaP2.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             ptbAvaP2.BackgroundImageLayout = ImageLayout.Stretch;
+            ptbAvaP2.BorderStyle = BorderStyle.Fixed3D;
             ptbAvaP2.Location = new Point(351, 127);
             ptbAvaP2.Name = "ptbAvaP2";
             ptbAvaP2.Size = new Size(89, 101);
@@ -101,7 +103,8 @@
             // 
             ptbAvaP1.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             ptbAvaP1.BackgroundImageLayout = ImageLayout.Stretch;
-            ptbAvaP1.Location = new Point(7, 12);
+            ptbAvaP1.BorderStyle = BorderStyle.Fixed3D;
+            ptbAvaP1.Location = new Point(9, 12);
             ptbAvaP1.Name = "ptbAvaP1";
             ptbAvaP1.Size = new Size(89, 99);
             ptbAvaP1.TabIndex = 9;
@@ -193,7 +196,7 @@
             label1.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             label1.AutoSize = true;
             label1.Font = new Font("Showcard Gothic", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            label1.Location = new Point(113, 12);
+            label1.Location = new Point(121, 12);
             label1.Name = "label1";
             label1.Size = new Size(107, 26);
             label1.TabIndex = 2;
@@ -202,9 +205,9 @@
             // pgbP2
             // 
             pgbP2.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            pgbP2.Location = new Point(27, 199);
+            pgbP2.Location = new Point(9, 199);
             pgbP2.Name = "pgbP2";
-            pgbP2.Size = new Size(303, 29);
+            pgbP2.Size = new Size(321, 29);
             pgbP2.TabIndex = 3;
             // 
             // ptbO
@@ -212,7 +215,7 @@
             ptbO.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             ptbO.BackgroundImage = Properties.Resources.Caro_Game__1_;
             ptbO.BackgroundImageLayout = ImageLayout.Stretch;
-            ptbO.Location = new Point(41, 129);
+            ptbO.Location = new Point(9, 129);
             ptbO.Name = "ptbO";
             ptbO.Size = new Size(89, 64);
             ptbO.TabIndex = 2;
@@ -221,9 +224,9 @@
             // pgbP1
             // 
             pgbP1.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            pgbP1.Location = new Point(137, 82);
+            pgbP1.Location = new Point(121, 82);
             pgbP1.Name = "pgbP1";
-            pgbP1.Size = new Size(303, 29);
+            pgbP1.Size = new Size(319, 29);
             pgbP1.TabIndex = 1;
             // 
             // ptbX

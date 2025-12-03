@@ -86,7 +86,7 @@
             // btn_signout
             // 
             btn_signout.Cursor = Cursors.Hand;
-            btn_signout.Location = new Point(187, 570);
+            btn_signout.Location = new Point(187, 568);
             btn_signout.Margin = new Padding(3, 4, 3, 4);
             btn_signout.Name = "btn_signout";
             btn_signout.Size = new Size(86, 31);
@@ -99,6 +99,7 @@
             // 
             pictureBox1.BackgroundImage = Properties.Resources.accountCaro1;
             pictureBox1.BackgroundImageLayout = ImageLayout.Stretch;
+            pictureBox1.BorderStyle = BorderStyle.Fixed3D;
             pictureBox1.Location = new Point(164, 52);
             pictureBox1.Name = "pictureBox1";
             pictureBox1.Size = new Size(142, 150);
@@ -139,7 +140,7 @@
             // 
             label4.AutoSize = true;
             label4.Font = new Font("Segoe UI", 16F, FontStyle.Bold);
-            label4.Location = new Point(124, 12);
+            label4.Location = new Point(124, 10);
             label4.Name = "label4";
             label4.Size = new Size(226, 37);
             label4.TabIndex = 11;
@@ -264,7 +265,7 @@
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            BackColor = SystemColors.ActiveCaption;
+            BackColor = Color.LightBlue;
             ClientSize = new Size(470, 614);
             Controls.Add(btnEditBirth);
             Controls.Add(btnEditEmail);
