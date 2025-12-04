@@ -1,6 +1,6 @@
 ﻿namespace CaroGame
 {
-    partial class UIMainGame
+    partial class PvP
     {
         /// <summary>
         ///  Required designer variable.
@@ -93,9 +93,9 @@
             ptbAvaP2.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             ptbAvaP2.BackgroundImageLayout = ImageLayout.Stretch;
             ptbAvaP2.BorderStyle = BorderStyle.Fixed3D;
-            ptbAvaP2.Location = new Point(351, 127);
+            ptbAvaP2.Location = new Point(336, 127);
             ptbAvaP2.Name = "ptbAvaP2";
-            ptbAvaP2.Size = new Size(89, 101);
+            ptbAvaP2.Size = new Size(104, 101);
             ptbAvaP2.TabIndex = 10;
             ptbAvaP2.TabStop = false;
             // 
@@ -106,7 +106,7 @@
             ptbAvaP1.BorderStyle = BorderStyle.Fixed3D;
             ptbAvaP1.Location = new Point(9, 12);
             ptbAvaP1.Name = "ptbAvaP1";
-            ptbAvaP1.Size = new Size(89, 99);
+            ptbAvaP1.Size = new Size(106, 99);
             ptbAvaP1.TabIndex = 9;
             ptbAvaP1.TabStop = false;
             // 
@@ -316,7 +316,7 @@
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            BackColor = Color.MidnightBlue;
+            BackColor = SystemColors.HotTrack;
             ClientSize = new Size(1097, 624);
             Controls.Add(panelChat);
             Controls.Add(label3);

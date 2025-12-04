@@ -20,27 +20,27 @@ namespace CaroGame
         private void btn_return_Click(object sender, EventArgs e)
         {
             this.Hide();
-            var main = Application.OpenForms.OfType<UIMainGame>().FirstOrDefault();
+            var main = Application.OpenForms.OfType<PvP>().FirstOrDefault();
             if (main != null)
             {
                 main.Show();
             }
             else
             {
-                var newMain = new UIMainGame();
+                var newMain = new PvP();
                 newMain.Show();
             }
         }
 
         private void btn_newgame_Click(object sender, EventArgs e)
         {
-            var Openform = Application.OpenForms.OfType<UIMainGame>().ToList();
+            var Openform = Application.OpenForms.OfType<PvP>().ToList();
                 foreach (var f in Openform)
                 {
                     f.Close();
                 }
                 this.Close();
-            var form = new UIMainGame();
+            var form = new PvP();
             form.Show();
         }
 
