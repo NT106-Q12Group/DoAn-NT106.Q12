@@ -116,7 +116,7 @@ namespace CaroGame
 
             if (isEndGame(btn))
             {
-                EndGame();
+                EndGame(Player[CurrentPlayer].Name);
                 return;
             }
 
@@ -140,9 +140,9 @@ namespace CaroGame
             */
         }
 
-        private void EndGame()
+        private void EndGame(string winnerName)
         {
-            MessageBox.Show("Trò chơi kết thúc!");
+            MessageBox.Show($"{winnerName} chiến thắng!!!");
         }
 
         private bool isEndGame(Button btn)
@@ -366,7 +366,7 @@ namespace CaroGame
                 CurrentPlayer = 0;
 
                 if (isEndGame(matrix[bestRow][bestCol]))
-                    EndGame();
+                    EndGame(Player[1].Name);
             }
         }
 
