@@ -19,6 +19,18 @@ namespace CaroGame
 
         private void btnStart_Click(object sender, EventArgs e)
         {
+            var newGameForm = new BotDifficulty();
+            newGameForm.Show();
+            this.Hide();
+        }
+
+        private void pnlNaviBar_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
+
+        private void btnPvP_Click(object sender, EventArgs e)
+        {
             var newGameForm = new PvP();
             newGameForm.Show();
             this.Hide();
