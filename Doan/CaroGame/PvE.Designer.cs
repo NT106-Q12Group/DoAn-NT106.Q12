@@ -64,6 +64,7 @@
             pnlChessBoard.Name = "pnlChessBoard";
             pnlChessBoard.Size = new Size(601, 601);
             pnlChessBoard.TabIndex = 1;
+            pnlChessBoard.Paint += pnlChessBoard_Paint;
             // 
             // pnlInfo
             // 
@@ -297,6 +298,7 @@
             Controls.Add(pnlChessBoard);
             Name = "Form1";
             Text = "Cờ Caro";
+            Load += Form1_Load;
             pnlInfo.ResumeLayout(false);
             pnlInfo.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)ptbAvaBot).EndInit();

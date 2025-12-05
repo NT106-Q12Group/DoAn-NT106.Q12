@@ -56,6 +56,7 @@
             pnlNaviBar.Name = "pnlNaviBar";
             pnlNaviBar.Size = new Size(391, 241);
             pnlNaviBar.TabIndex = 3;
+            pnlNaviBar.Paint += pnlNaviBar_Paint;
             // 
             // btnPvE
             // 
@@ -143,6 +144,7 @@
             btnPvP.TabIndex = 4;
             btnPvP.TextAlign = ContentAlignment.MiddleLeft;
             btnPvP.UseVisualStyleBackColor = false;
+            btnPvP.Click += btnPvP_Click;
             // 
             // label2
             // 
