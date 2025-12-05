@@ -81,6 +81,10 @@ namespace CaroGame
         private long timeLimitMillis = 0;
         private bool isTimeOut = false;
 
+        private Button lastMoveBtn = null;
+        private Color defaultColor = Color.WhiteSmoke;
+        private Color lastMoveColor = Color.Yellow;
+
         public DifficultyLevel Difficulty { get; set; } = DifficultyLevel.Easy;
         public void DrawChessBoard()
         {
@@ -103,8 +107,17 @@ namespace CaroGame
                         Height = Cons.CHESS_HEIGHT,
                         Location = new Point(oldButton.Location.X + oldButton.Width, oldButton.Location.Y),
                         BackgroundImageLayout = ImageLayout.Stretch,
-                        Tag = i.ToString()
+                        Tag = i.ToString(),
+
+                        // --- THÊM 2 DÒNG NÀY ---
+                        BackColor = defaultColor,
+                        FlatStyle = FlatStyle.Flat, // Chuyển sang Flat để màu nền hiện rõ hơn
+                                                    // -----------------------
                     };
+
+                    // Muốn đẹp hơn thì thêm viền (Optional)
+                    btn.FlatAppearance.BorderColor = Color.Silver;
+                    btn.FlatAppearance.BorderSize = 1;
 
                     btn.Click += Btn_Click;
 
@@ -120,6 +133,28 @@ namespace CaroGame
             }
         }
 
+        private void HighlightMove(Button btn)
+        {
+            // 1. Trả lại trạng thái cũ
+            if (lastMoveBtn != null)
+            {
+                lastMoveBtn.BackColor = defaultColor;
+                lastMoveBtn.FlatAppearance.BorderColor = Color.Silver; // Màu viền thường
+                lastMoveBtn.FlatAppearance.BorderSize = 1; // Độ dày viền thường
+            }
+
+            // 2. Gán nút mới
+            lastMoveBtn = btn;
+
+            // 3. Highlight
+            // Cách 1: Vẫn dùng màu nền (nhớ sửa FlatStyle ở trên)
+            lastMoveBtn.BackColor = lastMoveColor;
+
+            // Cách 2: Highlight bằng viền đỏ (nếu ảnh che mất màu nền)
+            lastMoveBtn.FlatAppearance.BorderColor = Color.Blue;
+            lastMoveBtn.FlatAppearance.BorderSize = 3; // Viền dày lên
+        }
+
         // Thêm biến này vào khu vực #region Methods hoặc khai báo biến
         private bool isThinking = false; // Biến khóa bàn cờ khi Bot đang nghĩ
 
@@ -133,6 +168,7 @@ namespace CaroGame
 
             // 1. Đánh dấu nước đi của người chơi
             btn.BackgroundImage = Player[CurrentPlayer].Mark;
+            HighlightMove(btn);
 
             Point p = getChessPoint(btn);
             lastHumanRow = p.Y;
@@ -512,6 +548,7 @@ namespace CaroGame
         private void MakeMove(int r, int c)
         {
             matrix[r][c].BackgroundImage = Player[1].Mark;
+            HighlightMove(matrix[r][c]);
             CurrentPlayer = 0;
             if (isEndGame(matrix[r][c])) EndGame(Player[1].Name);
         }
