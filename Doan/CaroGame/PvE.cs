@@ -10,9 +10,9 @@ using System.Windows.Forms;
 
 namespace CaroGame
 {
-    public partial class Form1 : Form
+    public partial class PvE : Form
     {
-        public Form1()
+        public PvE()
         {
             InitializeComponent();
         }
