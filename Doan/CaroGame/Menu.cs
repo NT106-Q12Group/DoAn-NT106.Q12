@@ -36,7 +36,7 @@ namespace CaroGame
         {
             var Openform = Application.OpenForms.OfType<PvP>().ToList();
                 foreach (var f in Openform)
-                {
+                {   
                     f.Close();
                 }
                 this.Close();

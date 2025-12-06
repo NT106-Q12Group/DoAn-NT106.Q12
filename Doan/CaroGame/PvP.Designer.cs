@@ -275,7 +275,7 @@
             // 
             // btnSend
             // 
-            btnSend.Location = new Point(335, 236);
+            btnSend.Location = new Point(364, 236);
             btnSend.Name = "btnSend";
             btnSend.Size = new Size(82, 37);
             btnSend.TabIndex = 2;

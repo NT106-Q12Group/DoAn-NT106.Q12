@@ -64,6 +64,7 @@
             pnlChessBoard.Name = "pnlChessBoard";
             pnlChessBoard.Size = new Size(601, 601);
             pnlChessBoard.TabIndex = 1;
+            pnlChessBoard.Paint += pnlChessBoard_Paint;
             // 
             // pnlInfo
             // 
@@ -125,6 +126,7 @@
             btnExit.Size = new Size(65, 51);
             btnExit.TabIndex = 8;
             btnExit.UseVisualStyleBackColor = true;
+            btnExit.Click += btnExit_Click;
             // 
             // btnChat
             // 
@@ -176,6 +178,7 @@
             btnMenu.Size = new Size(66, 51);
             btnMenu.TabIndex = 5;
             btnMenu.UseVisualStyleBackColor = true;
+            btnMenu.Click += btnMenu_Click;
             // 
             // label2
             // 
@@ -286,7 +289,7 @@
             rtbChat.TabIndex = 0;
             rtbChat.Text = "";
             // 
-            // Form1
+            // PvE
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
@@ -296,7 +299,9 @@
             Controls.Add(pnlInfo);
             Controls.Add(pnlChessBoard);
             Name = "PvE";
+            StartPosition = FormStartPosition.CenterScreen;
             Text = "Cờ Caro";
+            Load += Form1_Load;
             pnlInfo.ResumeLayout(false);
             pnlInfo.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)ptbAvaBot).EndInit();
