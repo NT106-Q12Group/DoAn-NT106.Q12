@@ -53,7 +53,7 @@ namespace CaroGame
             SetBotDifficulty(botDifficulty);
 
             // Ẩn BotDifficulty và hiển thị Form chơi chính
-            var gameForm = new Form1(botDifficulty); // Tạo form mới với chế độ khó
+            var gameForm = new PvE(botDifficulty); // Tạo form mới với chế độ khó
             gameForm.Show();
             this.Hide(); // Ẩn BotDifficulty form
         }

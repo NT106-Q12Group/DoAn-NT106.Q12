@@ -42,7 +42,7 @@
 
             private void btnExit_Click(object sender, EventArgs e)
             {
-                ActiveForm.Close();
+                this.Close();
                 var DashBoard = new Dashboard();
                 DashBoard.Show();
             }

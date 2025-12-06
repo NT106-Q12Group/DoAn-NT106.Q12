@@ -83,7 +83,7 @@ namespace CaroGame
 
         private void btnExit_Click(object sender, EventArgs e)
         {
-            ActiveForm.Close(); // Hoặc this.Close();
+            this.Close();
             var DashBoard = new Dashboard();
             DashBoard.Show();
         }
