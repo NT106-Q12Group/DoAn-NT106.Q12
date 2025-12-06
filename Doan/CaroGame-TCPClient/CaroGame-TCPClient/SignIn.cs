@@ -12,7 +12,7 @@ namespace CaroGame_TCPClient
         private bool _signingIn = false;
         private string _currentUser = "";
 
-        public SignIn() : this(new TCPClient("127.0.0.1", 25565)) { }
+        public SignIn() : this(new TCPClient("3.230.162.159", 25565)) { }
 
         public SignIn(TCPClient sharedClient)
         {
