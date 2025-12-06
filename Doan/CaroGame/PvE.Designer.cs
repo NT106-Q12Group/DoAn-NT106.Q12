@@ -1,6 +1,6 @@
 ﻿namespace CaroGame
 {
-    partial class Form1
+    partial class PvE
     {
         /// <summary>
         /// Required designer variable.
@@ -296,7 +296,7 @@
             Controls.Add(panelChat);
             Controls.Add(pnlInfo);
             Controls.Add(pnlChessBoard);
-            Name = "Form1";
+            Name = "PvE";
             Text = "Cờ Caro";
             Load += Form1_Load;
             pnlInfo.ResumeLayout(false);

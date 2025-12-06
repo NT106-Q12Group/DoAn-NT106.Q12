@@ -6,7 +6,7 @@ using static CaroGame.ChessBoardManager;
 
 namespace CaroGame
 {
-    public partial class Form1 : Form
+    public partial class PvE : Form
     {
         #region Properties
         ChessBoardManager ChessBoard;
@@ -15,7 +15,7 @@ namespace CaroGame
         #endregion
 
         // Constructor nhận tham số difficulty
-        public Form1(string difficulty)
+        public PvE(string difficulty)
         {
             InitializeComponent();
             botDifficulty = difficulty;
