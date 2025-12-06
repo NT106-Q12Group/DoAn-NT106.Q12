@@ -131,6 +131,8 @@ namespace CaroGame_TCPClient
                     dash.FormClosed += (s, _) => Close();
                     Hide();
                     dash.Show();
+                    var Dash = new CaroGame.Dashboard();
+                    Dash.Show();
 
                     MessageBox.Show("Signed in successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }

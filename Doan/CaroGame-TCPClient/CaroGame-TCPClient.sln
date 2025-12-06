@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.13.35931.197 d17.13
+VisualStudioVersion = 17.13.35931.197
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CaroGame-TCPClient", "CaroGame-TCPClient\CaroGame-TCPClient.csproj", "{58B5D4D2-5396-4641-9573-F96A72EB5AC4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CaroGame", "..\CaroGame\CaroGame.csproj", "{BC69426B-F6AC-07EA-8FFE-72F0EDC9271A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{58B5D4D2-5396-4641-9573-F96A72EB5AC4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{58B5D4D2-5396-4641-9573-F96A72EB5AC4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{58B5D4D2-5396-4641-9573-F96A72EB5AC4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BC69426B-F6AC-07EA-8FFE-72F0EDC9271A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BC69426B-F6AC-07EA-8FFE-72F0EDC9271A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BC69426B-F6AC-07EA-8FFE-72F0EDC9271A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BC69426B-F6AC-07EA-8FFE-72F0EDC9271A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
