@@ -7,14 +7,18 @@
             #region Properties
             ChessBoardManager ChessBoard;
             #endregion
-
-            public PvP()
+            public Room room;
+            public int playerNumber;
+            public PvP(Room room, int playerNumber)
             {
                 InitializeComponent();
 
                 ChessBoard = new ChessBoardManager(pnlChessBoard);
 
                 ChessBoard.DrawChessBoard();
+
+                this.room = room;
+                this.playerNumber = playerNumber;
             }
 
             private void Btn_Click(object? sender, EventArgs e)

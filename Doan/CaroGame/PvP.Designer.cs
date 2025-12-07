@@ -70,7 +70,7 @@
             // pnlInfo
             // 
             pnlInfo.Anchor = AnchorStyles.Top;
-            pnlInfo.BackColor = SystemColors.ButtonHighlight;
+            pnlInfo.BackColor = Color.White;
             pnlInfo.Controls.Add(ptbAvaP2);
             pnlInfo.Controls.Add(ptbAvaP1);
             pnlInfo.Controls.Add(btnExit);
@@ -253,6 +253,7 @@
             // panelChat
             // 
             panelChat.BackColor = Color.DeepSkyBlue;
+            panelChat.BorderStyle = BorderStyle.Fixed3D;
             panelChat.Controls.Add(label4);
             panelChat.Controls.Add(btnSend);
             panelChat.Controls.Add(txtMessage);
@@ -293,6 +294,7 @@
             // 
             // rtbChat
             // 
+            rtbChat.BackColor = Color.White;
             rtbChat.Location = new Point(30, 37);
             rtbChat.Name = "rtbChat";
             rtbChat.ReadOnly = true;
@@ -312,7 +314,7 @@
             label3.TabIndex = 9;
             label3.Text = "Leaderboard";
             // 
-            // UIMainGame
+            // PvP
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
@@ -323,9 +325,9 @@
             Controls.Add(pnlLeaderBoard);
             Controls.Add(pnlInfo);
             Controls.Add(pnlChessBoard);
-            FormBorderStyle = FormBorderStyle.FixedSingle;
+            FormBorderStyle = FormBorderStyle.None;
             MaximizeBox = false;
-            Name = "UIMainGame";
+            Name = "PvP";
             StartPosition = FormStartPosition.CenterScreen;
             Text = "Cờ Caro";
             pnlInfo.ResumeLayout(false);

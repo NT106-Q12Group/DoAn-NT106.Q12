@@ -79,5 +79,12 @@ namespace CaroGame
                     break;
             }
         }
+
+        private void btnExit_Click(object sender, EventArgs e)
+        {
+            this.Close();
+            var DashBoard = new Dashboard();
+            DashBoard.Show();
+        }
     }
 }
