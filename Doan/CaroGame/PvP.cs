@@ -7,10 +7,10 @@
         #region Properties
         ChessBoardManager ChessBoard;
         #endregion
-
-        public PvP()
+        public Room room;
+        public int playerNumber;
+        public PvP(Room room, int playerNumber)
         {
-<<<<<<< HEAD
             InitializeComponent();
             SetupEmojiPickerPanel();
 
@@ -28,29 +28,18 @@
         private void btnMenu_Click(object sender, EventArgs e)
         {
             if (menuForm == null || menuForm.IsDisposed)
-=======
-            #region Properties
-            ChessBoardManager ChessBoard;
-            #endregion
-            public Room room;
-            public int playerNumber;
-            public PvP(Room room, int playerNumber)
->>>>>>> 5b0a71ae87a12a3a946ca9b2c8cdbadb57155472
             {
                 menuForm = new Menu();
                 menuForm.StartPosition = FormStartPosition.Manual;
                 menuForm.Location = new Point(this.Left + 22, this.Top + 50);
-
-<<<<<<< HEAD
                 menuForm.Show(this);
-=======
+
                 ChessBoard = new ChessBoardManager(pnlChessBoard);
 
                 ChessBoard.DrawChessBoard();
 
                 this.room = room;
                 this.playerNumber = playerNumber;
->>>>>>> 5b0a71ae87a12a3a946ca9b2c8cdbadb57155472
             }
             else
             {

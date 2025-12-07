@@ -255,13 +255,10 @@
             // panelChat
             // 
             panelChat.BackColor = Color.DeepSkyBlue;
-<<<<<<< HEAD
             panelChat.Controls.Add(rtbChat);
             panelChat.Controls.Add(pnlEmojiPicker);
             panelChat.Controls.Add(btn_emoji);
-=======
             panelChat.BorderStyle = BorderStyle.Fixed3D;
->>>>>>> 5b0a71ae87a12a3a946ca9b2c8cdbadb57155472
             panelChat.Controls.Add(label4);
             panelChat.Controls.Add(btnSend);
             panelChat.Controls.Add(txtMessage);
@@ -325,8 +322,6 @@
             txtMessage.Size = new Size(300, 37);
             txtMessage.TabIndex = 1;
             // 
-<<<<<<< HEAD
-=======
             // rtbChat
             // 
             rtbChat.BackColor = Color.White;
@@ -337,7 +332,6 @@
             rtbChat.TabIndex = 0;
             rtbChat.Text = "";
             // 
->>>>>>> 5b0a71ae87a12a3a946ca9b2c8cdbadb57155472
             // label3
             // 
             label3.Anchor = AnchorStyles.Top;

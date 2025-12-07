@@ -56,8 +56,8 @@
             // 
             // pnlNaviBar
             // 
-            pnlNaviBar.Controls.Add(pnlDashBoard);
             pnlNaviBar.Controls.Add(pnlPvPMenu);
+            pnlNaviBar.Controls.Add(pnlDashBoard);
             pnlNaviBar.Controls.Add(btnPvE);
             pnlNaviBar.Controls.Add(btnLeaderboard);
             pnlNaviBar.Controls.Add(btnPvP);
@@ -181,6 +181,7 @@
             btnPlayInstant.TabIndex = 0;
             btnPlayInstant.Text = "Play Instant";
             btnPlayInstant.UseVisualStyleBackColor = true;
+            btnPlayInstant.Click += btnPlayInstant_Click;
             // 
             // btnPvE
             // 
