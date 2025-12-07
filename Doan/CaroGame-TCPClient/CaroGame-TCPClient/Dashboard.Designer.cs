@@ -202,6 +202,8 @@
             btnEditFullName.BackgroundImageLayout = ImageLayout.Stretch;
             btnEditFullName.Cursor = Cursors.Hand;
             btnEditFullName.FlatAppearance.BorderSize = 0;
+            btnEditFullName.FlatAppearance.MouseDownBackColor = Color.LightBlue;
+            btnEditFullName.FlatAppearance.MouseOverBackColor = Color.LightBlue;
             btnEditFullName.FlatStyle = FlatStyle.Flat;
             btnEditFullName.Location = new Point(418, 238);
             btnEditFullName.Name = "btnEditFullName";
@@ -215,6 +217,8 @@
             btnEditUsername.BackgroundImageLayout = ImageLayout.Stretch;
             btnEditUsername.Cursor = Cursors.Hand;
             btnEditUsername.FlatAppearance.BorderSize = 0;
+            btnEditUsername.FlatAppearance.MouseDownBackColor = Color.LightBlue;
+            btnEditUsername.FlatAppearance.MouseOverBackColor = Color.LightBlue;
             btnEditUsername.FlatStyle = FlatStyle.Flat;
             btnEditUsername.Location = new Point(418, 306);
             btnEditUsername.Name = "btnEditUsername";
@@ -228,6 +232,8 @@
             btnEditPassword.BackgroundImageLayout = ImageLayout.Stretch;
             btnEditPassword.Cursor = Cursors.Hand;
             btnEditPassword.FlatAppearance.BorderSize = 0;
+            btnEditPassword.FlatAppearance.MouseDownBackColor = Color.LightBlue;
+            btnEditPassword.FlatAppearance.MouseOverBackColor = Color.LightBlue;
             btnEditPassword.FlatStyle = FlatStyle.Flat;
             btnEditPassword.Location = new Point(418, 377);
             btnEditPassword.Name = "btnEditPassword";
@@ -241,6 +247,8 @@
             btnEditEmail.BackgroundImageLayout = ImageLayout.Stretch;
             btnEditEmail.Cursor = Cursors.Hand;
             btnEditEmail.FlatAppearance.BorderSize = 0;
+            btnEditEmail.FlatAppearance.MouseDownBackColor = Color.LightBlue;
+            btnEditEmail.FlatAppearance.MouseOverBackColor = Color.LightBlue;
             btnEditEmail.FlatStyle = FlatStyle.Flat;
             btnEditEmail.Location = new Point(418, 446);
             btnEditEmail.Name = "btnEditEmail";
@@ -254,6 +262,8 @@
             btnEditBirth.BackgroundImageLayout = ImageLayout.Stretch;
             btnEditBirth.Cursor = Cursors.Hand;
             btnEditBirth.FlatAppearance.BorderSize = 0;
+            btnEditBirth.FlatAppearance.MouseDownBackColor = Color.LightBlue;
+            btnEditBirth.FlatAppearance.MouseOverBackColor = Color.LightBlue;
             btnEditBirth.FlatStyle = FlatStyle.Flat;
             btnEditBirth.Location = new Point(418, 516);
             btnEditBirth.Name = "btnEditBirth";

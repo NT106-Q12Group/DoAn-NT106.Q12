@@ -27,7 +27,10 @@ namespace CaroGame
             }
             else
             {
-                var newMain = new PvP();
+                Room room = new Room();
+                int playerNumber = 1;
+
+                var newMain = new PvP(room, playerNumber);
                 newMain.Show();
             }
         }
@@ -35,12 +38,16 @@ namespace CaroGame
         private void btn_newgame_Click(object sender, EventArgs e)
         {
             var Openform = Application.OpenForms.OfType<PvP>().ToList();
-                foreach (var f in Openform)
-                {   
-                    f.Close();
-                }
-                this.Close();
-            var form = new PvP();
+            foreach (var f in Openform)
+            {
+                f.Close();
+            }
+            this.Close();
+
+            Room room = new Room();
+            int playerNumber = 1;
+
+            var form = new PvP(room, playerNumber);
             form.Show();
         }
 

@@ -53,7 +53,7 @@
             btn_newgame.TabIndex = 0;
             btn_newgame.Text = "Game mới";
             btn_newgame.UseVisualStyleBackColor = true;
-            btn_newgame.Click += btn_newgame_Click;
+            //btn_newgame.Click += btn_newgame_Click;
             // 
             // btn_diffselect
             // 
@@ -91,7 +91,7 @@
             btn_return.TabIndex = 3;
             btn_return.Text = "Tiếp tục";
             btn_return.UseVisualStyleBackColor = true;
-            btn_return.Click += btn_return_Click;
+            //btn_return.Click += btn_return_Click;
             // 
             // pictureBox1
             // 
