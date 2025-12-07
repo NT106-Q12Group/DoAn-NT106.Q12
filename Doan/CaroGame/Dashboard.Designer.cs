@@ -288,6 +288,7 @@
             btnPlayInstant.TabIndex = 0;
             btnPlayInstant.Text = "Play Instant";
             btnPlayInstant.UseVisualStyleBackColor = true;
+            btnPlayInstant.Click += btnPlayInstant_Click;
             // 
             // ptbAvaGame
             // 

@@ -44,10 +44,12 @@
             ptbX = new PictureBox();
             pnlChessBoard = new Panel();
             panelChat = new Panel();
+            rtbChat = new RichTextBox();
+            pnlEmojiPicker = new Panel();
+            btn_emoji = new Button();
             label4 = new Label();
             btnSend = new Button();
             txtMessage = new TextBox();
-            rtbChat = new RichTextBox();
             label3 = new Label();
             pnlInfo.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)ptbAvaP2).BeginInit();
@@ -138,7 +140,7 @@
             btnChat.FlatAppearance.MouseDownBackColor = SystemColors.ButtonHighlight;
             btnChat.FlatAppearance.MouseOverBackColor = SystemColors.ButtonHighlight;
             btnChat.FlatStyle = FlatStyle.Flat;
-            btnChat.Location = new Point(246, 244);
+            btnChat.Location = new Point(254, 244);
             btnChat.Name = "btnChat";
             btnChat.Size = new Size(65, 51);
             btnChat.TabIndex = 7;
@@ -253,16 +255,44 @@
             // panelChat
             // 
             panelChat.BackColor = Color.DeepSkyBlue;
+            panelChat.Controls.Add(rtbChat);
+            panelChat.Controls.Add(pnlEmojiPicker);
+            panelChat.Controls.Add(btn_emoji);
             panelChat.BorderStyle = BorderStyle.Fixed3D;
             panelChat.Controls.Add(label4);
             panelChat.Controls.Add(btnSend);
             panelChat.Controls.Add(txtMessage);
-            panelChat.Controls.Add(rtbChat);
             panelChat.Location = new Point(631, 329);
             panelChat.Name = "panelChat";
             panelChat.Size = new Size(449, 284);
             panelChat.TabIndex = 1;
             panelChat.Visible = false;
+            // 
+            // rtbChat
+            // 
+            rtbChat.Location = new Point(19, 40);
+            rtbChat.Name = "rtbChat";
+            rtbChat.ReadOnly = true;
+            rtbChat.Size = new Size(421, 192);
+            rtbChat.TabIndex = 0;
+            rtbChat.Text = "";
+            // 
+            // pnlEmojiPicker
+            // 
+            pnlEmojiPicker.Location = new Point(19, 94);
+            pnlEmojiPicker.Name = "pnlEmojiPicker";
+            pnlEmojiPicker.Size = new Size(397, 136);
+            pnlEmojiPicker.TabIndex = 5;
+            // 
+            // btn_emoji
+            // 
+            btn_emoji.Location = new Point(325, 236);
+            btn_emoji.Name = "btn_emoji";
+            btn_emoji.Size = new Size(33, 39);
+            btn_emoji.TabIndex = 4;
+            btn_emoji.Text = "😊";
+            btn_emoji.UseVisualStyleBackColor = true;
+            btn_emoji.Click += btn_emoji_Click;
             // 
             // label4
             // 
@@ -286,7 +316,7 @@
             // 
             // txtMessage
             // 
-            txtMessage.Location = new Point(30, 236);
+            txtMessage.Location = new Point(19, 238);
             txtMessage.Multiline = true;
             txtMessage.Name = "txtMessage";
             txtMessage.Size = new Size(300, 37);
@@ -364,5 +394,7 @@
         private Button btnSend;
         private TextBox txtMessage;
         private RichTextBox rtbChat;
+        private Button btn_emoji;
+        private Panel pnlEmojiPicker;
     }
 }

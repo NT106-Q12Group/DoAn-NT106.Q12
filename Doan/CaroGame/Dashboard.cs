@@ -13,6 +13,8 @@ namespace CaroGame
 {
     public partial class Dashboard : Form
     {
+        private Room room;
+        private int playerNumber;
         public Dashboard()
         {
             InitializeComponent();
@@ -84,6 +86,12 @@ namespace CaroGame
         private void btnSettings_Click(object sender, EventArgs e)
         {
             var dashboardSettings = new CaroGame_TCPClient.Dashboard();
+        }
+        private void btnPlayInstant_Click(object sender, EventArgs e)
+        {
+            var newGameForm = new PvP(room, playerNumber);
+            newGameForm.Show();
+            this.Hide();
         }
     }
 }
