@@ -127,11 +127,14 @@ namespace CaroGame_TCPClient
                         Birthday = birthday
                     };
 
-                    var dash = new Dashboard(pv, _client);
-                    dash.FormClosed += (s, _) => Close();
-                    Hide();
-                    dash.Show();
+                    //var dash = new Dashboard(pv, _client);
                     var Dash = new CaroGame.Dashboard();
+
+                    //dash.FormClosed += (s, _) => Close();
+                    Dash.FormClosed += (s, _) => Close();
+
+                    Hide();
+                    //dash.Show();
                     Dash.Show();
 
                     MessageBox.Show("Signed in successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);

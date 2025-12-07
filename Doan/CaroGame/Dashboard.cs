@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -78,6 +79,11 @@ namespace CaroGame
 
             room.Show();
             this.Hide();
+        }
+
+        private void btnSettings_Click(object sender, EventArgs e)
+        {
+            var dashboardSettings = new CaroGame-TCPClient.Dashboard();
         }
     }
 }
