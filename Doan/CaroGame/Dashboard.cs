@@ -83,7 +83,7 @@ namespace CaroGame
 
         private void btnSettings_Click(object sender, EventArgs e)
         {
-            var dashboardSettings = new CaroGame-TCPClient.Dashboard();
+            var dashboardSettings = new CaroGame_TCPClient.Dashboard();
         }
     }
 }
