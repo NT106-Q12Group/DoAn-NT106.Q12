@@ -69,7 +69,7 @@
             // pnlInfo
             // 
             pnlInfo.Anchor = AnchorStyles.Left;
-            pnlInfo.BackColor = SystemColors.ButtonHighlight;
+            pnlInfo.BackColor = Color.White;
             pnlInfo.Controls.Add(ptbAvaBot);
             pnlInfo.Controls.Add(ptbAvaP1);
             pnlInfo.Controls.Add(btnExit);
@@ -243,6 +243,7 @@
             // panelChat
             // 
             panelChat.BackColor = Color.DeepSkyBlue;
+            panelChat.BorderStyle = BorderStyle.Fixed3D;
             panelChat.Controls.Add(label4);
             panelChat.Controls.Add(btnSend);
             panelChat.Controls.Add(txtMessage);
@@ -282,6 +283,7 @@
             // 
             // rtbChat
             // 
+            rtbChat.BackColor = Color.White;
             rtbChat.Location = new Point(30, 37);
             rtbChat.Name = "rtbChat";
             rtbChat.ReadOnly = true;
@@ -298,6 +300,8 @@
             Controls.Add(panelChat);
             Controls.Add(pnlInfo);
             Controls.Add(pnlChessBoard);
+            FormBorderStyle = FormBorderStyle.None;
+            MaximizeBox = false;
             Name = "PvE";
             StartPosition = FormStartPosition.CenterScreen;
             Text = "Cờ Caro";

@@ -45,6 +45,7 @@
             pictureBox16 = new PictureBox();
             pictureBox17 = new PictureBox();
             pictureBox18 = new PictureBox();
+            btnExit = new Button();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pictureBox2).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pictureBox3).BeginInit();
@@ -65,11 +66,11 @@
             btn_easy.Cursor = Cursors.Hand;
             btn_easy.FlatAppearance.BorderSize = 0;
             btn_easy.Font = new Font("Segoe UI", 13.8F, FontStyle.Bold, GraphicsUnit.Point, 163);
-            btn_easy.Location = new Point(65, 108);
+            btn_easy.Location = new Point(55, 108);
             btn_easy.Name = "btn_easy";
-            btn_easy.Size = new Size(176, 43);
+            btn_easy.Size = new Size(191, 43);
             btn_easy.TabIndex = 0;
-            btn_easy.Text = "Dễ";
+            btn_easy.Text = "Easy";
             btn_easy.UseVisualStyleBackColor = false;
             btn_easy.Click += btn_easy_Click;
             // 
@@ -79,11 +80,11 @@
             btn_medium.Cursor = Cursors.Hand;
             btn_medium.FlatAppearance.BorderSize = 0;
             btn_medium.Font = new Font("Segoe UI", 13.8F, FontStyle.Bold, GraphicsUnit.Point, 163);
-            btn_medium.Location = new Point(280, 108);
+            btn_medium.Location = new Point(277, 108);
             btn_medium.Name = "btn_medium";
-            btn_medium.Size = new Size(176, 43);
+            btn_medium.Size = new Size(191, 43);
             btn_medium.TabIndex = 1;
-            btn_medium.Text = "Thường";
+            btn_medium.Text = "Normal";
             btn_medium.UseVisualStyleBackColor = false;
             btn_medium.Click += btn_medium_Click;
             // 
@@ -93,11 +94,11 @@
             btn_hard.Cursor = Cursors.Hand;
             btn_hard.FlatAppearance.BorderSize = 0;
             btn_hard.Font = new Font("Segoe UI", 13.8F, FontStyle.Bold, GraphicsUnit.Point, 163);
-            btn_hard.Location = new Point(65, 188);
+            btn_hard.Location = new Point(55, 188);
             btn_hard.Name = "btn_hard";
-            btn_hard.Size = new Size(176, 43);
+            btn_hard.Size = new Size(191, 43);
             btn_hard.TabIndex = 2;
-            btn_hard.Text = "Khó";
+            btn_hard.Text = "Hard";
             btn_hard.UseVisualStyleBackColor = false;
             btn_hard.Click += btn_hard_Click;
             // 
@@ -107,11 +108,11 @@
             btn_extremely_hard.Cursor = Cursors.Hand;
             btn_extremely_hard.FlatAppearance.BorderSize = 0;
             btn_extremely_hard.Font = new Font("Segoe UI", 13.8F, FontStyle.Bold, GraphicsUnit.Point, 163);
-            btn_extremely_hard.Location = new Point(280, 188);
+            btn_extremely_hard.Location = new Point(277, 188);
             btn_extremely_hard.Name = "btn_extremely_hard";
-            btn_extremely_hard.Size = new Size(176, 43);
+            btn_extremely_hard.Size = new Size(191, 43);
             btn_extremely_hard.TabIndex = 3;
-            btn_extremely_hard.Text = "Cực Khó";
+            btn_extremely_hard.Text = "Extremely Hard";
             btn_extremely_hard.UseVisualStyleBackColor = false;
             btn_extremely_hard.Click += btn_extremely_hard_Click;
             // 
@@ -120,11 +121,11 @@
             lb_title.AutoSize = true;
             lb_title.Font = new Font("Segoe UI", 16.2F, FontStyle.Bold);
             lb_title.ForeColor = SystemColors.ButtonHighlight;
-            lb_title.Location = new Point(114, 18);
+            lb_title.Location = new Point(140, 18);
             lb_title.Name = "lb_title";
-            lb_title.Size = new Size(293, 38);
+            lb_title.Size = new Size(243, 38);
             lb_title.TabIndex = 4;
-            lb_title.Text = "Chọn độ khó của Bot";
+            lb_title.Text = "Choose Difficulty";
             // 
             // pictureBox1
             // 
@@ -160,7 +161,7 @@
             // 
             pictureBox6.BackgroundImage = Properties.Resources.star;
             pictureBox6.BackgroundImageLayout = ImageLayout.Stretch;
-            pictureBox6.Location = new Point(339, 77);
+            pictureBox6.Location = new Point(345, 77);
             pictureBox6.Name = "pictureBox6";
             pictureBox6.Size = new Size(25, 25);
             pictureBox6.TabIndex = 11;
@@ -170,7 +171,7 @@
             // 
             pictureBox8.BackgroundImage = Properties.Resources.star;
             pictureBox8.BackgroundImageLayout = ImageLayout.Stretch;
-            pictureBox8.Location = new Point(370, 77);
+            pictureBox8.Location = new Point(376, 77);
             pictureBox8.Name = "pictureBox8";
             pictureBox8.Size = new Size(25, 25);
             pictureBox8.TabIndex = 9;
@@ -190,7 +191,7 @@
             // 
             pictureBox13.BackgroundImage = Properties.Resources.star;
             pictureBox13.BackgroundImageLayout = ImageLayout.Stretch;
-            pictureBox13.Location = new Point(370, 157);
+            pictureBox13.Location = new Point(376, 157);
             pictureBox13.Name = "pictureBox13";
             pictureBox13.Size = new Size(25, 25);
             pictureBox13.TabIndex = 20;
@@ -200,7 +201,7 @@
             // 
             pictureBox14.BackgroundImage = Properties.Resources.star;
             pictureBox14.BackgroundImageLayout = ImageLayout.Stretch;
-            pictureBox14.Location = new Point(308, 157);
+            pictureBox14.Location = new Point(314, 157);
             pictureBox14.Name = "pictureBox14";
             pictureBox14.Size = new Size(25, 25);
             pictureBox14.TabIndex = 19;
@@ -210,7 +211,7 @@
             // 
             pictureBox15.BackgroundImage = Properties.Resources.star;
             pictureBox15.BackgroundImageLayout = ImageLayout.Stretch;
-            pictureBox15.Location = new Point(339, 157);
+            pictureBox15.Location = new Point(345, 157);
             pictureBox15.Name = "pictureBox15";
             pictureBox15.Size = new Size(25, 25);
             pictureBox15.TabIndex = 18;
@@ -220,7 +221,7 @@
             // 
             pictureBox16.BackgroundImage = Properties.Resources.star;
             pictureBox16.BackgroundImageLayout = ImageLayout.Stretch;
-            pictureBox16.Location = new Point(401, 157);
+            pictureBox16.Location = new Point(407, 157);
             pictureBox16.Name = "pictureBox16";
             pictureBox16.Size = new Size(25, 25);
             pictureBox16.TabIndex = 17;
@@ -230,7 +231,7 @@
             // 
             pictureBox17.BackgroundImage = Properties.Resources.shooting_star;
             pictureBox17.BackgroundImageLayout = ImageLayout.Stretch;
-            pictureBox17.Location = new Point(406, 6);
+            pictureBox17.Location = new Point(407, 18);
             pictureBox17.Name = "pictureBox17";
             pictureBox17.Size = new Size(50, 50);
             pictureBox17.TabIndex = 21;
@@ -240,18 +241,36 @@
             // 
             pictureBox18.BackgroundImage = Properties.Resources.shooting_star_flip;
             pictureBox18.BackgroundImageLayout = ImageLayout.Stretch;
-            pictureBox18.Location = new Point(65, 6);
+            pictureBox18.Location = new Point(64, 18);
             pictureBox18.Name = "pictureBox18";
             pictureBox18.Size = new Size(50, 50);
             pictureBox18.TabIndex = 22;
             pictureBox18.TabStop = false;
+            // 
+            // btnExit
+            // 
+            btnExit.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            btnExit.BackgroundImage = Properties.Resources.Caro_Game__7_;
+            btnExit.BackgroundImageLayout = ImageLayout.Stretch;
+            btnExit.Cursor = Cursors.Hand;
+            btnExit.FlatAppearance.BorderSize = 0;
+            btnExit.FlatAppearance.MouseDownBackColor = SystemColors.HotTrack;
+            btnExit.FlatAppearance.MouseOverBackColor = SystemColors.HotTrack;
+            btnExit.FlatStyle = FlatStyle.Flat;
+            btnExit.Location = new Point(231, 246);
+            btnExit.Name = "btnExit";
+            btnExit.Size = new Size(65, 51);
+            btnExit.TabIndex = 23;
+            btnExit.UseVisualStyleBackColor = true;
+            btnExit.Click += btnExit_Click;
             // 
             // BotDifficulty
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = SystemColors.HotTrack;
-            ClientSize = new Size(520, 257);
+            ClientSize = new Size(520, 309);
+            Controls.Add(btnExit);
             Controls.Add(pictureBox18);
             Controls.Add(pictureBox17);
             Controls.Add(pictureBox13);
@@ -269,7 +288,7 @@
             Controls.Add(btn_hard);
             Controls.Add(btn_medium);
             Controls.Add(btn_easy);
-            FormBorderStyle = FormBorderStyle.FixedSingle;
+            FormBorderStyle = FormBorderStyle.None;
             MaximizeBox = false;
             Name = "BotDifficulty";
             StartPosition = FormStartPosition.CenterScreen;
@@ -315,5 +334,6 @@
         private PictureBox pictureBox16;
         private PictureBox pictureBox17;
         private PictureBox pictureBox18;
+        private Button btnExit;
     }
 }

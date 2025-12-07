@@ -72,7 +72,7 @@
             // pnlInfo
             // 
             pnlInfo.Anchor = AnchorStyles.Top;
-            pnlInfo.BackColor = SystemColors.ButtonHighlight;
+            pnlInfo.BackColor = Color.White;
             pnlInfo.Controls.Add(ptbAvaP2);
             pnlInfo.Controls.Add(ptbAvaP1);
             pnlInfo.Controls.Add(btnExit);
@@ -255,9 +255,13 @@
             // panelChat
             // 
             panelChat.BackColor = Color.DeepSkyBlue;
+<<<<<<< HEAD
             panelChat.Controls.Add(rtbChat);
             panelChat.Controls.Add(pnlEmojiPicker);
             panelChat.Controls.Add(btn_emoji);
+=======
+            panelChat.BorderStyle = BorderStyle.Fixed3D;
+>>>>>>> 5b0a71ae87a12a3a946ca9b2c8cdbadb57155472
             panelChat.Controls.Add(label4);
             panelChat.Controls.Add(btnSend);
             panelChat.Controls.Add(txtMessage);
@@ -321,6 +325,19 @@
             txtMessage.Size = new Size(300, 37);
             txtMessage.TabIndex = 1;
             // 
+<<<<<<< HEAD
+=======
+            // rtbChat
+            // 
+            rtbChat.BackColor = Color.White;
+            rtbChat.Location = new Point(30, 37);
+            rtbChat.Name = "rtbChat";
+            rtbChat.ReadOnly = true;
+            rtbChat.Size = new Size(387, 185);
+            rtbChat.TabIndex = 0;
+            rtbChat.Text = "";
+            // 
+>>>>>>> 5b0a71ae87a12a3a946ca9b2c8cdbadb57155472
             // label3
             // 
             label3.Anchor = AnchorStyles.Top;
@@ -344,7 +361,7 @@
             Controls.Add(pnlLeaderBoard);
             Controls.Add(pnlInfo);
             Controls.Add(pnlChessBoard);
-            FormBorderStyle = FormBorderStyle.FixedSingle;
+            FormBorderStyle = FormBorderStyle.None;
             MaximizeBox = false;
             Name = "PvP";
             StartPosition = FormStartPosition.CenterScreen;

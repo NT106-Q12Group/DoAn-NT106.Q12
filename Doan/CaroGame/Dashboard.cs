@@ -17,7 +17,7 @@ namespace CaroGame
             InitializeComponent();
         }
 
-        private void btnStart_Click(object sender, EventArgs e)
+        private void btnPvE_Click(object sender, EventArgs e)
         {
             var newGameForm = new BotDifficulty();
             newGameForm.Show();
@@ -31,8 +31,52 @@ namespace CaroGame
 
         private void btnPvP_Click(object sender, EventArgs e)
         {
-            var newGameForm = new PvP();
-            newGameForm.Show();
+            if (pnlPvPMenu != null)
+                pnlPvPMenu.Visible = !pnlPvPMenu.Visible;
+            //var newGameForm = new PvP();
+            //newGameForm.Show();
+            //this.Hide();
+        }
+
+        private void btnCreateRoom_Click(object sender, EventArgs e)
+        {
+            Room newRoom = RoomManager.createRoom();
+            var newWaitingRoom = new WaitingRoom(newRoom, 1);
+
+            newWaitingRoom.Show();
+            this.Hide();
+        }
+
+        private void btnJoinRoom_Click(object sender, EventArgs e)
+        {
+            if (pnlDashBoard != null)
+            {
+                pnlDashBoard.Visible = !pnlDashBoard.Visible;
+                pnlPvPMenu.Visible = !pnlPvPMenu.Visible;
+            }
+        }
+
+        private void btnBack_Click(object sender, EventArgs e)
+        {
+            if (pnlDashBoard != null)
+                pnlDashBoard.Visible = !pnlDashBoard.Visible;
+        }
+
+        private void btnJoin_Click(object sender, EventArgs e)
+        {
+            string id = tbRoomID.Text.Trim();
+
+            Room joinedRoom = RoomManager.JoinRoom(id, out int playerNumber);
+
+            if (joinedRoom == null)
+            {
+                MessageBox.Show("Phòng không tồn tại hoặc đã đủ 2 người!");
+                return;
+            }
+
+            var room = new WaitingRoom(joinedRoom, playerNumber);
+
+            room.Show();
             this.Hide();
         }
     }
