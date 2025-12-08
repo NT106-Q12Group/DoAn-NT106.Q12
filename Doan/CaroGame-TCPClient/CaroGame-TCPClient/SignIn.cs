@@ -128,7 +128,7 @@ namespace CaroGame_TCPClient
                     };
 
                     //var dash = new Dashboard(pv, _client);
-                    var Dash = new CaroGame.Dashboard();
+                    var Dash = new CaroGame.Dashboard(uname);
 
                     //dash.FormClosed += (s, _) => Close();
                     Dash.FormClosed += (s, _) => Close();

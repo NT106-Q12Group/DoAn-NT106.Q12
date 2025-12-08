@@ -15,14 +15,22 @@ namespace CaroGame
     {
         private Room room;
         private int playerNumber;
+        private string _loggedInUser;
         public Dashboard()
         {
             InitializeComponent();
+            _loggedInUser = "Player"; // Mặc định nếu không truyền gì
+        }
+
+        public Dashboard(string username)
+        {
+            InitializeComponent();
+            _loggedInUser = username;
         }
 
         private void btnPvE_Click(object sender, EventArgs e)
         {
-            var newGameForm = new BotDifficulty();
+            var newGameForm = new BotDifficulty(_loggedInUser);
             newGameForm.Show();
             this.Hide();
         }
