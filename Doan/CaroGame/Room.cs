@@ -13,5 +13,8 @@ namespace CaroGame
 
         public bool player1Ready = false;
         public bool player2Ready = false;
+
+        public string player1name;
+        public string player2Name;
     }
 }

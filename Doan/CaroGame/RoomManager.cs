@@ -35,24 +35,29 @@ namespace CaroGame
             return room;
         }
 
+        private static object roomLock = new object();
+
         public static Room JoinRoom(string roomId, out int playerNumber)
         {
-            playerNumber = 0;
+            lock (roomLock)
+            {
+                playerNumber = 0;
 
-            //chưa tạo phòng thì phòng không tồn tại
-            if (!Rooms.ContainsKey(roomId))
-                return null;
+                //chưa tạo phòng thì phòng không tồn tại
+                if (!Rooms.ContainsKey(roomId))
+                    return null;
 
-            var room = Rooms[roomId];
+                var room = Rooms[roomId];
 
-            //Kiểm tra nếu phòng >= 2 thì trả về rỗng
-            if (room.playerCount >= 2)
-                return null;
+                //Kiểm tra nếu phòng >= 2 thì trả về rỗng
+                if (room.playerCount >= 2)
+                    return null;
 
-            room.playerCount++;
-            playerNumber = room.playerCount;
+                room.playerCount++;
+                playerNumber = room.playerCount;
 
-            return room;
+                return room;
+            }
         }
     }
 }
