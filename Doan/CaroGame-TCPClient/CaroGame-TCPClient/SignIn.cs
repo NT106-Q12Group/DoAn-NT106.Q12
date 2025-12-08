@@ -129,14 +129,14 @@ namespace CaroGame_TCPClient
                     };
 
                     //var dash = new Dashboard(pv, _client);
-                    var Dash = new CaroGame.Dashboard();
+                    var Dash = new CaroGame.Dashboard(uname);
                     Dash.OnOpenUserInfo += () =>
                     {
                         var userInfoForm = new UserInfo(pv, _client);
                         userInfoForm.OnBack += () =>
                         {                             
                             Dash.Show();
-                            userInfoForm.Close();
+                            userInfoForm.Hide();
                         };
                         userInfoForm.Show();
                         Dash.Hide();
