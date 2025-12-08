@@ -125,6 +125,22 @@ namespace CaroGame_TCPClient
         {
             return isConnected;
         }
+
+        public string GetEmail(string username)
+        {
+            string request = $"GETEMAIL|{username}";
+            return SendRequest(request);
+        }
+
+        public string UpdatePassword(string username, string newPassword)
+        {
+            string hashedPassword = HashUtil.Sha256(newPassword);
+
+            string request = $"UPDATEPASS|{username}|{hashedPassword}";
+
+            return SendRequest(request);
+        }
+
     }
 
     public static class HashUtil

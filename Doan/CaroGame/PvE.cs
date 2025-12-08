@@ -11,14 +11,19 @@ namespace CaroGame
         #region Properties
         ChessBoardManager ChessBoard;
         private string botDifficulty;
+        private string _playerName;
         private Menu menuForm;
         private bool undoCount = false;
         #endregion
 
         // Constructor nhận tham số difficulty
-        public PvE(string difficulty)
+        public PvE(string difficulty, string playerName)
         {
             InitializeComponent();
+            _playerName = playerName;
+
+            if (label1 != null)
+                label1.Text = _playerName;
 
             botDifficulty = difficulty;
 
@@ -26,7 +31,6 @@ namespace CaroGame
             ChessBoard.GameEnded += OnGameEnded;
             ChessBoard.DrawChessBoard();
 
-            // GỌI HÀM SET DIFFICULTY NGAY TẠI ĐÂY
             SetBotDifficulty(botDifficulty);
         }
 
@@ -102,7 +106,7 @@ namespace CaroGame
         private void btnExit_Click(object sender, EventArgs e)
         {
             this.Close();
-            var DashBoard = new Dashboard();
+            var DashBoard = new Dashboard(_playerName);
             DashBoard.Show();
         }
 
