@@ -1,6 +1,6 @@
 ﻿namespace CaroGame
 {
-    partial class Form1
+    partial class PvE
     {
         /// <summary>
         /// Required designer variable.
@@ -30,6 +30,7 @@
         {
             pnlChessBoard = new Panel();
             pnlInfo = new Panel();
+            ptbOne = new PictureBox();
             ptbAvaBot = new PictureBox();
             ptbAvaP1 = new PictureBox();
             btnExit = new Button();
@@ -42,16 +43,19 @@
             ptbO = new PictureBox();
             pgbP1 = new ProgressBar();
             ptbX = new PictureBox();
+            ptbZero = new PictureBox();
             panelChat = new Panel();
             label4 = new Label();
             btnSend = new Button();
             txtMessage = new TextBox();
             rtbChat = new RichTextBox();
             pnlInfo.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)ptbOne).BeginInit();
             ((System.ComponentModel.ISupportInitialize)ptbAvaBot).BeginInit();
             ((System.ComponentModel.ISupportInitialize)ptbAvaP1).BeginInit();
             ((System.ComponentModel.ISupportInitialize)ptbO).BeginInit();
             ((System.ComponentModel.ISupportInitialize)ptbX).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)ptbZero).BeginInit();
             panelChat.SuspendLayout();
             SuspendLayout();
             // 
@@ -69,12 +73,12 @@
             // pnlInfo
             // 
             pnlInfo.Anchor = AnchorStyles.Left;
-            pnlInfo.BackColor = SystemColors.ButtonHighlight;
+            pnlInfo.BackColor = Color.White;
+            pnlInfo.Controls.Add(ptbOne);
             pnlInfo.Controls.Add(ptbAvaBot);
             pnlInfo.Controls.Add(ptbAvaP1);
             pnlInfo.Controls.Add(btnExit);
             pnlInfo.Controls.Add(btnChat);
-            pnlInfo.Controls.Add(btnUndo);
             pnlInfo.Controls.Add(btnMenu);
             pnlInfo.Controls.Add(label2);
             pnlInfo.Controls.Add(label1);
@@ -82,10 +86,24 @@
             pnlInfo.Controls.Add(ptbO);
             pnlInfo.Controls.Add(pgbP1);
             pnlInfo.Controls.Add(ptbX);
+            pnlInfo.Controls.Add(ptbZero);
+            pnlInfo.Controls.Add(btnUndo);
             pnlInfo.Location = new Point(632, 12);
             pnlInfo.Name = "pnlInfo";
             pnlInfo.Size = new Size(450, 311);
             pnlInfo.TabIndex = 2;
+            // 
+            // ptbOne
+            // 
+            ptbOne.BackColor = Color.Transparent;
+            ptbOne.BackgroundImage = Properties.Resources.number_11;
+            ptbOne.BackgroundImageLayout = ImageLayout.Stretch;
+            ptbOne.Cursor = Cursors.Hand;
+            ptbOne.Location = new Point(192, 236);
+            ptbOne.Name = "ptbOne";
+            ptbOne.Size = new Size(20, 20);
+            ptbOne.TabIndex = 11;
+            ptbOne.TabStop = false;
             // 
             // ptbAvaBot
             // 
@@ -114,6 +132,7 @@
             // btnExit
             // 
             btnExit.Anchor = AnchorStyles.Top;
+            btnExit.BackColor = Color.Transparent;
             btnExit.BackgroundImage = Properties.Resources.Caro_Game__7_;
             btnExit.BackgroundImageLayout = ImageLayout.Stretch;
             btnExit.Cursor = Cursors.Hand;
@@ -125,11 +144,13 @@
             btnExit.Name = "btnExit";
             btnExit.Size = new Size(65, 51);
             btnExit.TabIndex = 8;
-            btnExit.UseVisualStyleBackColor = true;
+            btnExit.UseVisualStyleBackColor = false;
+            btnExit.Click += btnExit_Click;
             // 
             // btnChat
             // 
             btnChat.Anchor = AnchorStyles.Top;
+            btnChat.BackColor = Color.Transparent;
             btnChat.BackgroundImage = Properties.Resources.Caro_Game__6_;
             btnChat.BackgroundImageLayout = ImageLayout.Stretch;
             btnChat.Cursor = Cursors.Hand;
@@ -142,12 +163,12 @@
             btnChat.Name = "btnChat";
             btnChat.Size = new Size(65, 51);
             btnChat.TabIndex = 7;
-            btnChat.UseVisualStyleBackColor = true;
+            btnChat.UseVisualStyleBackColor = false;
             // 
             // btnUndo
             // 
             btnUndo.Anchor = AnchorStyles.Top;
-            btnUndo.BackColor = SystemColors.ButtonHighlight;
+            btnUndo.BackColor = Color.Transparent;
             btnUndo.BackgroundImage = Properties.Resources.Caro_Game__5_;
             btnUndo.BackgroundImageLayout = ImageLayout.Stretch;
             btnUndo.Cursor = Cursors.Hand;
@@ -160,10 +181,12 @@
             btnUndo.Size = new Size(65, 51);
             btnUndo.TabIndex = 6;
             btnUndo.UseVisualStyleBackColor = false;
+            btnUndo.Click += btnUndo_Click;
             // 
             // btnMenu
             // 
             btnMenu.Anchor = AnchorStyles.Top;
+            btnMenu.BackColor = Color.Transparent;
             btnMenu.BackgroundImage = Properties.Resources.menuCaro;
             btnMenu.BackgroundImageLayout = ImageLayout.Stretch;
             btnMenu.Cursor = Cursors.Hand;
@@ -176,7 +199,8 @@
             btnMenu.Name = "btnMenu";
             btnMenu.Size = new Size(66, 51);
             btnMenu.TabIndex = 5;
-            btnMenu.UseVisualStyleBackColor = true;
+            btnMenu.UseVisualStyleBackColor = false;
+            btnMenu.Click += btnMenu_Click;
             // 
             // label2
             // 
@@ -238,9 +262,23 @@
             ptbX.TabIndex = 0;
             ptbX.TabStop = false;
             // 
+            // ptbZero
+            // 
+            ptbZero.BackColor = Color.Transparent;
+            ptbZero.BackgroundImage = Properties.Resources.zero;
+            ptbZero.BackgroundImageLayout = ImageLayout.Stretch;
+            ptbZero.Cursor = Cursors.Hand;
+            ptbZero.Location = new Point(192, 236);
+            ptbZero.Name = "ptbZero";
+            ptbZero.Size = new Size(20, 20);
+            ptbZero.TabIndex = 12;
+            ptbZero.TabStop = false;
+            ptbZero.Visible = false;
+            // 
             // panelChat
             // 
             panelChat.BackColor = Color.DeepSkyBlue;
+            panelChat.BorderStyle = BorderStyle.Fixed3D;
             panelChat.Controls.Add(label4);
             panelChat.Controls.Add(btnSend);
             panelChat.Controls.Add(txtMessage);
@@ -280,6 +318,7 @@
             // 
             // rtbChat
             // 
+            rtbChat.BackColor = Color.White;
             rtbChat.Location = new Point(30, 37);
             rtbChat.Name = "rtbChat";
             rtbChat.ReadOnly = true;
@@ -287,7 +326,7 @@
             rtbChat.TabIndex = 0;
             rtbChat.Text = "";
             // 
-            // Form1
+            // PvE
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
@@ -296,15 +335,20 @@
             Controls.Add(panelChat);
             Controls.Add(pnlInfo);
             Controls.Add(pnlChessBoard);
-            Name = "Form1";
+            FormBorderStyle = FormBorderStyle.None;
+            MaximizeBox = false;
+            Name = "PvE";
+            StartPosition = FormStartPosition.CenterScreen;
             Text = "Cờ Caro";
             Load += Form1_Load;
             pnlInfo.ResumeLayout(false);
             pnlInfo.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)ptbOne).EndInit();
             ((System.ComponentModel.ISupportInitialize)ptbAvaBot).EndInit();
             ((System.ComponentModel.ISupportInitialize)ptbAvaP1).EndInit();
             ((System.ComponentModel.ISupportInitialize)ptbO).EndInit();
             ((System.ComponentModel.ISupportInitialize)ptbX).EndInit();
+            ((System.ComponentModel.ISupportInitialize)ptbZero).EndInit();
             panelChat.ResumeLayout(false);
             panelChat.PerformLayout();
             ResumeLayout(false);
@@ -331,5 +375,7 @@
         private Button btnSend;
         private TextBox txtMessage;
         private RichTextBox rtbChat;
+        private PictureBox ptbOne;
+        private PictureBox ptbZero;
     }
 }

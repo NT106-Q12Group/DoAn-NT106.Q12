@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
-using System.Diagnostics;
+using System.Windows.Forms;
 
 namespace CaroGame
 {
@@ -31,6 +32,12 @@ namespace CaroGame
 
         #region Properties
         private Panel chessBoard;
+        private Stack<Button> moveHistory = new Stack<Button>();
+        private Stack<int> playerHistory = new Stack<int>();
+        private bool undoAlready = false;
+        private bool undoUsedInBot = false;
+        public event Action<string> GameEnded;
+
         public Panel ChesBoard
         {
             get { return chessBoard; }
@@ -64,8 +71,8 @@ namespace CaroGame
             this.chessBoard = chessBoard;
             this.Player = new List<Player>()
             {
-                new Player ("Player1",Image.FromFile(Application.StartupPath + "\\Resources\\Caro Game.png")),
-                new Player ("Player2",Image.FromFile(Application.StartupPath + "\\Resources\\Caro Game (1).png")),
+                new Player ("Player 1",Image.FromFile(Application.StartupPath + "\\Resources\\Caro Game.png")),
+                new Player ("Player 2",Image.FromFile(Application.StartupPath + "\\Resources\\Caro Game (1).png")),
             };
 
             CurrentPlayer = 0;
@@ -130,6 +137,12 @@ namespace CaroGame
                 oldButton.Location = new Point(0, oldButton.Location.Y + Cons.CHESS_HEIGHT);
                 oldButton.Width = 0;
                 oldButton.Height = 0;
+
+                //kích hoạt cơ chế undo
+                moveHistory = new Stack<Button>();
+                playerHistory = new Stack<int>();
+                undoAlready = false;
+                undoUsedInBot = false;
             }
         }
 
@@ -169,14 +182,18 @@ namespace CaroGame
             // 1. Đánh dấu nước đi của người chơi
             btn.BackgroundImage = Player[CurrentPlayer].Mark;
             HighlightMove(btn);
+            moveHistory.Push(btn);
+            playerHistory.Push(CurrentPlayer);
 
             Point p = getChessPoint(btn);
             lastHumanRow = p.Y;
             lastHumanCol = p.X;
 
             // Kiểm tra người chơi thắng chưa
-            if (isEndGame(btn))
+            var winCells = getWinningCells(btn);
+            if (winCells != null)
             {
+                HighlightWinningCells(winCells);
                 EndGame(Player[CurrentPlayer].Name);
                 return;
             }
@@ -213,16 +230,70 @@ namespace CaroGame
         }
             */
 
+        //Kết thúc trò chơi
         private void EndGame(string winnerName)
         {
-            MessageBox.Show($"{winnerName} chiến thắng!!!");
+            GameEnded?.Invoke(winnerName);
         }
 
-        private bool isEndGame(Button btn)
+        //Reset chơi lại
+        public void resetGame()
         {
-            return isEndHorizontal(btn) || isEndVertical(btn) || isEndMainDiagonal(btn) || isEndSecondaryDiagonal(btn);
+            if (lastMoveBtn != null)
+            {
+                lastMoveBtn.BackColor = defaultColor;
+                lastMoveBtn.FlatAppearance.BorderColor = Color.Silver;
+                lastMoveBtn.FlatAppearance.BorderSize = 1;
+                lastMoveBtn = null;
+            }
+
+            foreach (var row in matrix)
+            {
+                foreach (var btn in row)
+                {
+                    btn.BackgroundImage = null;
+                    btn.BackColor = defaultColor;
+
+                    btn.FlatStyle = FlatStyle.Flat;
+                    btn.FlatAppearance.BorderColor = Color.Silver;
+                    btn.FlatAppearance.BorderSize = 1;
+                }
+            }
+            CurrentPlayer = 0;
+            isThinking = false;
+
+            lastHumanRow = -1;
+            lastHumanCol = -1;
+
+            isTimeOut = false;
+
+            moveHistory.Clear();
+            playerHistory.Clear();
+            undoAlready = false;
+            undoUsedInBot = false;
         }
 
+        //Lấy các ô thắng
+        private List<Button> getWinningCells(Button btn)
+        {
+            List<Button> win;
+
+            win = getHorizontalCells(btn);
+            if (win != null) return win;
+
+            win = getVerticalCells(btn);
+            if (win != null) return win;
+
+            win = getMainDiagonalCells(btn);
+            if (win != null) return win;
+
+            win = getSecondaryDiagonalCells(btn);
+            if (win != null) return win;
+
+            return null;
+        }
+
+        //Lấy vị trí các ô
         private Point getChessPoint(Button btn)
         {  
             int column = Convert.ToInt32(btn.Tag);
@@ -232,16 +303,18 @@ namespace CaroGame
 
             return point;
         }
-        private bool isEndHorizontal(Button btn)
+
+        //Các ô cờ thắng vị trí ngang
+        private List<Button> getHorizontalCells(Button btn)
         {
             Point point = getChessPoint(btn);
+            List<Button> cells = new List<Button>();
 
-            int countLeft = 0;
             for (int i = point.X; i >= 0; i--)
             {
                 if (matrix[point.Y][i].BackgroundImage == btn.BackgroundImage)
                 {
-                    countLeft++;
+                    cells.Insert(0, matrix[point.Y][i]);
                 }
                 else
                 {
@@ -250,12 +323,11 @@ namespace CaroGame
 
             }
 
-            int countRight = 0;
             for (int i = point.X + 1; i < Cons.CHESS_BOARD_WIDTH; i++)
             {
                 if (matrix[point.Y][i].BackgroundImage == btn.BackgroundImage)
                 {
-                    countRight++;
+                    cells.Add(matrix[point.Y][i]);
                 }
                 else
                 {
@@ -264,19 +336,25 @@ namespace CaroGame
 
             }
 
-            return countLeft + countRight >= 5;
+            if (cells.Count < 5)
+            {
+                return null;
+            }
+
+            return cells.GetRange(0, 5);
         }
 
-        private bool isEndVertical(Button btn)
+        //Các ô cờ thắng vị trí dọc
+        private List<Button> getVerticalCells(Button btn)
         {
             Point point = getChessPoint(btn);
+            List<Button> cells = new List<Button>();
 
-            int countTop = 0;
             for (int i = point.Y; i >= 0; i--)
             {
                 if (matrix[i][point.X].BackgroundImage == btn.BackgroundImage)
                 {
-                    countTop++;
+                    cells.Insert(0, matrix[i][point.X]);
                 }
                 else
                 {
@@ -285,12 +363,11 @@ namespace CaroGame
 
             }
 
-            int countBottom = 0;
             for (int i = point.Y + 1; i < Cons.CHESS_BOARD_HEIGHT; i++)
             {
                 if (matrix[i][point.X].BackgroundImage == btn.BackgroundImage)
                 {
-                    countBottom++;
+                    cells.Add(matrix[i][point.X]);
                 }
                 else
                 {
@@ -299,14 +376,20 @@ namespace CaroGame
 
             }
 
-            return countTop + countBottom >= 5;
+            if (cells.Count < 5)
+            {
+                return null;
+            }
+
+            return cells.GetRange(0, 5);
         }
 
-        private bool isEndMainDiagonal(Button btn)
+        //Các ô cờ thắng vị trí chéo chính
+        private List<Button> getMainDiagonalCells(Button btn)
         {
             Point point = getChessPoint(btn);
+            List<Button> cells = new List<Button>();
 
-            int countTop = 0;
             for (int i = 0; i <= point.X; i++)
             {
                 if (point.X - i < 0 || point.Y - i < 0)
@@ -316,7 +399,7 @@ namespace CaroGame
 
                 if (matrix[point.Y - i][point.X - i].BackgroundImage == btn.BackgroundImage)
                 {
-                    countTop++;
+                    cells.Insert(0, matrix[point.Y - i][point.X - i]);
                 }
                 else
                 {
@@ -325,7 +408,6 @@ namespace CaroGame
 
             }
 
-            int countBottom = 0;
             for (int i = 1; i <= Cons.CHESS_WIDTH - point.X; i++)
             {
                 if (point.Y + i >= Cons.CHESS_BOARD_HEIGHT || point.X + i >= Cons.CHESS_BOARD_WIDTH)
@@ -335,7 +417,7 @@ namespace CaroGame
 
                 if (matrix[point.Y + i][point.X + i].BackgroundImage == btn.BackgroundImage)
                 {
-                    countBottom++;
+                    cells.Add(matrix[point.Y + i][point.X + i]);
                 }
                 else
                 {
@@ -344,24 +426,30 @@ namespace CaroGame
 
             }
 
-            return countTop + countBottom >= 5;
+            if (cells.Count < 5)
+            {
+                return null;
+            }
+
+            return cells.GetRange(0, 5);
         }
 
-        private bool isEndSecondaryDiagonal(Button btn)
+        //Các ô cờ thắng vị trí chéo phụ
+        private List<Button> getSecondaryDiagonalCells(Button btn)
         {
             Point point = getChessPoint(btn);
+            List<Button> cells = new List<Button>();
 
-            int countTop = 0;
             for (int i = 0; i <= point.X; i++)
             {
-                if (point.X + i > Cons.CHESS_BOARD_WIDTH || point.Y - i < 0)
+                if (point.X + i >= Cons.CHESS_BOARD_WIDTH || point.Y - i < 0)
                 {
                     break;
                 }
 
                 if (matrix[point.Y - i][point.X + i].BackgroundImage == btn.BackgroundImage)
                 {
-                    countTop++;
+                    cells.Insert(0, matrix[point.Y - i][point.X + i]);
                 }
                 else
                 {
@@ -370,7 +458,6 @@ namespace CaroGame
 
             }
 
-            int countBottom = 0;
             for (int i = 1; i <= Cons.CHESS_WIDTH - point.X; i++)
             {
                 if (point.Y + i >= Cons.CHESS_BOARD_HEIGHT || point.X - i < 0)
@@ -380,7 +467,7 @@ namespace CaroGame
 
                 if (matrix[point.Y + i][point.X - i].BackgroundImage == btn.BackgroundImage)
                 {
-                    countBottom++;
+                    cells.Add(matrix[point.Y + i][point.X - i]);
                 }
                 else
                 {
@@ -389,8 +476,63 @@ namespace CaroGame
 
             }
 
-            return countTop + countBottom >= 5;
+            if (cells.Count < 5)
+            {
+                return null;
+            }
+
+            return cells.GetRange(0, 5);
         }
+
+        //Làm nổi bật các ô thắng
+        private void HighlightWinningCells(List<Button> cells)
+        {
+            foreach (var b in cells)
+            {
+                b.FlatStyle = FlatStyle.Flat;
+                b.FlatAppearance.BorderColor = Color.Lime;
+                b.FlatAppearance.BorderSize = 3;
+            }
+        }
+
+        //Undo bước đi trước
+        public void undoLastMove()
+        {
+            if (moveHistory.Count == 0 || undoAlready)
+                return;
+
+            var btn = moveHistory.Pop();
+            btn.BackgroundImage = null;
+            btn.BackColor = defaultColor;
+            CurrentPlayer = playerHistory.Pop();
+        }
+
+        //Undo lượt đi trước
+        public bool undoTurnPvP()
+        {
+            if (moveHistory.Count == 0 || undoAlready)
+                return false;
+
+                undoLastMove();
+                undoLastMove();
+
+            undoAlready = true;
+            return true;
+        }
+
+        public bool undoTurnPvE()
+        {
+            if (moveHistory.Count == 0 || undoUsedInBot)
+                return false;       
+
+                undoLastMove();
+                undoLastMove();
+
+            undoUsedInBot = true;
+            return true;
+        }
+
+
 
         long[] AttackScore = new long[] { 0, 10, 100, 1000, 100000, 10000000 };
         long[] DefendScore = new long[] { 0, 12, 120, 1500, 200000, 10000000 };
@@ -550,7 +692,16 @@ namespace CaroGame
             matrix[r][c].BackgroundImage = Player[1].Mark;
             HighlightMove(matrix[r][c]);
             CurrentPlayer = 0;
-            if (isEndGame(matrix[r][c])) EndGame(Player[1].Name);
+
+            moveHistory.Push(matrix[r][c]);
+            playerHistory.Push(1);
+
+            var winCells = getWinningCells(matrix[r][c]);
+            if (winCells != null)
+            {
+                HighlightWinningCells(winCells);
+                EndGame(Player[1].Name);
+            }
         }
 
         // Chuyển đổi ma trận Button sang ma trận số nguyên (0, 1, 2)

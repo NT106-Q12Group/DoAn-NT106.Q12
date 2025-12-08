@@ -46,20 +46,20 @@
             // 
             btn_newgame.Cursor = Cursors.Hand;
             btn_newgame.Font = new Font("Segoe UI", 13F, FontStyle.Bold);
-            btn_newgame.Location = new Point(75, 10);
+            btn_newgame.Location = new Point(76, 10);
             btn_newgame.Margin = new Padding(2);
             btn_newgame.Name = "btn_newgame";
             btn_newgame.Size = new Size(209, 53);
             btn_newgame.TabIndex = 0;
             btn_newgame.Text = "Game mới";
             btn_newgame.UseVisualStyleBackColor = true;
-            btn_newgame.Click += btn_newgame_Click;
+            //btn_newgame.Click += btn_newgame_Click;
             // 
             // btn_diffselect
             // 
             btn_diffselect.Cursor = Cursors.Hand;
             btn_diffselect.Font = new Font("Segoe UI", 13F, FontStyle.Bold);
-            btn_diffselect.Location = new Point(75, 67);
+            btn_diffselect.Location = new Point(76, 75);
             btn_diffselect.Margin = new Padding(2);
             btn_diffselect.Name = "btn_diffselect";
             btn_diffselect.Size = new Size(209, 53);
@@ -71,7 +71,7 @@
             // 
             btn_pause.Cursor = Cursors.Hand;
             btn_pause.Font = new Font("Segoe UI", 13F, FontStyle.Bold);
-            btn_pause.Location = new Point(75, 124);
+            btn_pause.Location = new Point(76, 140);
             btn_pause.Margin = new Padding(2);
             btn_pause.Name = "btn_pause";
             btn_pause.Size = new Size(209, 53);
@@ -84,14 +84,14 @@
             // 
             btn_return.Cursor = Cursors.Hand;
             btn_return.Font = new Font("Segoe UI", 13F, FontStyle.Bold);
-            btn_return.Location = new Point(75, 181);
+            btn_return.Location = new Point(76, 205);
             btn_return.Margin = new Padding(2);
             btn_return.Name = "btn_return";
             btn_return.Size = new Size(209, 53);
             btn_return.TabIndex = 3;
             btn_return.Text = "Tiếp tục";
             btn_return.UseVisualStyleBackColor = true;
-            btn_return.Click += btn_return_Click;
+            //btn_return.Click += btn_return_Click;
             // 
             // pictureBox1
             // 
@@ -99,7 +99,7 @@
             pictureBox1.BackgroundImage = Properties.Resources.play;
             pictureBox1.BackgroundImageLayout = ImageLayout.Stretch;
             pictureBox1.BorderStyle = BorderStyle.Fixed3D;
-            pictureBox1.Location = new Point(13, 181);
+            pictureBox1.Location = new Point(14, 205);
             pictureBox1.Name = "pictureBox1";
             pictureBox1.Size = new Size(57, 53);
             pictureBox1.TabIndex = 4;
@@ -111,7 +111,7 @@
             pictureBox2.BackgroundImage = Properties.Resources.pause;
             pictureBox2.BackgroundImageLayout = ImageLayout.Stretch;
             pictureBox2.BorderStyle = BorderStyle.Fixed3D;
-            pictureBox2.Location = new Point(13, 124);
+            pictureBox2.Location = new Point(14, 140);
             pictureBox2.Name = "pictureBox2";
             pictureBox2.Size = new Size(57, 53);
             pictureBox2.TabIndex = 5;
@@ -123,7 +123,7 @@
             pictureBox3.BackgroundImage = Properties.Resources.folder;
             pictureBox3.BackgroundImageLayout = ImageLayout.Stretch;
             pictureBox3.BorderStyle = BorderStyle.Fixed3D;
-            pictureBox3.Location = new Point(13, 10);
+            pictureBox3.Location = new Point(14, 10);
             pictureBox3.Name = "pictureBox3";
             pictureBox3.Size = new Size(57, 53);
             pictureBox3.TabIndex = 6;
@@ -135,7 +135,7 @@
             pictureBox4.BackgroundImage = Properties.Resources.file;
             pictureBox4.BackgroundImageLayout = ImageLayout.Stretch;
             pictureBox4.BorderStyle = BorderStyle.Fixed3D;
-            pictureBox4.Location = new Point(13, 67);
+            pictureBox4.Location = new Point(14, 75);
             pictureBox4.Name = "pictureBox4";
             pictureBox4.Size = new Size(57, 53);
             pictureBox4.TabIndex = 7;
@@ -145,8 +145,8 @@
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            BackColor = Color.LightBlue;
-            ClientSize = new Size(301, 247);
+            BackColor = SystemColors.HotTrack;
+            ClientSize = new Size(300, 270);
             Controls.Add(pictureBox4);
             Controls.Add(pictureBox3);
             Controls.Add(pictureBox2);

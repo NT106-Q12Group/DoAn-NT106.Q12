@@ -32,9 +32,17 @@ namespace CaroGame_TCPClient
                 isConnected = true;
                 return true;
             }
-            catch
+            catch (Exception e)
             {
                 isConnected = false;
+                Console.WriteLine($"[DEBUG] Connect error: {e.Message}");
+                // tạm thời cho hiện MessageBox nếu là WinForms/WPF
+                System.Windows.Forms.MessageBox.Show(
+                    "Connect error: " + e.Message,
+                    "DEBUG",
+                    System.Windows.Forms.MessageBoxButtons.OK,
+                    System.Windows.Forms.MessageBoxIcon.Error
+                );
                 return false;
             }
         }

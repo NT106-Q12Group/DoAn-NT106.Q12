@@ -12,7 +12,7 @@ namespace CaroGame_TCPClient
         private bool _signingIn = false;
         private string _currentUser = "";
 
-        public SignIn() : this(new TCPClient("127.0.0.1", 25565)) { }
+        public SignIn() : this(new TCPClient("3.230.162.159", 25565)) { }
 
         public SignIn(TCPClient sharedClient)
         {
@@ -127,10 +127,15 @@ namespace CaroGame_TCPClient
                         Birthday = birthday
                     };
 
-                    var dash = new Dashboard(pv, _client);
-                    dash.FormClosed += (s, _) => Close();
+                    //var dash = new Dashboard(pv, _client);
+                    var Dash = new CaroGame.Dashboard();
+
+                    //dash.FormClosed += (s, _) => Close();
+                    Dash.FormClosed += (s, _) => Close();
+
                     Hide();
-                    dash.Show();
+                    //dash.Show();
+                    Dash.Show();
 
                     MessageBox.Show("Signed in successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
