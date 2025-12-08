@@ -1,6 +1,6 @@
 ﻿namespace CaroGame_TCPClient
 {
-    partial class Dashboard
+    partial class UserInfo
     {
         /// <summary>
         /// Required designer variable.
@@ -47,6 +47,7 @@
             btnEditPassword = new Button();
             btnEditEmail = new Button();
             btnEditBirth = new Button();
+            btnBack = new Button();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             SuspendLayout();
             // 
@@ -86,7 +87,7 @@
             // btn_signout
             // 
             btn_signout.Cursor = Cursors.Hand;
-            btn_signout.Location = new Point(187, 568);
+            btn_signout.Location = new Point(124, 570);
             btn_signout.Margin = new Padding(3, 4, 3, 4);
             btn_signout.Name = "btn_signout";
             btn_signout.Size = new Size(86, 31);
@@ -271,12 +272,25 @@
             btnEditBirth.TabIndex = 21;
             btnEditBirth.UseVisualStyleBackColor = true;
             // 
-            // Dashboard
+            // btnBack
+            // 
+            btnBack.Cursor = Cursors.Hand;
+            btnBack.Location = new Point(264, 570);
+            btnBack.Margin = new Padding(3, 4, 3, 4);
+            btnBack.Name = "btnBack";
+            btnBack.Size = new Size(86, 31);
+            btnBack.TabIndex = 22;
+            btnBack.Text = "Back";
+            btnBack.UseVisualStyleBackColor = true;
+            btnBack.Click += btnBack_Click;
+            // 
+            // UserInfo
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.LightBlue;
             ClientSize = new Size(470, 614);
+            Controls.Add(btnBack);
             Controls.Add(btnEditBirth);
             Controls.Add(btnEditEmail);
             Controls.Add(btnEditPassword);
@@ -299,7 +313,7 @@
             FormBorderStyle = FormBorderStyle.None;
             Margin = new Padding(3, 4, 3, 4);
             MaximizeBox = false;
-            Name = "Dashboard";
+            Name = "UserInfo";
             StartPosition = FormStartPosition.CenterScreen;
             Text = "Dashboard";
             Load += Dashboard_Load;
@@ -329,5 +343,6 @@
         private Button btnEditPassword;
         private Button btnEditEmail;
         private Button btnEditBirth;
+        private Button btnBack;
     }
 }

@@ -63,9 +63,8 @@ namespace CaroGame
 
         private void resetChess()
         {
-            ChessBoard.resetGame();   // reset logic
+            ChessBoard.resetGame();
 
-            // reset UI (undo icon)
             undoCount = false;
             ptbOne.Visible = true;
             ptbZero.Visible = false;

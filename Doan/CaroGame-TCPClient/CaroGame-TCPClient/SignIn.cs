@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CaroGame;
+using System;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -129,6 +130,17 @@ namespace CaroGame_TCPClient
 
                     //var dash = new Dashboard(pv, _client);
                     var Dash = new CaroGame.Dashboard();
+                    Dash.OnOpenUserInfo += () =>
+                    {
+                        var userInfoForm = new UserInfo(pv, _client);
+                        userInfoForm.OnBack += () =>
+                        {                             
+                            Dash.Show();
+                            userInfoForm.Close();
+                        };
+                        userInfoForm.Show();
+                        Dash.Hide();
+                    };
 
                     //dash.FormClosed += (s, _) => Close();
                     Dash.FormClosed += (s, _) => Close();

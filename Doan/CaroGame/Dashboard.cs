@@ -15,9 +15,11 @@ namespace CaroGame
     {
         private Room room;
         private int playerNumber;
+        private Form _userInfoForm;
+
         public Dashboard()
         {
-            InitializeComponent();
+            InitializeComponent();   
         }
 
         private void btnPvE_Click(object sender, EventArgs e)
@@ -44,8 +46,10 @@ namespace CaroGame
         private void btnCreateRoom_Click(object sender, EventArgs e)
         {
             Room newRoom = RoomManager.createRoom();
-            var newWaitingRoom = new WaitingRoom(newRoom, 1);
+            room = newRoom;
+            playerNumber = 1;
 
+            var newWaitingRoom = new WaitingRoom(newRoom, 1);
             newWaitingRoom.Show();
             this.Hide();
         }
@@ -69,7 +73,7 @@ namespace CaroGame
         {
             string id = tbRoomID.Text.Trim();
 
-            Room joinedRoom = RoomManager.JoinRoom(id, out int playerNumber);
+            Room joinedRoom = RoomManager.JoinRoom(id, out int pNumber);
 
             if (joinedRoom == null)
             {
@@ -77,16 +81,21 @@ namespace CaroGame
                 return;
             }
 
-            var room = new WaitingRoom(joinedRoom, playerNumber);
+            room = joinedRoom;
+            playerNumber = pNumber;
 
-            room.Show();
+            var waitingroom = new WaitingRoom(joinedRoom, pNumber);
+            waitingroom.Show();
             this.Hide();
         }
 
+        public event Action OnOpenUserInfo;
+
         private void btnSettings_Click(object sender, EventArgs e)
         {
-            //var dashboardSettings = new CaroGame_TCPClient.Dashboard();
+            OnOpenUserInfo?.Invoke();
         }
+
         private void btnPlayInstant_Click(object sender, EventArgs e)
         {
             var newGameForm = new PvP(room, playerNumber);

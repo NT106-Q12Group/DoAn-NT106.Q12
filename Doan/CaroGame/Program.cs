@@ -1,3 +1,7 @@
+using System.Net.Sockets;
+using System;
+using System.Windows.Forms;
+
 namespace CaroGame
 {
     internal static class Program

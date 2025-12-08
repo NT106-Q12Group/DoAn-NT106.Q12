@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\CaroGame\CaroGame.csproj" />
+    <ProjectReference Include="..\CommonLib\CommonLib.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -4,12 +4,12 @@ using System.Windows.Forms;
 
 namespace CaroGame_TCPClient
 {
-    public partial class Dashboard : Form
+    public partial class UserInfo : Form
     {
         private readonly PlayerView _player;
         private readonly TCPClient _client;
 
-        public Dashboard(PlayerView player, TCPClient client)
+        public UserInfo(PlayerView player, TCPClient client)
         {
             InitializeComponent();
             _player = player;
@@ -79,6 +79,13 @@ namespace CaroGame_TCPClient
             }
             catch { }
             base.OnFormClosing(e);
+        }
+
+        public event Action OnBack;
+
+        private void btnBack_Click(object sender, EventArgs e)
+        {
+            OnBack?.Invoke();
         }
     }
 }
