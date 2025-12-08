@@ -94,9 +94,10 @@
             // 
             // ptbReady2
             // 
+            ptbReady2.BackColor = Color.Transparent;
             ptbReady2.BackgroundImage = Properties.Resources.check;
             ptbReady2.BackgroundImageLayout = ImageLayout.Stretch;
-            ptbReady2.Location = new Point(501, 38);
+            ptbReady2.Location = new Point(514, 38);
             ptbReady2.Name = "ptbReady2";
             ptbReady2.Size = new Size(24, 24);
             ptbReady2.TabIndex = 11;
@@ -105,9 +106,10 @@
             // 
             // ptbReady1
             // 
+            ptbReady1.BackColor = Color.Transparent;
             ptbReady1.BackgroundImage = Properties.Resources.check;
             ptbReady1.BackgroundImageLayout = ImageLayout.Stretch;
-            ptbReady1.Location = new Point(146, 38);
+            ptbReady1.Location = new Point(160, 38);
             ptbReady1.Name = "ptbReady1";
             ptbReady1.Size = new Size(24, 24);
             ptbReady1.TabIndex = 10;

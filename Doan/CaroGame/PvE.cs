@@ -12,15 +12,18 @@ namespace CaroGame
         ChessBoardManager ChessBoard;
         private string botDifficulty;
         private Menu menuForm;
+        private bool undoCount = false;
         #endregion
 
         // Constructor nhận tham số difficulty
         public PvE(string difficulty)
         {
             InitializeComponent();
+
             botDifficulty = difficulty;
 
             ChessBoard = new ChessBoardManager(pnlChessBoard);
+            ChessBoard.GameEnded += OnGameEnded;
             ChessBoard.DrawChessBoard();
 
             // GỌI HÀM SET DIFFICULTY NGAY TẠI ĐÂY
@@ -52,6 +55,22 @@ namespace CaroGame
             }
         }
 
+        private void OnGameEnded(string winner)
+        {
+            MessageBox.Show($"{winner} chiến thắng!!!");
+            resetChess();
+        }
+
+        private void resetChess()
+        {
+            ChessBoard.resetGame();   // reset logic
+
+            // reset UI (undo icon)
+            undoCount = false;
+            ptbOne.Visible = true;
+            ptbZero.Visible = false;
+        }
+
         #region Các hàm để trống (Fix lỗi "Does not exist")
         // Giữ lại 2 hàm này để Designer không báo lỗi, nhưng để trống vì logic đã chuyển lên Constructor
         private void Form1_Load(object sender, EventArgs e)
@@ -63,7 +82,7 @@ namespace CaroGame
         }
         #endregion
 
-        #region Các chức năng giống PvP (Menu, Exit, Chat)
+        #region Các chức năng giống PvP (Menu, Exit, Chat, Undo)
 
         private void btnMenu_Click(object sender, EventArgs e)
         {
@@ -128,6 +147,17 @@ namespace CaroGame
             rtbChat.AppendText(message + Environment.NewLine + Environment.NewLine);
 
             rtbChat.ScrollToCaret();
+        }
+
+        private void btnUndo_Click(object sender, EventArgs e)
+        {
+            bool undoSuccess = ChessBoard.undoTurnPvE();
+            if (undoSuccess && !undoCount)
+            {
+                ptbOne.Visible = false;
+                ptbZero.Visible = true;
+                undoCount = true;
+            }
         }
 
         #endregion

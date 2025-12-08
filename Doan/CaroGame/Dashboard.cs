@@ -85,7 +85,7 @@ namespace CaroGame
 
         private void btnSettings_Click(object sender, EventArgs e)
         {
-            var dashboardSettings = new CaroGame_TCPClient.Dashboard();
+            //var dashboardSettings = new CaroGame_TCPClient.Dashboard();
         }
         private void btnPlayInstant_Click(object sender, EventArgs e)
         {

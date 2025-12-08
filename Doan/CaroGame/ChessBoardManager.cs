@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
-using System.Diagnostics;
+using System.Windows.Forms;
 
 namespace CaroGame
 {
@@ -31,6 +32,12 @@ namespace CaroGame
 
         #region Properties
         private Panel chessBoard;
+        private Stack<Button> moveHistory = new Stack<Button>();
+        private Stack<int> playerHistory = new Stack<int>();
+        private bool undoAlready = false;
+        private bool undoUsedInBot = false;
+        public event Action<string> GameEnded;
+
         public Panel ChesBoard
         {
             get { return chessBoard; }
@@ -130,6 +137,12 @@ namespace CaroGame
                 oldButton.Location = new Point(0, oldButton.Location.Y + Cons.CHESS_HEIGHT);
                 oldButton.Width = 0;
                 oldButton.Height = 0;
+
+                //kích hoạt cơ chế undo
+                moveHistory = new Stack<Button>();
+                playerHistory = new Stack<int>();
+                undoAlready = false;
+                undoUsedInBot = false;
             }
         }
 
@@ -169,6 +182,8 @@ namespace CaroGame
             // 1. Đánh dấu nước đi của người chơi
             btn.BackgroundImage = Player[CurrentPlayer].Mark;
             HighlightMove(btn);
+            moveHistory.Push(btn);
+            playerHistory.Push(CurrentPlayer);
 
             Point p = getChessPoint(btn);
             lastHumanRow = p.Y;
@@ -218,8 +233,7 @@ namespace CaroGame
         //Kết thúc trò chơi
         private void EndGame(string winnerName)
         {
-            MessageBox.Show($"{winnerName} chiến thắng!!!");
-            resetGame();
+            GameEnded?.Invoke(winnerName);
         }
 
         //Reset chơi lại
@@ -252,6 +266,11 @@ namespace CaroGame
             lastHumanCol = -1;
 
             isTimeOut = false;
+
+            moveHistory.Clear();
+            playerHistory.Clear();
+            undoAlready = false;
+            undoUsedInBot = false;
         }
 
         //Lấy các ô thắng
@@ -476,6 +495,45 @@ namespace CaroGame
             }
         }
 
+        //Undo bước đi trước
+        public void undoLastMove()
+        {
+            if (moveHistory.Count == 0 || undoAlready)
+                return;
+
+            var btn = moveHistory.Pop();
+            btn.BackgroundImage = null;
+            btn.BackColor = defaultColor;
+            CurrentPlayer = playerHistory.Pop();
+        }
+
+        //Undo lượt đi trước
+        public bool undoTurnPvP()
+        {
+            if (moveHistory.Count == 0 || undoAlready)
+                return false;
+
+                undoLastMove();
+                undoLastMove();
+
+            undoAlready = true;
+            return true;
+        }
+
+        public bool undoTurnPvE()
+        {
+            if (moveHistory.Count == 0 || undoUsedInBot)
+                return false;       
+
+                undoLastMove();
+                undoLastMove();
+
+            undoUsedInBot = true;
+            return true;
+        }
+
+
+
         long[] AttackScore = new long[] { 0, 10, 100, 1000, 100000, 10000000 };
         long[] DefendScore = new long[] { 0, 12, 120, 1500, 200000, 10000000 };
         // --- CÁC BIẾN CẦN THIẾT ---
@@ -634,6 +692,10 @@ namespace CaroGame
             matrix[r][c].BackgroundImage = Player[1].Mark;
             HighlightMove(matrix[r][c]);
             CurrentPlayer = 0;
+
+            moveHistory.Push(matrix[r][c]);
+            playerHistory.Push(1);
+
             var winCells = getWinningCells(matrix[r][c]);
             if (winCells != null)
             {

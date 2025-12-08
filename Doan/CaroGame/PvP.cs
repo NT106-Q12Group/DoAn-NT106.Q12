@@ -205,7 +205,15 @@
             ShowEmojiPicker();
         }
 
-
-
+        private void btnUndo_Click(object sender, EventArgs e)
+        {
+            bool undoSuccess = ChessBoard.undoTurnPvP();
+            //if (undoSuccess && !undoCount)
+            //{
+            //    ptbOne.Visible = false;
+            //    ptbZero.Visible = true;
+            //    undoCount = true;
+            //}
+        }
     }
 }

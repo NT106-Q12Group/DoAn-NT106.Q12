@@ -163,6 +163,7 @@
             btnUndo.Size = new Size(65, 51);
             btnUndo.TabIndex = 6;
             btnUndo.UseVisualStyleBackColor = false;
+            btnUndo.Click += btnUndo_Click;
             // 
             // btnMenu
             // 
@@ -255,10 +256,10 @@
             // panelChat
             // 
             panelChat.BackColor = Color.DeepSkyBlue;
+            panelChat.BorderStyle = BorderStyle.Fixed3D;
             panelChat.Controls.Add(rtbChat);
             panelChat.Controls.Add(pnlEmojiPicker);
             panelChat.Controls.Add(btn_emoji);
-            panelChat.BorderStyle = BorderStyle.Fixed3D;
             panelChat.Controls.Add(label4);
             panelChat.Controls.Add(btnSend);
             panelChat.Controls.Add(txtMessage);
@@ -270,10 +271,11 @@
             // 
             // rtbChat
             // 
-            rtbChat.Location = new Point(19, 40);
+            rtbChat.BackColor = Color.White;
+            rtbChat.Location = new Point(30, 37);
             rtbChat.Name = "rtbChat";
             rtbChat.ReadOnly = true;
-            rtbChat.Size = new Size(421, 192);
+            rtbChat.Size = new Size(387, 185);
             rtbChat.TabIndex = 0;
             rtbChat.Text = "";
             // 
@@ -321,16 +323,6 @@
             txtMessage.Name = "txtMessage";
             txtMessage.Size = new Size(300, 37);
             txtMessage.TabIndex = 1;
-            // 
-            // rtbChat
-            // 
-            rtbChat.BackColor = Color.White;
-            rtbChat.Location = new Point(30, 37);
-            rtbChat.Name = "rtbChat";
-            rtbChat.ReadOnly = true;
-            rtbChat.Size = new Size(387, 185);
-            rtbChat.TabIndex = 0;
-            rtbChat.Text = "";
             // 
             // label3
             // 

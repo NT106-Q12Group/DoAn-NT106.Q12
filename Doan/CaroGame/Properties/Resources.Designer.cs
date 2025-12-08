@@ -293,6 +293,26 @@ namespace CaroGame.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap number_1 {
+            get {
+                object obj = ResourceManager.GetObject("number-1", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap number_11 {
+            get {
+                object obj = ResourceManager.GetObject("number-11", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap pause {
             get {
                 object obj = ResourceManager.GetObject("pause", resourceCulture);
@@ -366,6 +386,16 @@ namespace CaroGame.Properties {
         internal static System.Drawing.Bitmap versus {
             get {
                 object obj = ResourceManager.GetObject("versus", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap zero {
+            get {
+                object obj = ResourceManager.GetObject("zero", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
