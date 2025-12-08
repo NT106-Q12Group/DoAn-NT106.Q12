@@ -13,10 +13,12 @@ namespace CaroGame
     public partial class BotDifficulty : Form
     {
         private string botDifficulty; // Biến lưu trữ chế độ khó của bot
+        private string _playerName;
 
-        public BotDifficulty()
+        public BotDifficulty(string playerName)
         {
             InitializeComponent();
+            _playerName = playerName;
         }
 
         // Khi nhấn nút Easy
@@ -53,7 +55,7 @@ namespace CaroGame
             SetBotDifficulty(botDifficulty);
 
             // Ẩn BotDifficulty và hiển thị Form chơi chính
-            var gameForm = new PvE(botDifficulty); // Tạo form mới với chế độ khó
+            var gameForm = new PvE(botDifficulty, _playerName);
             gameForm.Show();
             this.Hide(); // Ẩn BotDifficulty form
         }
@@ -83,7 +85,7 @@ namespace CaroGame
         private void btnExit_Click(object sender, EventArgs e)
         {
             this.Close();
-            var DashBoard = new Dashboard();
+            var DashBoard = new Dashboard(_playerName);
             DashBoard.Show();
         }
     }
