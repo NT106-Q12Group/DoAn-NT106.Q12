@@ -137,6 +137,7 @@ namespace CaroGame_TCPClient
                     //dash.Show();
                     Dash.Show();
 
+
                     MessageBox.Show("Signed in successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
                 else
@@ -174,6 +175,14 @@ namespace CaroGame_TCPClient
             }
             catch { }
             base.OnFormClosing(e);
+        }
+
+        private void linkLabel1_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            var resetPsw = new ResetPassword(_client);
+            Hide();
+            resetPsw.FormClosed += (s, _) => Show();
+            resetPsw.Show();
         }
     }
 }
