@@ -1,9 +1,9 @@
-﻿using CaroGame;
+﻿using CaroGame_TCPClient;
 using System;
 using System.Drawing;
 using System.Windows.Forms;
 
-namespace CaroGame_TCPClient
+namespace CaroGame
 {
     public partial class SignIn : Form
     {
@@ -128,25 +128,9 @@ namespace CaroGame_TCPClient
                         Birthday = birthday
                     };
 
-                    //var dash = new Dashboard(pv, _client);
-                    var Dash = new CaroGame.Dashboard(uname);
-                    Dash.OnOpenUserInfo += () =>
-                    {
-                        var userInfoForm = new UserInfo(pv, _client);
-                        userInfoForm.OnBack += () =>
-                        {                             
-                            Dash.Show();
-                            userInfoForm.Hide();
-                        };
-                        userInfoForm.Show();
-                        Dash.Hide();
-                    };
-
-                    //dash.FormClosed += (s, _) => Close();
+                    var Dash = new Dashboard(uname);
                     Dash.FormClosed += (s, _) => Close();
-
                     Hide();
-                    //dash.Show();
                     Dash.Show();
 
 

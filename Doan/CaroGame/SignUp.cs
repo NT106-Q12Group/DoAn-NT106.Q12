@@ -1,9 +1,10 @@
 ﻿using System;
+using CaroGame_TCPClient;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
 
-namespace CaroGame_TCPClient
+namespace CaroGame
 {
     public partial class SignUp : Form
     {
