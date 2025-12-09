@@ -17,6 +17,12 @@ namespace CaroGame
         Hard,
         ExtremelyHard
     }
+
+    public enum GameMode
+    {
+        PvE,
+        PvP
+    }
     public class Tile
     {
         public Image BackgroundImage { get; set; }
@@ -44,6 +50,8 @@ namespace CaroGame
             set { chessBoard = value; }
         }
 
+        public GameMode CurrentGameMode { get; set; }
+
         private List<Player> player;
         public List<Player> Player
         {
@@ -66,17 +74,17 @@ namespace CaroGame
         #endregion
 
         #region Initialize
-        public ChessBoardManager(Panel chessBoard)
+        public ChessBoardManager(Panel chessBoard, GameMode mode = GameMode.PvE)
         {
             this.chessBoard = chessBoard;
+            this.CurrentGameMode = mode; // Lưu chế độ chơi
+
             this.Player = new List<Player>()
-            {
-                new Player ("Player 1",Image.FromFile(Application.StartupPath + "\\Resources\\Caro Game.png")),
-                new Player ("Player 2",Image.FromFile(Application.StartupPath + "\\Resources\\Caro Game (1).png")),
-            };
-
+        {
+            new Player ("Player 1", Image.FromFile(Application.StartupPath + "\\Resources\\Caro Game.png")),
+            new Player ("Player 2", Image.FromFile(Application.StartupPath + "\\Resources\\Caro Game (1).png")),
+        };
             CurrentPlayer = 0;
-
         }
         #endregion
 
@@ -171,17 +179,20 @@ namespace CaroGame
         // Thêm biến này vào khu vực #region Methods hoặc khai báo biến
         private bool isThinking = false; // Biến khóa bàn cờ khi Bot đang nghĩ
 
+        // Thay thế toàn bộ hàm Btn_Click cũ bằng hàm này
         private async void Btn_Click(object? sender, EventArgs e)
         {
             Button btn = sender as Button;
 
-            // Nếu ô đã đánh hoặc chưa đến lượt hoặc Bot đang nghĩ -> Bỏ qua
-            if (btn.BackgroundImage != null || CurrentPlayer != 0 || isThinking)
+            // 1. Kiểm tra điều kiện chung
+            // Nếu ô đã đánh hoặc Bot đang nghĩ (trong PvE) -> Bỏ qua
+            if (btn.BackgroundImage != null || isThinking)
                 return;
 
-            // 1. Đánh dấu nước đi của người chơi
+            // 2. Xử lý đánh cờ lên giao diện
             btn.BackgroundImage = Player[CurrentPlayer].Mark;
             HighlightMove(btn);
+
             moveHistory.Push(btn);
             playerHistory.Push(CurrentPlayer);
 
@@ -189,7 +200,7 @@ namespace CaroGame
             lastHumanRow = p.Y;
             lastHumanCol = p.X;
 
-            // Kiểm tra người chơi thắng chưa
+            // 3. Kiểm tra thắng thua ngay lập tức
             var winCells = getWinningCells(btn);
             if (winCells != null)
             {
@@ -198,37 +209,38 @@ namespace CaroGame
                 return;
             }
 
-            // 2. Chuyển lượt và KHÓA bàn cờ
-            CurrentPlayer = 1;
-            isThinking = true; // Khóa không cho người chơi click lung tung
-
-            // --- MAGIC Ở ĐÂY ---
-            // Delay 100ms để nhường CPU vẽ xong hình ảnh nước cờ người chơi lên màn hình
-            await Task.Delay(100);
-
-            // 3. Gọi Bot chạy (Dùng await để chờ Bot tính xong mà không đơ máy)
-            await BotPlay();
-
-            // 4. Mở khóa bàn cờ
-            isThinking = false;
-        }
-
-
-            //Phần PVP
-            /*
-            if (btn.BackgroundImage != null)
-                return;
-             
-            btn.BackgroundImage = Player[CurrentPlayer].Mark;
-            CurrentPlayer = CurrentPlayer == 1 ? 0 : 1;
-
-            if (isEndGame(btn))
+            // -----------------------------------------------------------
+            // 4. PHÂN CHIA LOGIC TẠI ĐÂY
+            // -----------------------------------------------------------
+            if (CurrentGameMode == GameMode.PvE)
             {
-                EndGame();
+                // --- LOGIC ĐÁNH VỚI MÁY (CŨ) ---
+
+                // Nếu người chơi vừa đánh (CurrentPlayer là 0) thì đến lượt Bot
+                if (CurrentPlayer == 0)
+                {
+                    CurrentPlayer = 1; // Chuyển sang Bot
+                    isThinking = true; // Khóa bàn cờ
+
+                    await Task.Delay(100); // Đợi UI cập nhật
+                    await BotPlay();       // Bot đánh
+
+                    isThinking = false; // Mở khóa
+                }
             }
-           
+            else
+            {
+                // --- LOGIC ĐÁNH PVP (MỚI) ---
+
+                // Đơn giản là đổi lượt người chơi
+                // Nếu đang là 0 thì thành 1, đang là 1 thì thành 0
+                CurrentPlayer = (CurrentPlayer == 0) ? 1 : 0;
+
+                // Lưu ý: Với PvP Online, bạn có thể cần thêm code gửi tọa độ 'p' 
+                // qua mạng tại đây (thông qua sự kiện).
+                // OnPlayerMoved?.Invoke(p); 
+            }
         }
-            */
 
         //Kết thúc trò chơi
         private void EndGame(string winnerName)

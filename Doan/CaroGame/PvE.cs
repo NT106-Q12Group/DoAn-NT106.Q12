@@ -27,7 +27,7 @@ namespace CaroGame
 
             botDifficulty = difficulty;
 
-            ChessBoard = new ChessBoardManager(pnlChessBoard);
+            ChessBoard = new ChessBoardManager(pnlChessBoard, GameMode.PvE);
             ChessBoard.GameEnded += OnGameEnded;
             ChessBoard.DrawChessBoard();
 

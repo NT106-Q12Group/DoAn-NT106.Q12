@@ -12,11 +12,13 @@ namespace CaroGame
         private bool _isQuickMatch;
         private bool _matchFound = false;
 
+        // Constructor mặc định
         public PvPLobby()
         {
             InitializeComponent();
         }
 
+        // Constructor chính
         public PvPLobby(string username, TCPClient client, bool isQuickMatch = true)
         {
             InitializeComponent();
@@ -24,7 +26,11 @@ namespace CaroGame
             _client = client;
             _isQuickMatch = isQuickMatch;
 
-            // Kiểm tra an toàn trước khi đăng ký sự kiện
+            // --- QUAN TRỌNG: Gắn sự kiện FormClosed thủ công ---
+            // Để đảm bảo dù bấm nút Back hay nút X đỏ thì đều chạy hàm dọn dẹp
+            this.FormClosed += PvPLobby_FormClosed;
+
+            // Kiểm tra an toàn trước khi đăng ký sự kiện mạng
             if (_client != null)
             {
                 _client.OnMessageReceived += ProcessServerMessage;
@@ -39,28 +45,24 @@ namespace CaroGame
         {
             SetupUI();
 
-            // Căn giữa lần đầu khi form hiện lên
+            // Căn giữa giao diện lúc mới mở
             CenterControls();
         }
 
-        // --- HÀM MỚI: CĂN GIỮA CÁC THÀNH PHẦN ---
+        // --- CĂN GIỮA CÁC THÀNH PHẦN ---
         private void CenterControls()
         {
-            // Căn giữa Label trạng thái
             if (lb_status != null)
             {
-                // Tính toán: (Chiều rộng Form - Chiều rộng Label) / 2
                 lb_status.Left = (this.ClientSize.Width - lb_status.Width) / 2;
             }
 
-            // Căn giữa thanh Loading
             if (progressBar1 != null)
             {
                 progressBar1.Left = (this.ClientSize.Width - progressBar1.Width) / 2;
             }
         }
 
-        // Để đảm bảo khi resize form nó vẫn nằm giữa
         protected override void OnResize(EventArgs e)
         {
             base.OnResize(e);
@@ -77,7 +79,7 @@ namespace CaroGame
             }
             if (pictureBox1 != null) pictureBox1.BackColor = Color.LightBlue;
 
-            // Player 2 (Đối thủ)
+            // Player 2 (Đối thủ - Đang chờ)
             if (lb_username2 != null)
             {
                 lb_username2.Text = "???";
@@ -93,6 +95,7 @@ namespace CaroGame
             if (lb_status != null) lb_status.Text = "Waiting...";
             if (progressBar1 != null) progressBar1.Visible = false;
 
+            // Tự động tìm trận nếu là QuickMatch
             if (_isQuickMatch && _client != null)
             {
                 StartSearching();
@@ -103,11 +106,8 @@ namespace CaroGame
         {
             if (lb_status != null)
             {
-                // ĐỔI TEXT THEO Ý BẠN
                 lb_status.Text = "Finding Match...";
                 lb_status.ForeColor = Color.DarkOrange;
-
-                // Căn giữa lại sau khi đổi text (vì độ dài chữ thay đổi)
                 CenterControls();
             }
 
@@ -124,6 +124,7 @@ namespace CaroGame
             }
         }
 
+        // --- XỬ LÝ TIN NHẮN SERVER ---
         public void ProcessServerMessage(string message)
         {
             if (this.InvokeRequired)
@@ -137,7 +138,7 @@ namespace CaroGame
 
             if (command == "MATCH_FOUND" && parts.Length >= 2)
             {
-                _matchFound = true;
+                _matchFound = true; // Đánh dấu đã tìm thấy
                 string opponentName = parts[1];
                 string mySymbol = parts.Length > 2 ? parts[2] : "O";
 
@@ -153,7 +154,7 @@ namespace CaroGame
             {
                 lb_status.Text = "OPPONENT FOUND!";
                 lb_status.ForeColor = Color.Green;
-                CenterControls(); // Căn giữa lại
+                CenterControls();
             }
 
             if (lb_username2 != null)
@@ -165,6 +166,7 @@ namespace CaroGame
 
             if (pictureBox2 != null) pictureBox2.BackColor = Color.PaleVioletRed;
 
+            // Đếm ngược 1.5s rồi vào game
             System.Windows.Forms.Timer transitionTimer = new System.Windows.Forms.Timer();
             transitionTimer.Interval = 1500;
             transitionTimer.Tick += (s, e) =>
@@ -197,16 +199,21 @@ namespace CaroGame
             gameForm.Show();
         }
 
+        // --- NÚT BACK (Sẽ kích hoạt FormClosed) ---
         private void btnBack_Click(object sender, EventArgs e)
         {
             this.Close();
         }
 
+        // --- SỰ KIỆN ĐÓNG FORM (Xử lý hủy trận) ---
         private void PvPLobby_FormClosed(object sender, FormClosedEventArgs e)
         {
             if (_client != null)
             {
+                // 1. Hủy đăng ký sự kiện tin nhắn
                 _client.OnMessageReceived -= ProcessServerMessage;
+
+                // 2. Nếu thoát mà chưa tìm thấy trận -> Gửi lệnh HỦY
                 if (!_matchFound && _isQuickMatch)
                 {
                     _client.Send($"CANCEL_MATCH|{_username}");
