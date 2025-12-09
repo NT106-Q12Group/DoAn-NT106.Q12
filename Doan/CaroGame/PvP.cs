@@ -34,7 +34,6 @@ namespace CaroGame
             InitGame();
         }
 
-        // Constructor cũ
         public PvP(Room room, int playerNumber)
         {
             InitializeComponent();
@@ -55,16 +54,17 @@ namespace CaroGame
             // Host (1) là quân X (0), Guest (2) là quân O (1)
             ChessBoard.MySide = (playerNumber == 1) ? 0 : 1;
 
-            // Nếu MySide == 0 (X) thì được đánh trước
+            // X luôn đi trước
             ChessBoard.IsMyTurn = (ChessBoard.MySide == 0);
 
-            // 3. ĐĂNG KÝ SỰ KIỆN CLICK (Gửi tọa độ lên Server)
+            // 3. ĐĂNG KÝ SỰ KIỆN CLICK
             ChessBoard.PlayerClickedNode += ChessBoard_PlayerClickedNode;
 
-            // 4. [FIX QUAN TRỌNG] Đăng ký nhận tin nhắn từ Server
-            // Thay vì tạo Thread loop, ta hứng sự kiện từ TCPClient
+            // 4. ĐĂNG KÝ NHẬN TIN TỪ SERVER
             if (tcpClient != null)
             {
+                // Hủy đăng ký cũ nếu có để tránh duplicate
+                tcpClient.OnMessageReceived -= HandleServerMessage;
                 tcpClient.OnMessageReceived += HandleServerMessage;
             }
 
@@ -76,15 +76,14 @@ namespace CaroGame
         {
             if (tcpClient != null && tcpClient.IsConnected())
             {
-                // Gửi Packet MOVE (Server sẽ broadcast lại cho cả 2 người)
+                // Gửi Packet MOVE (MOVE|X|Y)
                 tcpClient.SendPacket(new Packet("MOVE", point));
             }
         }
 
-        // --- [FIX] XỬ LÝ TIN NHẮN TỪ SERVER (Thay thế ListenFromServer) ---
+        // --- [QUAN TRỌNG] XỬ LÝ TIN NHẮN TỪ SERVER ---
         private void HandleServerMessage(string data)
         {
-            // Đảm bảo chạy trên luồng UI
             this.Invoke((MethodInvoker)delegate
             {
                 try
@@ -94,76 +93,72 @@ namespace CaroGame
 
                     if (command == "MOVE")
                     {
-                        // Server gửi: MOVE|Row|Col|PlayerSide
-                        // (Lưu ý: Bạn cần đảm bảo Server gửi đủ 4 tham số này)
-                        int r = int.Parse(parts[1]);
-                        int c = int.Parse(parts[2]);
+                        // [FIXED] Parse đúng thứ tự X, Y và Side
+                        // Server gửi: MOVE | x | y | side
 
-                        // Nếu Server chưa gửi side, ta tạm suy luận (nhưng tốt nhất Server nên gửi)
-                        // Ở đây mình giả định Server gửi kèm Side ở vị trí 3
-                        int side = (parts.Length > 3) ? int.Parse(parts[3]) : -1;
+                        int x = int.Parse(parts[1]); // X là cột
+                        int y = int.Parse(parts[2]); // Y là dòng
+                        int side = int.Parse(parts[3]); // Bắt buộc phải có side từ Server
 
-                        // Nếu Server cũ chỉ gửi Row|Col, ta phải đoán phe:
-                        if (side == -1)
-                        {
-                            // Nếu đến lượt mình mà nhận được MOVE -> Thì đó là move của Địch
-                            // (Logic này hơi rủi ro, nên fix Server gửi Side là tốt nhất)
-                            side = ChessBoard.IsMyTurn ? (ChessBoard.MySide == 0 ? 1 : 0) : ChessBoard.MySide;
-                        }
-
-                        // Gọi hàm vẽ thống nhất
-                        ChessBoard.ProcessMove(c, r, side);
+                        // Gọi hàm xử lý chung (Vẽ + Đổi lượt)
+                        ChessBoard.ProcessMove(x, y, side);
                     }
                     else if (command == "CHAT")
                     {
-                        // CHAT|Message
                         if (parts.Length >= 2)
                         {
-                            string msg = parts[1];
-                            AppendMessage("Opponent", msg, Color.Red);
+                            AppendMessage("Opponent", parts[1], Color.Red);
                         }
                     }
                     else if (command == "UNDO_SUCCESS")
                     {
-                        // [FIX] Khi Server đồng ý Undo -> Thực hiện xóa nước cờ
+                        // Khi Server đồng ý Undo -> Thực hiện xóa nước cờ
                         ChessBoard.ExecuteUndoPvP();
 
-                        // Reset lại trạng thái nút Undo nếu cần
+                        // Cập nhật lại UI nút undo
                         undoCount = true;
                         ptbOne.Visible = false;
                         ptbZero.Visible = true;
                     }
                     else if (command == "NEXT_TURN")
                     {
-                        // Nếu Server quản lý lượt đi chặt chẽ
-                        // NEXT_TURN|Username
-                        // if (parts[1] == myUsername) ChessBoard.IsMyTurn = true;
+                        // Server gửi: NEXT_TURN|Username_Cua_Nguoi_Duoc_Di
+                        // Logic này để đảm bảo chắc chắn lượt đi đúng (dự phòng cho ProcessMove)
+                        string nextUser = parts[1];
+                        if (nextUser == player1Name) // Nếu tên gửi về là tên mình
+                        {
+                            ChessBoard.IsMyTurn = true;
+                        }
+                        else
+                        {
+                            ChessBoard.IsMyTurn = false;
+                        }
+                    }
+                    else if (command == "OPPONENT_LEFT")
+                    {
+                        MessageBox.Show("Đối thủ đã thoát trận! Bạn thắng.");
+                        this.Close();
                     }
                 }
                 catch (Exception ex)
                 {
-                    // Log error nếu cần
+                    // Console.WriteLine(ex.Message);
                 }
             });
         }
 
-        // --- CÁC HÀM UI KHÁC ---
+        // --- CÁC HÀM UI ---
 
-        private void OnGameEnded(string winner)
+        private void btnUndo_Click(object sender, EventArgs e)
         {
-            MessageBox.Show($"{winner} chiến thắng!!!");
-            resetChess();
-        }
+            if (undoCount) return; // Nếu đã dùng quyền undo rồi thì thôi
 
-        private void resetChess()
-        {
-            ChessBoard.resetGame();
-            undoCount = false;
-            ptbOne.Visible = true;
-            ptbZero.Visible = false;
-
-            // Khi reset game PvP, cần set lại lượt đúng luật
-            ChessBoard.IsMyTurn = (ChessBoard.MySide == 0);
+            if (tcpClient != null)
+            {
+                // Gửi yêu cầu Undo lên Server
+                tcpClient.Send("REQUEST_UNDO");
+                // KHÔNG tự gọi hàm Undo ở đây, phải chờ Server trả lời UNDO_SUCCESS
+            }
         }
 
         private void btnSend_Click(object sender, EventArgs e)
@@ -181,36 +176,20 @@ namespace CaroGame
 
         private void btnExit_Click(object sender, EventArgs e)
         {
-            // Hủy đăng ký sự kiện trước khi thoát để tránh lỗi
             if (tcpClient != null)
+            {
                 tcpClient.OnMessageReceived -= HandleServerMessage;
+                // Gửi lệnh thoát trận để Server báo cho đối thủ
+                tcpClient.CancelMatch(player1Name);
+            }
 
             this.Close();
+            // Mở lại Dashboard
             var DashBoard = new Dashboard(room, playerNumber, player1Name, tcpClient);
             DashBoard.Show();
         }
 
-        // [FIX] Nút Undo giờ sẽ gửi YÊU CẦU lên Server
-        private void btnUndo_Click(object sender, EventArgs e)
-        {
-            if (undoCount) return; // Đã undo rồi thì thôi
-
-            if (tcpClient != null)
-            {
-                // Gửi lệnh xin Undo
-                tcpClient.Send("REQUEST_UNDO");
-
-                // Lưu ý: Không gọi ChessBoard.ExecuteUndoPvP() ở đây!
-                // Phải đợi Server trả về "UNDO_SUCCESS" trong HandleServerMessage thì mới gọi.
-            }
-        }
-
-        // ... (Giữ nguyên các hàm UI Chat, Emoji, Menu) ...
-
-        // Code giữ nguyên để tránh lỗi Designer
-        private void Btn_Click(object? sender, EventArgs e) { Button btn = sender as Button; }
-
-        private void btnChat_Click(object sender, EventArgs e) { if (panelChat != null) panelChat.Visible = !panelChat.Visible; }
+        // --- GIỮ NGUYÊN PHẦN CÒN LẠI (Emoji, Menu, v.v.) ---
 
         private void AppendMessage(string sender, string message, Color color)
         {
@@ -235,11 +214,18 @@ namespace CaroGame
                 menuForm.Location = new Point(this.Left + 22, this.Top + 50);
                 menuForm.Show(this);
 
-                // Khi reset trong Menu, nhớ gán lại các Event
+                // Lưu ý: Việc reset game trong PvP phải cẩn thận.
+                // Thường thì chỉ Reset bàn cờ khi HẾT VÁN.
+                // Nếu reset giữa chừng sẽ bị lệch với đối thủ.
+                // Ở đây tạm thời ta khởi tạo lại Board.
+
                 ChessBoard = new ChessBoardManager(pnlChessBoard, GameMode.PvP);
                 ChessBoard.MySide = (playerNumber == 1) ? 0 : 1;
                 ChessBoard.PlayerClickedNode += ChessBoard_PlayerClickedNode;
                 ChessBoard.DrawChessBoard();
+
+                // Set lại lượt
+                ChessBoard.IsMyTurn = (ChessBoard.MySide == 0);
             }
             else
             {
@@ -248,8 +234,8 @@ namespace CaroGame
             }
         }
 
-        // Emoji logic (Giữ nguyên)
-        private readonly string[] _emoticons = new string[] { "😀", "😃", "😄", "😁" /*...*/ }; // (Cắt bớt cho gọn)
+        // Emoji logic
+        private readonly string[] _emoticons = new string[] { "😀", "😃", "😄", "😁", "😆", "😅", "😂", "🤣" }; // Rút gọn
         private void SetupEmojiPickerPanel()
         {
             if (pnlEmojiPicker == null) return;
@@ -278,8 +264,9 @@ namespace CaroGame
             }
         }
         private void btn_emoji_Click(object sender, EventArgs e) { ShowEmojiPicker(); }
+        private void btnChat_Click(object sender, EventArgs e) { if (panelChat != null) panelChat.Visible = !panelChat.Visible; }
+        private void Btn_Click(object? sender, EventArgs e) { } // Placeholder
 
-        // Hủy đăng ký khi đóng form
         protected override void OnFormClosing(FormClosingEventArgs e)
         {
             if (tcpClient != null) tcpClient.OnMessageReceived -= HandleServerMessage;
