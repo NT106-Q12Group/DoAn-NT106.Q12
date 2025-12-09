@@ -47,6 +47,9 @@ namespace CaroGame
             CheckForIllegalCrossThreadCalls = false;
             SetupEmojiPickerPanel();
 
+            // [FIX 1] Đưa Panel bàn cờ lên trên cùng để tránh bị Panel Leaderboard che mất
+            pnlChessBoard.BringToFront();
+
             // 1. Khởi tạo bàn cờ PvP
             ChessBoard = new ChessBoardManager(pnlChessBoard, GameMode.PvP);
 
@@ -58,12 +61,14 @@ namespace CaroGame
             ChessBoard.IsMyTurn = (ChessBoard.MySide == 0);
 
             // 3. ĐĂNG KÝ SỰ KIỆN CLICK
+            // Hủy đăng ký cũ trước khi thêm mới để tránh lỗi duplicate event
+            ChessBoard.PlayerClickedNode -= ChessBoard_PlayerClickedNode;
             ChessBoard.PlayerClickedNode += ChessBoard_PlayerClickedNode;
 
             // 4. ĐĂNG KÝ NHẬN TIN TỪ SERVER
             if (tcpClient != null)
             {
-                // Hủy đăng ký cũ nếu có để tránh duplicate
+                // Hủy đăng ký cũ nếu có để tránh nhận tin nhắn 2 lần
                 tcpClient.OnMessageReceived -= HandleServerMessage;
                 tcpClient.OnMessageReceived += HandleServerMessage;
             }
@@ -88,17 +93,20 @@ namespace CaroGame
             {
                 try
                 {
+                    // [DEBUG] Nếu vẫn lỗi, bỏ comment dòng dưới để xem Server gửi gì
+                    // Console.WriteLine("Received: " + data);
+
                     string[] parts = data.Split('|');
                     string command = parts[0];
 
                     if (command == "MOVE")
                     {
-                        // [FIXED] Parse đúng thứ tự X, Y và Side
-                        // Server gửi: MOVE | x | y | side
+                        // [FIX 2] Kiểm tra dữ liệu đầu vào để tránh crash
+                        if (parts.Length < 4) return;
 
-                        int x = int.Parse(parts[1]); // X là cột
-                        int y = int.Parse(parts[2]); // Y là dòng
-                        int side = int.Parse(parts[3]); // Bắt buộc phải có side từ Server
+                        int x = int.Parse(parts[1]); // Cột
+                        int y = int.Parse(parts[2]); // Dòng
+                        int side = int.Parse(parts[3]); // Phe (0 hoặc 1)
 
                         // Gọi hàm xử lý chung (Vẽ + Đổi lượt)
                         ChessBoard.ProcessMove(x, y, side);
@@ -123,7 +131,8 @@ namespace CaroGame
                     else if (command == "NEXT_TURN")
                     {
                         // Server gửi: NEXT_TURN|Username_Cua_Nguoi_Duoc_Di
-                        // Logic này để đảm bảo chắc chắn lượt đi đúng (dự phòng cho ProcessMove)
+                        if (parts.Length < 2) return;
+
                         string nextUser = parts[1];
                         if (nextUser == player1Name) // Nếu tên gửi về là tên mình
                         {
@@ -142,7 +151,8 @@ namespace CaroGame
                 }
                 catch (Exception ex)
                 {
-                    // Console.WriteLine(ex.Message);
+                    // [FIX 3] Hiển thị lỗi để biết tại sao không vẽ được
+                    MessageBox.Show("Lỗi Client: " + ex.Message + "\nData nhận được: " + data);
                 }
             });
         }
@@ -157,7 +167,6 @@ namespace CaroGame
             {
                 // Gửi yêu cầu Undo lên Server
                 tcpClient.Send("REQUEST_UNDO");
-                // KHÔNG tự gọi hàm Undo ở đây, phải chờ Server trả lời UNDO_SUCCESS
             }
         }
 
@@ -189,8 +198,6 @@ namespace CaroGame
             DashBoard.Show();
         }
 
-        // --- GIỮ NGUYÊN PHẦN CÒN LẠI (Emoji, Menu, v.v.) ---
-
         private void AppendMessage(string sender, string message, Color color)
         {
             if (rtbChat == null) return;
@@ -214,18 +221,8 @@ namespace CaroGame
                 menuForm.Location = new Point(this.Left + 22, this.Top + 50);
                 menuForm.Show(this);
 
-                // Lưu ý: Việc reset game trong PvP phải cẩn thận.
-                // Thường thì chỉ Reset bàn cờ khi HẾT VÁN.
-                // Nếu reset giữa chừng sẽ bị lệch với đối thủ.
-                // Ở đây tạm thời ta khởi tạo lại Board.
-
-                ChessBoard = new ChessBoardManager(pnlChessBoard, GameMode.PvP);
-                ChessBoard.MySide = (playerNumber == 1) ? 0 : 1;
-                ChessBoard.PlayerClickedNode += ChessBoard_PlayerClickedNode;
-                ChessBoard.DrawChessBoard();
-
-                // Set lại lượt
-                ChessBoard.IsMyTurn = (ChessBoard.MySide == 0);
+                // [FIX 4] ĐÃ XÓA ĐOẠN CODE RESET BÀN CỜ Ở ĐÂY
+                // Việc tạo lại "new ChessBoardManager" ở đây sẽ làm hỏng bàn cờ đang chơi
             }
             else
             {
@@ -235,7 +232,7 @@ namespace CaroGame
         }
 
         // Emoji logic
-        private readonly string[] _emoticons = new string[] { "😀", "😃", "😄", "😁", "😆", "😅", "😂", "🤣" }; // Rút gọn
+        private readonly string[] _emoticons = new string[] { "😀", "😃", "😄", "😁", "😆", "😅", "😂", "🤣" };
         private void SetupEmojiPickerPanel()
         {
             if (pnlEmojiPicker == null) return;
