@@ -107,11 +107,8 @@ namespace CaroGame
             }
         }
 
-
-        // --- XỬ LÝ LOGIC ---
         private void ProcessData(string data)
         {
-            // [FIX QUAN TRỌNG]: Dùng Split('|') thay vì (';') để khớp với TCPClient
             try
             {
                 if (data.StartsWith("MOVE"))
@@ -123,14 +120,14 @@ namespace CaroGame
 
                     Point enemyPoint = new Point(c, r); // Point(Col, Row)
 
-                    // Vẽ lên bàn cờ (Dùng Invoke cho chắc ăn)
+                    // Cập nhật UI khi nhận được dữ liệu từ đối thủ (luôn chạy trên UI thread)
                     this.Invoke((MethodInvoker)delegate {
                         ChessBoard.OtherPlayerMoved(enemyPoint);
+                        ChessBoard.IsMyTurn = true;  // Đối thủ đã đi, giờ là lượt của mình
                     });
                 }
                 else if (data.StartsWith("CHAT"))
                 {
-                    // Format nhận về: CHAT|Nội_dung
                     string[] parts = data.Split('|');
                     if (parts.Length >= 2)
                     {
