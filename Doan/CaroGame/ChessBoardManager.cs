@@ -220,7 +220,6 @@ namespace CaroGame
         public int MySide { get; set; } = -1; // -1: Chưa gán, 0: Player 1, 1: Player 2
         public bool IsMyTurn { get; set; } = false;
 
-
         private async void Btn_Click(object? sender, EventArgs e)
         {
             Button btn = sender as Button;
@@ -240,8 +239,6 @@ namespace CaroGame
 
             // 1. Xử lý nước đi
             int markIndex = MySide;  // Đảm bảo đánh dấu quân của mình (PvP)
-
-            // Nếu là chế độ PvP, dùng MySide để xác định quân mình
             btn.BackgroundImage = Player[markIndex].Mark;
             HighlightMove(btn);  // Làm nổi bật nước đi
 
@@ -284,9 +281,10 @@ namespace CaroGame
                 PlayerClickedNode?.Invoke(p);
                 IsMyTurn = false;  // Đổi lượt cho đối thủ
 
-                // Chờ đối thủ đi xong rồi mới cho phép mình đi tiếp
+                // Sau khi gửi nước đi, cần kiểm tra và nhận nước đi từ đối thủ.
             }
         }
+
 
         //Kết thúc trò chơi
         private void EndGame(string winnerName)
@@ -581,8 +579,8 @@ namespace CaroGame
             if (moveHistory.Count == 0 || undoAlready)
                 return false;
 
-            undoLastMove();
-            undoLastMove();
+            undoLastMove(); // Undo nước đi của mình
+            undoLastMove(); // Undo nước đi của đối thủ
 
             undoAlready = true;
 
@@ -595,20 +593,18 @@ namespace CaroGame
             return true;
         }
 
-
+        //Undo lượt đi của Bot (PvE)
         public bool undoTurnPvE()
         {
             if (moveHistory.Count == 0 || undoUsedInBot)
-                return false;       
+                return false;
 
-                undoLastMove();
-                undoLastMove();
+            undoLastMove(); // Undo nước đi của người chơi
+            undoLastMove(); // Undo nước đi của Bot
 
             undoUsedInBot = true;
             return true;
         }
-
-
 
         long[] AttackScore = new long[] { 0, 10, 100, 1000, 100000, 10000000 };
         long[] DefendScore = new long[] { 0, 12, 120, 1500, 200000, 10000000 };
