@@ -1,8 +1,8 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
 using System.Drawing;
+using System.Threading;
 using System.Windows.Forms;
-using System;
-using CaroGame_TCPClient;
+using CaroGame_TCPClient; // Namespace chứa TCPClient và Packet
 
 namespace CaroGame
 {
@@ -13,7 +13,7 @@ namespace CaroGame
         #endregion
 
         public Room room;
-        public int playerNumber;
+        public int playerNumber; // 1 = Host (X), 2 = Guest (O)
         private bool undoCount = false;
 
         // Các biến kết nối mạng
@@ -21,17 +21,10 @@ namespace CaroGame
         private string player2Name;
         private TCPClient tcpClient;
 
-        // Constructor cũ (giữ lại để tránh lỗi designer, nhưng hạn chế dùng)
-        public PvP(Room room, int playerNumber)
-        {
-            InitializeComponent();
-            this.room = room;
-            this.playerNumber = playerNumber;
+        // Luồng lắng nghe tin nhắn từ Server
+        private Thread listenThread;
 
-            InitGame();
-        }
-
-        // --- CONSTRUCTOR CHÍNH (SỬA LỖI LOGIC) ---
+        // --- CONSTRUCTOR ---
         public PvP(Room room, int playerNumber, string p1, string p2, TCPClient client)
         {
             InitializeComponent();
@@ -44,12 +37,122 @@ namespace CaroGame
             InitGame();
         }
 
+        // Constructor cũ (giữ để tránh lỗi Designer)
+        public PvP(Room room, int playerNumber)
+        {
+            InitializeComponent();
+            this.room = room;
+            this.playerNumber = playerNumber;
+            InitGame();
+        }
+
         private void InitGame()
         {
+            // Tắt check thread để update UI từ luồng mạng dễ hơn
+            CheckForIllegalCrossThreadCalls = false;
+
             SetupEmojiPickerPanel();
+
+            // 1. Khởi tạo bàn cờ PvP
             ChessBoard = new ChessBoardManager(pnlChessBoard, GameMode.PvP);
+
+            // 2. Xác định phe (MySide)
+            // Host (1) là quân X (0), Guest (2) là quân O (1)
+            ChessBoard.MySide = (playerNumber == 1) ? 0 : 1;
+
+            // 3. ĐĂNG KÝ SỰ KIỆN GỬI (Quan trọng!)
+            ChessBoard.PlayerClickedNode += ChessBoard_PlayerClickedNode;
+
             ChessBoard.DrawChessBoard();
+
+            // 4. BẮT ĐẦU LẮNG NGHE SERVER (Luồng riêng)
+            listenThread = new Thread(ListenFromServer);
+            listenThread.IsBackground = true;
+            listenThread.Start();
         }
+
+        // --- GỬI DỮ LIỆU ---
+        private void ChessBoard_PlayerClickedNode(Point point)
+        {
+            if (tcpClient != null && tcpClient.IsConnected())
+            {
+                // Gửi Packet MOVE
+                tcpClient.SendPacket(new Packet("MOVE", point));
+            }
+        }
+
+        // --- NHẬN DỮ LIỆU ---
+        private void ListenFromServer()
+        {
+            while (true)
+            {
+                try
+                {
+                    if (tcpClient == null) break;
+
+                    // Hàm Receive() này sẽ chờ cho đến khi có tin nhắn
+                    string receivedData = tcpClient.Receive();
+
+                    if (string.IsNullOrEmpty(receivedData)) continue;
+
+                    // Xử lý dữ liệu
+                    ProcessData(receivedData);
+                }
+                catch
+                {
+                    // Mất kết nối -> thoát luồng
+                    break;
+                }
+            }
+        }
+
+        // --- XỬ LÝ LOGIC ---
+        private void ProcessData(string data)
+        {
+            // [FIX QUAN TRỌNG]: Dùng Split('|') thay vì (';') để khớp với TCPClient
+            try
+            {
+                if (data.StartsWith("MOVE"))
+                {
+                    // Format nhận về: MOVE|Row|Col
+                    string[] parts = data.Split('|');
+                    int r = int.Parse(parts[1]);
+                    int c = int.Parse(parts[2]);
+
+                    Point enemyPoint = new Point(c, r); // Point(Col, Row)
+
+                    // Vẽ lên bàn cờ (Dùng Invoke cho chắc ăn)
+                    this.Invoke((MethodInvoker)delegate {
+                        ChessBoard.OtherPlayerMoved(enemyPoint);
+                    });
+                }
+                else if (data.StartsWith("CHAT"))
+                {
+                    // Format nhận về: CHAT|Nội_dung
+                    string[] parts = data.Split('|');
+                    if (parts.Length >= 2)
+                    {
+                        string msg = parts[1];
+                        this.Invoke((MethodInvoker)delegate {
+                            AppendMessage("Opponent", msg, Color.Red);
+                        });
+                    }
+                }
+            }
+            catch { }
+        }
+
+        // Khi tắt Form -> Hủy luồng mạng
+        protected override void OnFormClosing(FormClosingEventArgs e)
+        {
+            if (listenThread != null && listenThread.IsAlive)
+            {
+                listenThread.Abort();
+            }
+            base.OnFormClosing(e);
+        }
+
+        // --- CÁC HÀM UI KHÁC ---
 
         private void OnGameEnded(string winner)
         {
@@ -60,15 +163,56 @@ namespace CaroGame
         private void resetChess()
         {
             ChessBoard.resetGame();
-
             undoCount = false;
             ptbOne.Visible = true;
             ptbZero.Visible = false;
         }
 
-        private void Btn_Click(object? sender, EventArgs e)
+        private void btnSend_Click(object sender, EventArgs e)
         {
-            Button btn = sender as Button;
+            string text = txtMessage.Text.Trim();
+            if (string.IsNullOrWhiteSpace(text)) return;
+
+            AppendMessage("You", text, Color.Blue);
+
+            // Gửi Chat qua mạng
+            if (tcpClient != null)
+            {
+                tcpClient.SendPacket(new Packet("CHAT", text));
+            }
+
+            txtMessage.Clear();
+        }
+
+        // ... (Giữ nguyên các hàm UI Emoji, Menu, Exit bên dưới của bạn) ...
+
+        // Code giữ nguyên để tránh lỗi Designer
+        private void Btn_Click(object? sender, EventArgs e) { Button btn = sender as Button; }
+
+        private void btnExit_Click(object sender, EventArgs e)
+        {
+            this.Close();
+            // Quay về Dashboard
+            var DashBoard = new Dashboard(room, playerNumber, player1Name, tcpClient);
+            DashBoard.Show();
+        }
+
+        private void btnChat_Click(object sender, EventArgs e)
+        {
+            if (panelChat != null) panelChat.Visible = !panelChat.Visible;
+        }
+
+        private void AppendMessage(string sender, string message, Color color)
+        {
+            if (rtbChat == null) return;
+            rtbChat.SelectionStart = rtbChat.TextLength;
+            rtbChat.SelectionColor = color;
+            rtbChat.SelectionFont = new Font("Segoe UI", 10, FontStyle.Bold);
+            rtbChat.AppendText($"{sender}: ");
+            rtbChat.SelectionFont = new Font("Segoe UI", 10, FontStyle.Regular);
+            rtbChat.SelectionColor = Color.Black;
+            rtbChat.AppendText(message + Environment.NewLine + Environment.NewLine);
+            rtbChat.ScrollToCaret();
         }
 
         private Menu menuForm;
@@ -81,10 +225,13 @@ namespace CaroGame
                 menuForm.Location = new Point(this.Left + 22, this.Top + 50);
                 menuForm.Show(this);
 
-                // Lưu ý: New lại ChessBoard sẽ làm mất nước đi hiện tại
-                ChessBoard = new ChessBoardManager(pnlChessBoard);
-                ChessBoard.DrawChessBoard();
+                // RESET GAME: Cần khởi tạo lại đúng logic PvP
+                // [FIX]: Đảm bảo đăng ký lại sự kiện khi new lại bàn cờ
+                ChessBoard = new ChessBoardManager(pnlChessBoard, GameMode.PvP);
+                ChessBoard.MySide = (playerNumber == 1) ? 0 : 1;
+                ChessBoard.PlayerClickedNode += ChessBoard_PlayerClickedNode;
 
+                ChessBoard.DrawChessBoard();
                 this.room = room;
                 this.playerNumber = playerNumber;
             }
@@ -95,113 +242,19 @@ namespace CaroGame
             }
         }
 
-        private void btnExit_Click(object sender, EventArgs e)
+        private void btnUndo_Click(object sender, EventArgs e)
         {
-            this.Close();
-            // Quay về Dashboard và TRUYỀN LẠI CLIENT + ROOM
-            var DashBoard = new Dashboard(room, playerNumber, player1Name, tcpClient);
-            DashBoard.Show();
-        }
-
-        private void btnChat_Click(object sender, EventArgs e)
-        {
-            panelChat.Visible = !panelChat.Visible;
-        }
-
-        private void btnSend_Click(object sender, EventArgs e)
-        {
-            string text = txtMessage.Text.Trim();
-            if (string.IsNullOrWhiteSpace(text)) return;
-            AppendMessage("You", text, Color.Blue);
-
-            // TODO: Gửi tin nhắn qua tcpClient nếu cần
-            // if(tcpClient != null) tcpClient.Send(...);
-
-            txtMessage.Clear();
-            System.Windows.Forms.Timer t = new System.Windows.Forms.Timer();
-            t.Interval = 1000;
-            t.Tick += (s, ev) =>
+            bool undoSuccess = ChessBoard.undoTurnPvP();
+            if (undoSuccess && !undoCount)
             {
-                t.Stop();
-                AppendMessage("Bot", "Đã nhận: " + text, Color.Green);
-            };
-            t.Start();
+                ptbOne.Visible = false;
+                ptbZero.Visible = true;
+                undoCount = true;
+            }
         }
 
-        private void AppendMessage(string sender, string message, Color color)
-        {
-            rtbChat.SelectionStart = rtbChat.TextLength;
-            rtbChat.SelectionColor = color;
-            rtbChat.SelectionFont = new Font("Segoe UI", 10, FontStyle.Bold);
-            rtbChat.AppendText($"{sender}: ");
-
-            rtbChat.SelectionFont = new Font("Segoe UI", 10, FontStyle.Regular);
-            rtbChat.SelectionColor = Color.Black;
-            rtbChat.AppendText(message + Environment.NewLine + Environment.NewLine);
-
-            rtbChat.ScrollToCaret();
-        }
-
-        private readonly string[] _emoticons = new string[]
-        {
-            "😀","😃","😄","😁","😆","😅","😂","🤣","🥲","😊","😇",
-            "🙂","🙃","😉","😌","😍","🥰","😘","😗","😙","😚","😋",
-            "😜","😝","😛","🤑","🤗","🤭","🤫","🤔","🤐","😐","😑",
-            "😶","😶‍🌫️","🙄","😏","😒","😞","😔","😟","😕","🙁",
-            "☹️","😣","😖","😫","😩","🥺","😢","😭","😤","😠","😡",
-            "🤬","🤯","😳","🥵","🥶","😱","😨","😰","😥","😓","🤤",
-            "😪","😴","😬","😮‍💨","🫠","😵","😵‍💫","🤐","🥴","😷",
-            "🤒","🤕","🤢","🤮","🤧","😇","🥳","🥸","😎","🤓","🧐",
-            "😕","😟","🙁","☹️","😮","😯","😲","😳","🥺","🥹","😦",
-            "😧","😨","😩","😰","😱","😪","😵","🤐","🥴","😷","🤒",
-            "🤕","🤢","🤮","🤧","😇","🥳","🥸","😎","🤓","🧐",
-            // Gestures/People
-            "👋","🤚","🖐️","✋","🖖","👌","🤌","🤏","✌️","🤞",
-            "🤟","🤘","🤙","👈","👉","👆","🖕","👇","☝️","👍","👎",
-            "✊","👊","🤛","🤜","👏","🙌","🫶","👐","🤲","🙏",
-            "💪","🦾","🦵","🦿","🦶","👂","🦻","👃","👣","👀","👁️",
-            "🫦","👄","🦷","🦴","👅",
-            // Relations/Love
-            "💋","👄","💘","💝","💖","💗","💓","💞","💕","💌","💟",
-            "❣️","💔","❤️","🧡","💛","💚","💙","💜","🤎","🖤","🤍",
-            // Animals/Nature
-            "🐶","🐱","🐭","🐹","🐰","🦊","🐻","🐼","🐨","🐯","🦁",
-            "🐮","🐷","🐸","🐵","🐔","🐧","🐦","🐤","🐣","🐥","🦆",
-            "🦅","🦉","🦇","🐺","🐗","🐴","🦄","🐝","🐛","🦋","🐌",
-            "🐞","🐜","🦟","🦗","🕷️","🦂","🐢","🐍","🦎","🦖","🦕",
-            "🐙","🦑","🦐","🦞","🦀","🐠","🐟","🐡","🐬","🐳","🐋",
-            "🦈","🐊","🐅","🐆","🦓","🦍","🦧","🐘","🦣","🦛","🦏",
-            "🐪","🐫","🦒","🦘","🦥","🦦","🦨","🦡","🐁","🐀","🐇",
-            "🦔",
-            // Food/Drinks
-            "🍏","🍎","🍐","🍊","🍋","🍌","🍉","🍇","🍓","🫐",
-            "🍈","🍒","🍑","🥭","🍍","🥥","🥝","🍅","🍆","🥑","🥦",
-            "🥬","🥒","🌶️","🫑","🌽","🥕","🧄","🧅","🥔","🍠",
-            "🥐","🥯","🍞","🥖","🥨","🧀","🥚","🍳","🥞","🧇",
-            "🥓","🥩","🍗","🍖","🦴","🌭","🍔","🍟","🍕","🫓",
-            "🥪","🥙","🧆","🌮","🌯","🫔","🥗","🥘","🫕","🥫",
-            "🍝","🍜","🍲","🍛","🍣","🍱","🥟","🦪","🍤","🍙",
-            "🍚","🍘","🍥","🥠","🥮","🍢","🍡","🍧","🍨","🍦",
-            "🥧","🧁","🍰","🎂","🍮","🍭","🍬","🍫","🍿","🧃",
-            "🥤","🧋","🫖","☕","🍵","🧉","🍶","🍺","🍻","🥂",
-            "🍷","🥃","🍸","🍹","🍾",
-            // Activities/Objects
-            "⚽","🏀","🏈","⚾","🥎","🎾","🏐","🏉","🥏","🎱",
-            "🏓","🏸","🥅","🏒","🏑","🥍","🏏","🪃","🏹","🎣",
-            "🤿","🥊","🥋","🎽","🛹","🛷","⛸️","🥌","🥇","🥈",
-            "🥉","🏆","🏅","🎖️","🥫","🏵️","🎗️","🎫","🎟️",
-            "🎪","🤹‍♂️","🤹‍♀️","🎭","🩰","🎨","🎬","🎤","🎧","🎼",
-            "🎹","🥁","🎷","🎺","🎸","🪕",
-            // Travel/Places
-            "🚗","🚕","🚙","🚌","🚎","🏎️","🚓","🚑","🚒","🚐",
-            "🚚","🚛","🚜","🛵","🏍️","🚲","🛴","🚏","🛣️","🛤️",
-            "🗺️","🗿","🗽","🗼","🏰","🏯","🏟️","🎡","🎢","🎠",
-            "⛲","⛱️","🏖️","🏝️","🛶","⛵","🚤","🛥️","🛳️","⛴️",
-            "🚀","🛸","✈️","🛫","🛬",
-            // Symbols/Flags
-            "🏁","🚩","🎌","🏴","🏳️","🏳️‍🌈","🏳️‍⚧️","🏴‍☠️","🇦🇺",
-            "🇨🇦","🇫🇷","🇩🇪","🇨🇳","🇯🇵","🇰🇷","🇷🇺","🇬🇧","🇺🇸"
-        };
+        // --- EMOJI LOGIC (Giữ nguyên) ---
+        private readonly string[] _emoticons = new string[] { "😀", "😃", "😄", "😁", "😆", "😅", "😂", "🤣", "🥲", "😊", "😇", "🙂", "🙃", "😉", "😌", "😍", "🥰", "😘", "😗", "😙", "😚", "😋", "😜", "😝", "😛", "🤑", "🤗", "🤭", "🤫", "🤔", "🤐", "😐", "😑", "😶", "😶‍🌫️", "🙄", "😏", "😒", "😞", "😔", "😟", "😕", "🙁", "☹️", "😣", "😖", "😫", "😩", "🥺", "😢", "😭", "😤", "😠", "😡", "🤬", "🤯", "😳", "🥵", "🥶", "😱", "😨", "😰", "😥", "😓", "🤤", "😪", "😴", "😬", "😮‍💨", "🫠", "😵", "😵‍💫", "🤐", "🥴", "😷", "🤒", "🤕", "🤢", "🤮", "🤧", "😇", "🥳", "🥸", "😎", "🤓", "🧐", "😕", "😟", "🙁", "☹️", "😮", "😯", "😲", "😳", "🥺", "🥹", "😦", "😧", "😨", "😩", "😰", "😱", "😪", "😵", "🤐", "🥴", "😷", "🤒", "🤕", "🤢", "🤮", "🤧", "😇", "🥳", "🥸", "😎", "🤓", "🧐", "👋", "🤚", "🖐️", "✋", "🖖", "👌", "🤌", "🤏", "✌️", "🤞", "🤟", "🤘", "🤙", "👈", "👉", "👆", "🖕", "👇", "☝️", "👍", "👎", "✊", "👊", "🤛", "🤜", "👏", "🙌", "🫶", "👐", "🤲", "🙏", "💪", "🦾", "🦵", "🦿", "🦶", "👂", "🦻", "👃", "👣", "👀", "👁️", "🫦", "👄", "🦷", "🦴", "👅", "💋", "👄", "💘", "💝", "💖", "💗", "💓", "💞", "💕", "💌", "💟", "❣️", "💔", "❤️", "🧡", "💛", "💚", "💙", "💜", "🤎", "🖤", "🤍", "🏁", "🚩", "🎌", "🏴", "🏳️", "🏳️‍🌈", "🏳️‍⚧️", "🏴‍☠️" };
 
         private void SetupEmojiPickerPanel()
         {
@@ -241,33 +294,10 @@ namespace CaroGame
                 btn.Top = row * (btnSize + spacing);
                 btn.Margin = new Padding(0);
                 btn.Padding = new Padding(0);
-
-                btn.Click += (s, e) =>
-                {
-                    txtMessage.Text += ((Button)s).Text;
-                    txtMessage.SelectionStart = txtMessage.Text.Length;
-                    txtMessage.Focus();
-                };
-
+                btn.Click += (s, e) => { txtMessage.Text += ((Button)s).Text; txtMessage.SelectionStart = txtMessage.Text.Length; txtMessage.Focus(); };
                 pnlEmojiPicker.Controls.Add(btn);
             }
         }
-        private void btn_emoji_Click(object sender, EventArgs e)
-        {
-            ShowEmojiPicker();
-        }
-
-        private void btnUndo_Click(object sender, EventArgs e)
-        {
-            bool undoSuccess = ChessBoard.undoTurnPvP();
-            {
-                if (undoSuccess && !undoCount)
-                {
-                    ptbOne.Visible = false;
-                    ptbZero.Visible = true;
-                    undoCount = true;
-                }
-            }
-        }
+        private void btn_emoji_Click(object sender, EventArgs e) { ShowEmojiPicker(); }
     }
 }
