@@ -133,13 +133,11 @@ namespace CaroGame
             };
         }
 
+        public event Action OnOpenUserInfo;
+
         private void btnSettings_Click(object sender, EventArgs e)
         {
-            // Cần truyền Client vào UserInfo để đổi pass được
-            var userInfoForm = new UserInfo(pv, _client);
-            userInfoForm.FormClosed += (s, args) => this.Show();
-            this.Hide();
-            userInfoForm.Show();
+            OnOpenUserInfo?.Invoke();
         }
 
         // --- NÚT PLAY INSTANT (QUICK MATCH) ---

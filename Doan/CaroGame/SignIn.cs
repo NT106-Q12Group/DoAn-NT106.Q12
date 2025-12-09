@@ -13,7 +13,6 @@ namespace CaroGame
         private bool _signingIn = false;
         private string _currentUser = "";
 
-        // --- CẬP NHẬT IP AWS CỦA BẠN TẠI ĐÂY ---
         public SignIn() : this(new TCPClient("3.230.162.159", 25565)) { }
 
         public SignIn(TCPClient sharedClient)
@@ -27,7 +26,6 @@ namespace CaroGame
 
             cb_showpsw.CheckedChanged += cb_showpsw_CheckedChanged;
 
-            // Xử lý chặn phím Space
             tb_username.KeyPress += (s, e) =>
             {
                 if (char.IsWhiteSpace(e.KeyChar))
@@ -80,7 +78,6 @@ namespace CaroGame
 
             try
             {
-                // Validate Input
                 if (tb_username.Text == PH_USERNAME || string.IsNullOrWhiteSpace(tb_username.Text))
                 {
                     MessageBox.Show("Please enter your username!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -95,17 +92,15 @@ namespace CaroGame
                     return;
                 }
 
-                // Kết nối tới Server AWS
                 if (!_client.IsConnected())
                 {
                     if (!_client.Connect())
                     {
-                        MessageBox.Show("Cannot connect to AWS Server (3.230.162.159).\nPlease check your internet connection.", "Connection Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        MessageBox.Show("Cannot connect to server. Please check if the server is running.", "Connection Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         return;
                     }
                 }
 
-                // Gửi lệnh Login
                 string loginResp = _client.Login(tb_username.Text.Trim(), tb_psw.Text);
                 var p1 = loginResp.Split('|');
 
@@ -117,7 +112,6 @@ namespace CaroGame
                     string email = "";
                     string birthday = "";
 
-                    // Lấy thêm thông tin User
                     string getResp = _client.GetUser(uname);
                     var p2 = getResp.Split('|');
                     if (p2.Length > 0 && p2[0].Equals("SUCCESS", StringComparison.OrdinalIgnoreCase))
@@ -126,17 +120,39 @@ namespace CaroGame
                         birthday = p2.Length > 3 ? p2[3] : "";
                     }
 
-                    // --- 1. BẬT CHẾ ĐỘ NGHE TIN NHẮN ---
-                    _client.StartListening();
+                    var pv = new PlayerView
+                    {
+                        PlayerID = 0,
+                        PlayerName = uname,
+                        Email = email,
+                        Birthday = birthday
+                    };
 
-                    MessageBox.Show("Signed in successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    var Dash = new Dashboard(uname);
 
-                    // --- 2. TRUYỀN CLIENT ĐÃ KẾT NỐI SANG DASHBOARD ---
-                    var Dash = new Dashboard(uname, _client);
+                    Dash.OnOpenUserInfo += () =>
+                    {
+                        var userInfo = new UserInfo(pv, _client);
+
+                        // Khi UserInfo BACK → callback về Dashboard
+                        userInfo.OnBack += (updatedPv) =>
+                        {
+                            // cập nhật player view lại Dashboard
+                            pv = updatedPv;
+
+                            Dash.Show();
+                        };
+
+                        Dash.Hide();
+                        userInfo.Show();
+                    };
 
                     Dash.FormClosed += (s, _) => Close();
                     Hide();
                     Dash.Show();
+
+
+                    MessageBox.Show("Signed in successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
                 else
                 {

@@ -37,12 +37,9 @@
             lblEmailUInfo = new Label();
             lblBirthUinfo = new Label();
             label4 = new Label();
-            lblFullNameUInfo = new Label();
-            tb_fullname = new TextBox();
             tb_password = new TextBox();
             lblPasswordUinfo = new Label();
             cb_showcfpswUInfo = new CheckBox();
-            btnEditFullName = new Button();
             btnEditUsername = new Button();
             btnEditPassword = new Button();
             btnEditEmail = new Button();
@@ -51,20 +48,11 @@
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             SuspendLayout();
             // 
-            // tb_fullname
-            // 
-            tb_fullname.BorderStyle = BorderStyle.FixedSingle;
-            tb_fullname.Font = new Font("Segoe UI", 10F);
-            tb_fullname.Location = new Point(27, 240);
-            tb_fullname.Name = "tb_fullname";
-            tb_fullname.Size = new Size(382, 30);
-            tb_fullname.TabIndex = 0;
-            // 
             // tb_username
             // 
             tb_username.BorderStyle = BorderStyle.FixedSingle;
             tb_username.Font = new Font("Segoe UI", 10F);
-            tb_username.Location = new Point(27, 308);
+            tb_username.Location = new Point(27, 247);
             tb_username.Margin = new Padding(3, 4, 3, 4);
             tb_username.Name = "tb_username";
             tb_username.ReadOnly = true;
@@ -75,7 +63,7 @@
             // 
             tb_email.BorderStyle = BorderStyle.FixedSingle;
             tb_email.Font = new Font("Segoe UI", 10F);
-            tb_email.Location = new Point(27, 448);
+            tb_email.Location = new Point(27, 387);
             tb_email.Margin = new Padding(3, 4, 3, 4);
             tb_email.Name = "tb_email";
             tb_email.ReadOnly = true;
@@ -86,7 +74,7 @@
             // 
             tb_birthdate.BorderStyle = BorderStyle.FixedSingle;
             tb_birthdate.Font = new Font("Segoe UI", 10F);
-            tb_birthdate.Location = new Point(27, 518);
+            tb_birthdate.Location = new Point(27, 457);
             tb_birthdate.Margin = new Padding(3, 4, 3, 4);
             tb_birthdate.Name = "tb_birthdate";
             tb_birthdate.ReadOnly = true;
@@ -96,7 +84,7 @@
             // btn_signout
             // 
             btn_signout.Cursor = Cursors.Hand;
-            btn_signout.Location = new Point(124, 570);
+            btn_signout.Location = new Point(124, 509);
             btn_signout.Margin = new Padding(3, 4, 3, 4);
             btn_signout.Name = "btn_signout";
             btn_signout.Size = new Size(86, 31);
@@ -120,7 +108,7 @@
             // 
             lblUsernameUInfo.AutoSize = true;
             lblUsernameUInfo.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
-            lblUsernameUInfo.Location = new Point(27, 281);
+            lblUsernameUInfo.Location = new Point(27, 220);
             lblUsernameUInfo.Name = "lblUsernameUInfo";
             lblUsernameUInfo.Size = new Size(89, 23);
             lblUsernameUInfo.TabIndex = 6;
@@ -130,7 +118,7 @@
             // 
             lblEmailUInfo.AutoSize = true;
             lblEmailUInfo.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
-            lblEmailUInfo.Location = new Point(27, 421);
+            lblEmailUInfo.Location = new Point(27, 360);
             lblEmailUInfo.Name = "lblEmailUInfo";
             lblEmailUInfo.Size = new Size(54, 23);
             lblEmailUInfo.TabIndex = 7;
@@ -140,7 +128,7 @@
             // 
             lblBirthUinfo.AutoSize = true;
             lblBirthUinfo.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
-            lblBirthUinfo.Location = new Point(27, 491);
+            lblBirthUinfo.Location = new Point(27, 430);
             lblBirthUinfo.Name = "lblBirthUinfo";
             lblBirthUinfo.Size = new Size(50, 23);
             lblBirthUinfo.TabIndex = 8;
@@ -156,21 +144,11 @@
             label4.TabIndex = 9;
             label4.Text = "User Infomation";
             // 
-            // lblFullNameUInfo
-            // 
-            lblFullNameUInfo.AutoSize = true;
-            lblFullNameUInfo.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
-            lblFullNameUInfo.Location = new Point(27, 212);
-            lblFullNameUInfo.Name = "lblFullNameUInfo";
-            lblFullNameUInfo.Size = new Size(91, 23);
-            lblFullNameUInfo.TabIndex = 10;
-            lblFullNameUInfo.Text = "Full Name";
-            // 
             // tb_password
             // 
             tb_password.BorderStyle = BorderStyle.FixedSingle;
             tb_password.Font = new Font("Segoe UI", 10F);
-            tb_password.Location = new Point(27, 379);
+            tb_password.Location = new Point(27, 318);
             tb_password.Name = "tb_password";
             tb_password.Size = new Size(382, 30);
             tb_password.TabIndex = 11;
@@ -179,7 +157,7 @@
             // 
             lblPasswordUinfo.AutoSize = true;
             lblPasswordUinfo.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
-            lblPasswordUinfo.Location = new Point(27, 353);
+            lblPasswordUinfo.Location = new Point(27, 292);
             lblPasswordUinfo.Name = "lblPasswordUinfo";
             lblPasswordUinfo.Size = new Size(85, 23);
             lblPasswordUinfo.TabIndex = 12;
@@ -189,28 +167,12 @@
             // 
             cb_showcfpswUInfo.AutoSize = true;
             cb_showcfpswUInfo.Cursor = Cursors.Hand;
-            cb_showcfpswUInfo.Location = new Point(275, 352);
+            cb_showcfpswUInfo.Location = new Point(275, 291);
             cb_showcfpswUInfo.Name = "cb_showcfpswUInfo";
             cb_showcfpswUInfo.Size = new Size(134, 24);
             cb_showcfpswUInfo.TabIndex = 13;
             cb_showcfpswUInfo.Text = "Show password";
             cb_showcfpswUInfo.UseVisualStyleBackColor = true;
-            // 
-            // btnEditFullName
-            // 
-            btnEditFullName.BackColor = Color.Transparent;
-            btnEditFullName.BackgroundImage = Properties.Resources.edit;
-            btnEditFullName.BackgroundImageLayout = ImageLayout.Stretch;
-            btnEditFullName.Cursor = Cursors.Hand;
-            btnEditFullName.FlatAppearance.BorderSize = 0;
-            btnEditFullName.FlatAppearance.MouseDownBackColor = Color.LightBlue;
-            btnEditFullName.FlatAppearance.MouseOverBackColor = Color.LightBlue;
-            btnEditFullName.FlatStyle = FlatStyle.Flat;
-            btnEditFullName.Location = new Point(418, 238);
-            btnEditFullName.Name = "btnEditFullName";
-            btnEditFullName.Size = new Size(30, 29);
-            btnEditFullName.TabIndex = 14;
-            btnEditFullName.UseVisualStyleBackColor = false;
             // 
             // btnEditUsername
             // 
@@ -221,7 +183,7 @@
             btnEditUsername.FlatAppearance.MouseDownBackColor = Color.LightBlue;
             btnEditUsername.FlatAppearance.MouseOverBackColor = Color.LightBlue;
             btnEditUsername.FlatStyle = FlatStyle.Flat;
-            btnEditUsername.Location = new Point(418, 306);
+            btnEditUsername.Location = new Point(418, 245);
             btnEditUsername.Name = "btnEditUsername";
             btnEditUsername.Size = new Size(30, 29);
             btnEditUsername.TabIndex = 15;
@@ -236,7 +198,7 @@
             btnEditPassword.FlatAppearance.MouseDownBackColor = Color.LightBlue;
             btnEditPassword.FlatAppearance.MouseOverBackColor = Color.LightBlue;
             btnEditPassword.FlatStyle = FlatStyle.Flat;
-            btnEditPassword.Location = new Point(418, 377);
+            btnEditPassword.Location = new Point(418, 316);
             btnEditPassword.Name = "btnEditPassword";
             btnEditPassword.Size = new Size(30, 29);
             btnEditPassword.TabIndex = 16;
@@ -251,7 +213,7 @@
             btnEditEmail.FlatAppearance.MouseDownBackColor = Color.LightBlue;
             btnEditEmail.FlatAppearance.MouseOverBackColor = Color.LightBlue;
             btnEditEmail.FlatStyle = FlatStyle.Flat;
-            btnEditEmail.Location = new Point(418, 446);
+            btnEditEmail.Location = new Point(418, 385);
             btnEditEmail.Name = "btnEditEmail";
             btnEditEmail.Size = new Size(30, 29);
             btnEditEmail.TabIndex = 17;
@@ -266,7 +228,7 @@
             btnEditBirth.FlatAppearance.MouseDownBackColor = Color.LightBlue;
             btnEditBirth.FlatAppearance.MouseOverBackColor = Color.LightBlue;
             btnEditBirth.FlatStyle = FlatStyle.Flat;
-            btnEditBirth.Location = new Point(418, 516);
+            btnEditBirth.Location = new Point(418, 455);
             btnEditBirth.Name = "btnEditBirth";
             btnEditBirth.Size = new Size(30, 29);
             btnEditBirth.TabIndex = 18;
@@ -275,7 +237,7 @@
             // btnBack
             // 
             btnBack.Cursor = Cursors.Hand;
-            btnBack.Location = new Point(264, 570);
+            btnBack.Location = new Point(264, 509);
             btnBack.Margin = new Padding(3, 4, 3, 4);
             btnBack.Name = "btnBack";
             btnBack.Size = new Size(86, 31);
@@ -289,18 +251,15 @@
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.LightBlue;
-            ClientSize = new Size(470, 614);
+            ClientSize = new Size(470, 555);
             Controls.Add(btnBack);
             Controls.Add(btnEditBirth);
             Controls.Add(btnEditEmail);
             Controls.Add(btnEditPassword);
             Controls.Add(btnEditUsername);
-            Controls.Add(btnEditFullName);
             Controls.Add(cb_showcfpswUInfo);
             Controls.Add(lblPasswordUinfo);
             Controls.Add(tb_password);
-            Controls.Add(tb_fullname);
-            Controls.Add(lblFullNameUInfo);
             Controls.Add(label4);
             Controls.Add(lblBirthUinfo);
             Controls.Add(lblEmailUInfo);
@@ -333,12 +292,9 @@
         private Label lblEmailUInfo;
         private Label lblBirthUinfo;
         private Label label4;
-        private Label lblFullNameUInfo;
-        private TextBox tb_fullname;
         private TextBox tb_password;
         private Label lblPasswordUinfo;
         private CheckBox cb_showcfpswUInfo;
-        private Button btnEditFullName;
         private Button btnEditUsername;
         private Button btnEditPassword;
         private Button btnEditEmail;

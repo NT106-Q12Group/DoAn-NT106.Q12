@@ -10,6 +10,8 @@ namespace CaroGame
         private readonly PlayerView _player;
         private readonly TCPClient _client;
 
+        public Action<PlayerView>? OnBack;
+
         public UserInfo(PlayerView player, TCPClient client)
         {
             InitializeComponent();
@@ -68,7 +70,7 @@ namespace CaroGame
             {
                 MessageBox.Show("Error while signing out: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-        }
+        }   
 
         protected override void OnFormClosing(FormClosingEventArgs e)
         {
@@ -84,7 +86,8 @@ namespace CaroGame
 
         private void btnBack_Click(object sender, EventArgs e)
         {
-            
+            OnBack?.Invoke(_player);
+            this.Close();
         }
     }
 }
