@@ -144,7 +144,7 @@ namespace CaroGame_TCPClient
         public string Register(string fullname, string username, string password, string email, string birthday)
         {
             string hashedPassword = HashUtil.Sha256(password);
-            string request = $"SIGNUP|{fullname}|{username}|{hashedPassword}|{email}|{birthday}";
+            string request = $"SIGNUP|{username}|{hashedPassword}|{email}|{birthday}";
             return SendRequest(request);
         }
 
