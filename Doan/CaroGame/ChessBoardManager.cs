@@ -214,75 +214,76 @@ namespace CaroGame
             }
         }
 
-        public int MySide { get; set; }
+        public int MySide { get; set; } = -1; // -1: Chưa gán, 0: Player 1, 1: Player 2
+
         private async void Btn_Click(object? sender, EventArgs e)
         {
             Button btn = sender as Button;
 
-            // 1. KIỂM TRA ĐIỀU KIỆN CHUNG
-            // Nếu ô đã đánh hoặc Bot đang suy nghĩ (trong PvE) -> Bỏ qua
+            // 1. KIỂM TRA ĐIỀU KIỆN CƠ BẢN
+            // Nếu ô đã đánh hoặc Bot đang suy nghĩ -> Bỏ qua
             if (btn.BackgroundImage != null || isThinking)
                 return;
 
-            // 2. XỬ LÝ ĐÁNH CỜ LÊN GIAO DIỆN
-            // Đánh quân của người chơi hiện tại (X hoặc O)
-            btn.BackgroundImage = Player[CurrentPlayer].Mark;
-            HighlightMove(btn); // Tô màu ô vừa đánh
+            // -----------------------------------------------------------
+            // [QUAN TRỌNG] THÊM ĐOẠN NÀY ĐỂ CHẶN LƯỢT (LOCK TURN)
+            // -----------------------------------------------------------
+            // Nếu đang chơi PvP và Người hiện tại KHÔNG PHẢI LÀ TÔI -> Không được đánh
+            if (CurrentGameMode == GameMode.PvP && CurrentPlayer != MySide)
+            {
+                // Bạn có thể return luôn, hoặc hiện thông báo
+                // MessageBox.Show("Chưa đến lượt của bạn!"); 
+                return;
+            }
+            // -----------------------------------------------------------
 
-            // Lưu vào lịch sử để Undo
+            // 2. XỬ LÝ ĐÁNH CỜ LÊN GIAO DIỆN
+            // (Chỉ khi nào qua được cái if ở trên thì mới được vẽ)
+            btn.BackgroundImage = Player[CurrentPlayer].Mark;
+            HighlightMove(btn);
+
             moveHistory.Push(btn);
             playerHistory.Push(CurrentPlayer);
 
-            // Lấy tọa độ (Dòng, Cột) của ô vừa đánh
             Point p = getChessPoint(btn);
             lastHumanRow = p.Y;
             lastHumanCol = p.X;
 
-            // 3. KIỂM TRA THẮNG THUA NGAY LẬP TỨC
-            // Kiểm tra xem nước đi này có tạo thành 5 ô liên tiếp không
+            // 3. KIỂM TRA THẮNG THUA
             var winCells = getWinningCells(btn);
             if (winCells != null)
             {
                 HighlightWinningCells(winCells);
                 EndGame(Player[CurrentPlayer].Name);
-                return; // Thắng rồi thì dừng, không đổi lượt nữa
+                return;
             }
 
-            // -----------------------------------------------------------
-            // 4. PHÂN CHIA LOGIC TẠI ĐÂY (PvE vs PvP)
-            // -----------------------------------------------------------
+            // 4. PHÂN CHIA LOGIC (PvE vs PvP)
             if (CurrentGameMode == GameMode.PvE)
             {
-                // === LOGIC PvE (Đánh với Bot) ===
-
-                // Nếu người chơi (Player 0) vừa đánh xong -> Đến lượt Bot
+                // === LOGIC PvE ===
                 if (CurrentPlayer == 0)
                 {
-                    CurrentPlayer = 1; // Chuyển lượt sang Bot
-                    isThinking = true; // Khóa bàn cờ lại, không cho người chơi click
+                    CurrentPlayer = 1;
+                    isThinking = true;
 
-                    // Delay nhỏ để giao diện kịp vẽ quân cờ của người chơi trước khi Bot chạy
                     await Task.Delay(100);
-
-                    // Gọi Bot tính toán và đánh
                     await BotPlay();
 
-                    isThinking = false; // Bot đánh xong -> Mở khóa bàn cờ
+                    isThinking = false;
                 }
             }
             else
             {
-                // === LOGIC PvP (Đánh Online) ===
+                // === LOGIC PvP ===
 
-                // 1. Kích hoạt Event để báo ra ngoài Form PvP
-                // Form PvP sẽ bắt sự kiện này để gửi lệnh "MOVE" lên Server
+                // 1. Gửi lệnh đi
                 PlayerClickedNode?.Invoke(p);
 
-                // 2. Đổi lượt nội bộ
-                // (Để chuẩn bị cho việc nhận nước đi từ đối thủ hoặc chặn click tiếp)
+                // 2. Đổi lượt
+                // Sau dòng này, CurrentPlayer sẽ khác MySide -> Bạn sẽ bị khóa không click được nữa
+                // cho đến khi đối thủ đánh và hàm OtherPlayerMoved đổi lượt lại cho bạn.
                 CurrentPlayer = (CurrentPlayer == 0) ? 1 : 0;
-
-                // Lưu ý: Ở chế độ PvP, ta không gọi BotPlay()
             }
         }
 
