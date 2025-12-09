@@ -204,6 +204,34 @@ namespace CaroGame_TCPClient
         {
             Send($"MOVE|{x}|{y}|{roomId}");
         }
+
+        public void SendPacket(Packet packet)
+        {
+            // Chuyển Packet thành chuỗi string theo đúng format Server bạn muốn
+            string data = "";
+            if (packet.Command == "MOVE")
+                data = $"MOVE|{packet.Point.X}|{packet.Point.Y}"; // Lưu ý: Server bạn dùng dấu | hay ; ?
+                                                                  // Trong code cũ bạn dùng |, nên ở đây mình dùng | cho đồng bộ
+            else if (packet.Command == "CHAT")
+                data = $"CHAT|{packet.Message}";
+
+            // Gọi hàm Send có sẵn
+            Send(data);
+        }
+
+        public string Receive()
+        {
+            if (!isConnected || stream == null) return null;
+            try
+            {
+                byte[] buffer = new byte[4096];
+                int bytesRead = stream.Read(buffer, 0, buffer.Length);
+                if (bytesRead > 0)
+                    return Encoding.UTF8.GetString(buffer, 0, bytesRead);
+            }
+            catch { }
+            return null;
+        }
     }
 
     public static class HashUtil
