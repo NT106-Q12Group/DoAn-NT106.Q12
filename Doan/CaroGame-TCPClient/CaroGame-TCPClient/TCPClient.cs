@@ -148,12 +148,20 @@ namespace CaroGame_TCPClient
             return SendRequest(request);
         }
 
+
         public string Login(string username, string password)
         {
             string hashedPassword = HashUtil.Sha256(password);
             string request = $"SIGNIN|{username}|{hashedPassword}";
             return SendRequest(request);
         }
+
+        public string UpdatePassword(string username, string newPassword)
+        {
+            string hashedPassword = HashUtil.Sha256(newPassword);
+            return SendRequest($"UPDATEPASS|{username}|{hashedPassword}");
+        }
+
 
         public string GetUser(string username)
         {
@@ -176,12 +184,6 @@ namespace CaroGame_TCPClient
         public string GetEmail(string username)
         {
             return SendRequest($"GETEMAIL|{username}");
-        }
-
-        public string UpdatePassword(string username, string newPassword)
-        {
-            string hashedPassword = HashUtil.Sha256(newPassword);
-            return SendRequest($"UPDATEPASS|{username}|{hashedPassword}");
         }
 
         public bool IsConnected() => isConnected;
