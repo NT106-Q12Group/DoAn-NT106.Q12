@@ -14,6 +14,7 @@ namespace CaroGame
 
         public Room room;
         public int playerNumber; // 1 = Host (X), 2 = Guest (O)
+        private bool isMyUndoRequest = false;
         private bool undoCount = false;
 
         // Các biến kết nối mạng
@@ -86,20 +87,15 @@ namespace CaroGame
             }
         }
 
-        // --- [QUAN TRỌNG] XỬ LÝ TIN NHẮN TỪ SERVER ---
         private void HandleServerMessage(string data)
         {
             this.Invoke((MethodInvoker)delegate
             {
                 try
                 {
-                    // [DEBUG] Nếu vẫn lỗi, bỏ comment dòng dưới để xem Server gửi gì
-                    // Console.WriteLine("Received: " + data);
-
                     string[] parts = data.Split('|');
                     string command = parts[0];
 
-                    // Trong HandleServerMessage của PvP.cs
                     if (command == "MOVE")
                     {
                         if (parts.Length < 4) return;
@@ -108,50 +104,48 @@ namespace CaroGame
                         int y = int.Parse(parts[2]);
                         int side = int.Parse(parts[3]);
 
-                        // --- [FIX] NẾU SERVER GỬI -1, TỰ ĐỘNG SỬA ---
+                        // --- [FIX LOGIC QUAN TRỌNG] ---
+                        // Nếu Server gửi sai (-1), ta tự tính toán dựa trên số nước đi hiện tại
                         if (side == -1)
                         {
-                            // Logic chữa cháy: 
-                            // Nếu đây là nước đi đầu tiên (bàn cờ chưa có quân nào) -> Chắc chắn là X (0)
-                            // Nếu không, ta tạm thời gán cho phe X (0) hoặc phe đang có lượt (tùy bạn chọn)
-                            // Ở đây mình gán cứng bằng 0 (X) để test, vì thường lỗi này xảy ra ở nước đầu tiên.
-                            side = 0;
+                            // Nếu số quân cờ trên bàn là Chẵn (0, 2, 4...) -> Tới lượt X (0) đánh
+                            // Nếu số quân cờ trên bàn là Lẻ (1, 3, 5...) -> Tới lượt O (1) đánh
+                            // (Vì X luôn đi trước)
+                            side = ChessBoard.MoveCount % 2;
                         }
-                        // --------------------------------------------
+                        // ------------------------------
 
                         ChessBoard.ProcessMove(x, y, side);
                     }
                     else if (command == "CHAT")
                     {
                         if (parts.Length >= 2)
-                        {
                             AppendMessage("Opponent", parts[1], Color.Red);
-                        }
                     }
                     else if (command == "UNDO_SUCCESS")
                     {
-                        // Khi Server đồng ý Undo -> Thực hiện xóa nước cờ
+                        // Thực hiện Undo bàn cờ (cả 2 bên đều chạy lệnh này để xóa quân)
                         ChessBoard.ExecuteUndoPvP();
 
-                        // Cập nhật lại UI nút undo
-                        undoCount = true;
-                        ptbOne.Visible = false;
-                        ptbZero.Visible = true;
+                        // [FIX LỖI UNDO]
+                        // Chỉ trừ lượt undo của người đã gửi yêu cầu
+                        if (isMyUndoRequest)
+                        {
+                            undoCount = true; // Đã dùng quyền undo
+                            ptbOne.Visible = false;
+                            ptbZero.Visible = true;
+
+                            // Reset lại cờ chờ
+                            isMyUndoRequest = false;
+                        }
                     }
                     else if (command == "NEXT_TURN")
                     {
-                        // Server gửi: NEXT_TURN|Username_Cua_Nguoi_Duoc_Di
                         if (parts.Length < 2) return;
-
                         string nextUser = parts[1];
-                        if (nextUser == player1Name) // Nếu tên gửi về là tên mình
-                        {
-                            ChessBoard.IsMyTurn = true;
-                        }
-                        else
-                        {
-                            ChessBoard.IsMyTurn = false;
-                        }
+
+                        // Cập nhật lượt đi chính xác dựa trên tên user server gửi về
+                        ChessBoard.IsMyTurn = (nextUser == player1Name);
                     }
                     else if (command == "OPPONENT_LEFT")
                     {
@@ -161,8 +155,7 @@ namespace CaroGame
                 }
                 catch (Exception ex)
                 {
-                    // [FIX 3] Hiển thị lỗi để biết tại sao không vẽ được
-                    MessageBox.Show("Lỗi Client: " + ex.Message + "\nData nhận được: " + data);
+                    // MessageBox.Show("Lỗi: " + ex.Message);
                 }
             });
         }
@@ -171,10 +164,13 @@ namespace CaroGame
 
         private void btnUndo_Click(object sender, EventArgs e)
         {
-            if (undoCount) return; // Nếu đã dùng quyền undo rồi thì thôi
+            if (undoCount) return; // Nếu đã hết lượt undo thì thôi
 
             if (tcpClient != null)
             {
+                // Đánh dấu là MÌNH đang xin undo
+                isMyUndoRequest = true;
+
                 // Gửi yêu cầu Undo lên Server
                 tcpClient.Send("REQUEST_UNDO");
             }
