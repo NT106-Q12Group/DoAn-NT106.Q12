@@ -39,6 +39,7 @@ namespace CaroGame
         #region Properties
         private Panel chessBoard;
         private Stack<Button> moveHistory = new Stack<Button>();
+        public int MoveCount => moveHistory.Count;
         private Stack<int> playerHistory = new Stack<int>();
         private bool undoAlready = false;
         private bool undoUsedInBot = false;
