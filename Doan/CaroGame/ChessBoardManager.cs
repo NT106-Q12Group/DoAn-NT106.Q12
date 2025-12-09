@@ -42,6 +42,7 @@ namespace CaroGame
         private Stack<int> playerHistory = new Stack<int>();
         private bool undoAlready = false;
         private bool undoUsedInBot = false;
+        public event Action<Point> PlayerClickedNode;
         public event Action<string> GameEnded;
 
         public Panel ChesBoard
@@ -180,65 +181,108 @@ namespace CaroGame
         private bool isThinking = false; // Biến khóa bàn cờ khi Bot đang nghĩ
 
         // Thay thế toàn bộ hàm Btn_Click cũ bằng hàm này
+
+        // [Thêm vào ChessBoardManager.cs]
+
+        public void OtherPlayerMoved(Point point)
+        {
+            // Kiểm tra tọa độ hợp lệ
+            if (point.Y < 0 || point.Y >= matrix.Count || point.X < 0 || point.X >= matrix[0].Count) return;
+
+            Button btn = matrix[point.Y][point.X];
+
+            // Nếu ô đó chưa đánh thì vẽ vào
+            if (btn.BackgroundImage == null)
+            {
+                // Vẽ quân của người chơi hiện tại (đang là lượt đối thủ)
+                btn.BackgroundImage = Player[CurrentPlayer].Mark;
+                HighlightMove(btn);
+
+                moveHistory.Push(btn);
+                playerHistory.Push(CurrentPlayer);
+
+                // Kiểm tra xem đối thủ có thắng không
+                var winCells = getWinningCells(btn);
+                if (winCells != null)
+                {
+                    HighlightWinningCells(winCells);
+                    EndGame(Player[CurrentPlayer].Name);
+                }
+
+                // Đổi lượt lại về mình
+                CurrentPlayer = (CurrentPlayer == 0) ? 1 : 0;
+            }
+        }
+
+        public int MySide { get; set; }
         private async void Btn_Click(object? sender, EventArgs e)
         {
             Button btn = sender as Button;
 
-            // 1. Kiểm tra điều kiện chung
-            // Nếu ô đã đánh hoặc Bot đang nghĩ (trong PvE) -> Bỏ qua
+            // 1. KIỂM TRA ĐIỀU KIỆN CHUNG
+            // Nếu ô đã đánh hoặc Bot đang suy nghĩ (trong PvE) -> Bỏ qua
             if (btn.BackgroundImage != null || isThinking)
                 return;
 
-            // 2. Xử lý đánh cờ lên giao diện
+            // 2. XỬ LÝ ĐÁNH CỜ LÊN GIAO DIỆN
+            // Đánh quân của người chơi hiện tại (X hoặc O)
             btn.BackgroundImage = Player[CurrentPlayer].Mark;
-            HighlightMove(btn);
+            HighlightMove(btn); // Tô màu ô vừa đánh
 
+            // Lưu vào lịch sử để Undo
             moveHistory.Push(btn);
             playerHistory.Push(CurrentPlayer);
 
+            // Lấy tọa độ (Dòng, Cột) của ô vừa đánh
             Point p = getChessPoint(btn);
             lastHumanRow = p.Y;
             lastHumanCol = p.X;
 
-            // 3. Kiểm tra thắng thua ngay lập tức
+            // 3. KIỂM TRA THẮNG THUA NGAY LẬP TỨC
+            // Kiểm tra xem nước đi này có tạo thành 5 ô liên tiếp không
             var winCells = getWinningCells(btn);
             if (winCells != null)
             {
                 HighlightWinningCells(winCells);
                 EndGame(Player[CurrentPlayer].Name);
-                return;
+                return; // Thắng rồi thì dừng, không đổi lượt nữa
             }
 
             // -----------------------------------------------------------
-            // 4. PHÂN CHIA LOGIC TẠI ĐÂY
+            // 4. PHÂN CHIA LOGIC TẠI ĐÂY (PvE vs PvP)
             // -----------------------------------------------------------
             if (CurrentGameMode == GameMode.PvE)
             {
-                // --- LOGIC ĐÁNH VỚI MÁY (CŨ) ---
+                // === LOGIC PvE (Đánh với Bot) ===
 
-                // Nếu người chơi vừa đánh (CurrentPlayer là 0) thì đến lượt Bot
+                // Nếu người chơi (Player 0) vừa đánh xong -> Đến lượt Bot
                 if (CurrentPlayer == 0)
                 {
-                    CurrentPlayer = 1; // Chuyển sang Bot
-                    isThinking = true; // Khóa bàn cờ
+                    CurrentPlayer = 1; // Chuyển lượt sang Bot
+                    isThinking = true; // Khóa bàn cờ lại, không cho người chơi click
 
-                    await Task.Delay(100); // Đợi UI cập nhật
-                    await BotPlay();       // Bot đánh
+                    // Delay nhỏ để giao diện kịp vẽ quân cờ của người chơi trước khi Bot chạy
+                    await Task.Delay(100);
 
-                    isThinking = false; // Mở khóa
+                    // Gọi Bot tính toán và đánh
+                    await BotPlay();
+
+                    isThinking = false; // Bot đánh xong -> Mở khóa bàn cờ
                 }
             }
             else
             {
-                // --- LOGIC ĐÁNH PVP (MỚI) ---
+                // === LOGIC PvP (Đánh Online) ===
 
-                // Đơn giản là đổi lượt người chơi
-                // Nếu đang là 0 thì thành 1, đang là 1 thì thành 0
+                // 1. Kích hoạt Event để báo ra ngoài Form PvP
+                // Form PvP sẽ bắt sự kiện này để gửi lệnh "MOVE" lên Server
+                PlayerClickedNode?.Invoke(p);
+
+                // 2. Đổi lượt nội bộ
+                // (Để chuẩn bị cho việc nhận nước đi từ đối thủ hoặc chặn click tiếp)
                 CurrentPlayer = (CurrentPlayer == 0) ? 1 : 0;
 
-                // Lưu ý: Với PvP Online, bạn có thể cần thêm code gửi tọa độ 'p' 
-                // qua mạng tại đây (thông qua sự kiện).
-                // OnPlayerMoved?.Invoke(p); 
+                // Lưu ý: Ở chế độ PvP, ta không gọi BotPlay()
             }
         }
 
