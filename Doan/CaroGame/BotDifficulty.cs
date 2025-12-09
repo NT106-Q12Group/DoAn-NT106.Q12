@@ -87,8 +87,6 @@ namespace CaroGame
         private void btnExit_Click(object sender, EventArgs e)
         {
             this.Close();
-            var DashBoard = new Dashboard(_playerName);
-            DashBoard.Show();
         }
     }
 }

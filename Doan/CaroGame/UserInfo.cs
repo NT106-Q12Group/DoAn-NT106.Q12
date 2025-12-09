@@ -86,7 +86,6 @@ namespace CaroGame
 
         private void btnBack_Click(object sender, EventArgs e)
         {
-            OnBack?.Invoke(_player);
             this.Close();
         }
     }
