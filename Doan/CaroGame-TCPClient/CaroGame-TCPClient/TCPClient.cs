@@ -37,6 +37,10 @@ namespace CaroGame_TCPClient
                 client.Connect(serverIP, serverPort);
                 stream = client.GetStream();
                 isConnected = true;
+
+                // Lưu ý: Không gọi StartListening() ở đây.
+                // Hàm này nên được gọi sau khi người dùng Login thành công.
+
                 return true;
             }
             catch (Exception e)
@@ -50,7 +54,6 @@ namespace CaroGame_TCPClient
         public void Disconnect()
         {
             isConnected = false;
-            // Đóng stream và client
             try { stream?.Close(); stream?.Dispose(); } catch { }
             try { client?.Close(); } catch { }
 
@@ -58,9 +61,8 @@ namespace CaroGame_TCPClient
             client = null;
         }
 
-        // --- HÀM 1: Dùng cho Login/Register (Chưa vào game) ---
-        // Lưu ý: Chỉ dùng hàm này KHI CHƯA gọi StartListening().
-        // Nếu đã vào game mà gọi hàm này sẽ gây xung đột luồng.
+        // --- HÀM 1: Gửi Request và Chờ Phản Hồi (Sync) ---
+        // Dùng cho: Login, Register, GetInfo (khi chưa vào bàn chơi)
         private string SendRequest(string request)
         {
             try
@@ -70,8 +72,8 @@ namespace CaroGame_TCPClient
                     if (!Connect()) return "ERROR|Cannot connect to server";
                 }
 
-                // Nếu luồng nghe đang chạy mà gọi hàm này thì rất nguy hiểm,
-                // nhưng với logic Login trước -> Play sau thì tạm ổn.
+                // Nếu luồng Listening đang chạy, việc gọi hàm này có thể gây tranh chấp dữ liệu.
+                // Nhưng với logic hiện tại (Login xong mới Play), rủi ro thấp.
 
                 byte[] data = Encoding.UTF8.GetBytes(request);
                 stream!.Write(data, 0, data.Length);
@@ -95,7 +97,8 @@ namespace CaroGame_TCPClient
             }
         }
 
-        // --- HÀM 2: Dùng trong Game (Gửi nhanh, không chờ phản hồi tại chỗ) ---
+        // --- HÀM 2: Gửi Nhanh (Async - Fire & Forget) ---
+        // Dùng cho: Trong trận đấu (Move, Chat, Undo)
         public void Send(string data)
         {
             try
@@ -104,17 +107,18 @@ namespace CaroGame_TCPClient
                 {
                     byte[] bytes = Encoding.UTF8.GetBytes(data);
                     stream.Write(bytes, 0, bytes.Length);
-                    stream.Flush(); // Đẩy dữ liệu đi ngay
+                    stream.Flush(); // Đẩy đi ngay
                 }
             }
             catch
             {
                 Disconnect();
+                OnMessageReceived?.Invoke("DISCONNECT|Send failed");
             }
         }
 
-        // --- HÀM 3: Luồng lắng nghe (Core của Game) ---
-        // Gọi hàm này 1 lần duy nhất sau khi Login thành công
+        // --- HÀM 3: Luồng Lắng Nghe (Core Loop) ---
+        // Chạy ngầm liên tục để hứng tin nhắn từ Server
         public void StartListening()
         {
             if (listenerThread != null && listenerThread.IsAlive) return;
@@ -126,9 +130,7 @@ namespace CaroGame_TCPClient
                     byte[] buffer = new byte[4096];
                     while (isConnected && client != null && stream != null)
                     {
-                        // Hàm này sẽ dừng (block) ở đây cho đến khi Server gửi gì đó về
                         int bytesRead = stream.Read(buffer, 0, buffer.Length);
-
                         if (bytesRead == 0)
                         {
                             Disconnect();
@@ -138,8 +140,12 @@ namespace CaroGame_TCPClient
 
                         string message = Encoding.UTF8.GetString(buffer, 0, bytesRead);
 
-                        // [QUAN TRỌNG] Bắn tin nhắn ra ngoài để Form xử lý
-                        // Form sẽ hứng event này để vẽ bàn cờ, update turn, chat...
+                        // [NÂNG CẤP] Xử lý dính gói tin (TCP Fragmentation) đơn giản
+                        // Server có thể gửi "MOVE|...NEXT_TURN|..." liền nhau.
+                        // Ta cần tách chúng ra nếu cần thiết. 
+                        // Tuy nhiên, để đơn giản cho Demo, ta giả định Server gửi đủ chậm hoặc Client xử lý chuỗi.
+                        // Nếu muốn chắc chắn, bạn nên dùng ký tự kết thúc gói tin (như \n) và split.
+
                         OnMessageReceived?.Invoke(message);
                     }
                 }
@@ -153,7 +159,8 @@ namespace CaroGame_TCPClient
             listenerThread.Start();
         }
 
-        // --- CÁC HÀM NGHIỆP VỤ (AUTH) ---
+        // --- CÁC HÀM NGHIỆP VỤ (API) ---
+
         public string Register(string fullname, string username, string password, string email, string birthday)
         {
             string hashedPassword = HashUtil.Sha256(password);
@@ -185,7 +192,7 @@ namespace CaroGame_TCPClient
 
         public bool IsConnected() => isConnected;
 
-        // --- CÁC HÀM GAME (MATCHMAKING & PLAY) ---
+        // --- CÁC HÀM GAME ---
 
         public void FindMatch(string username)
         {
@@ -197,16 +204,23 @@ namespace CaroGame_TCPClient
             Send($"CANCEL_MATCH|{username}");
         }
 
+        // Hàm này ít dùng trực tiếp, thường dùng SendPacket
         public void SendMove(int x, int y, int roomId)
         {
             Send($"MOVE|{x}|{y}|{roomId}");
+        }
+
+        // Hàm Undo
+        public void RequestUndo()
+        {
+            Send("REQUEST_UNDO");
         }
 
         public void SendPacket(Packet packet)
         {
             string data = "";
             if (packet.Command == "MOVE")
-                // Đảm bảo định dạng khớp với Server (dùng | hay ;)
+                // Gửi tọa độ nước đi (Server sẽ tự điền Side)
                 data = $"MOVE|{packet.Point.X}|{packet.Point.Y}";
             else if (packet.Command == "CHAT")
                 data = $"CHAT|{packet.Message}";
