@@ -226,11 +226,11 @@ namespace CaroGame
             Button btn = sender as Button;
             if (btn == null) return;
 
-            // 1. KIỂM TRA ĐIỀU KIỆN CƠ BẢN
+            // Kiểm tra điều kiện cơ bản: ô đã được đánh chưa
             if (btn.BackgroundImage != null)
                 return;
 
-            // PvE: không cho click khi Bot đang nghĩ
+            // PvE: không cho click khi Bot đang suy nghĩ
             if (CurrentGameMode == GameMode.PvE && isThinking)
                 return;
 
@@ -238,57 +238,55 @@ namespace CaroGame
             if (CurrentGameMode == GameMode.PvP && !IsMyTurn)
                 return;
 
-            // 2. XỬ LÝ ĐÁNH CỜ LÊN GIAO DIỆN
-            int markIndex = CurrentPlayer;
+            // 1. Xử lý nước đi
+            int markIndex = MySide;  // Đảm bảo đánh dấu quân của mình (PvP)
 
-            if (CurrentGameMode == GameMode.PvP)
-            {
-                // Trong PvP, luôn vẽ quân của MÌNH
-                markIndex = MySide;
-            }
-
+            // Nếu là chế độ PvP, dùng MySide để xác định quân mình
             btn.BackgroundImage = Player[markIndex].Mark;
-            HighlightMove(btn);
+            HighlightMove(btn);  // Làm nổi bật nước đi
 
+            // Lưu nước đi vào lịch sử
             moveHistory.Push(btn);
             playerHistory.Push(markIndex);
 
+            // Lấy tọa độ của nước đi
             Point p = getChessPoint(btn);
             lastHumanRow = p.Y;
             lastHumanCol = p.X;
 
-            // 3. KIỂM TRA THẮNG THUA
+            // 2. Kiểm tra thắng thua
             var winCells = getWinningCells(btn);
             if (winCells != null)
             {
-                HighlightWinningCells(winCells);
-                EndGame(Player[markIndex].Name);
+                HighlightWinningCells(winCells);  // Nổi bật các ô thắng
+                EndGame(Player[markIndex].Name);  // Kết thúc trò chơi
                 return;
             }
 
-            // 4. PHÂN CHIA LOGIC (PvE vs PvP)
+            // 3. Logic cho PvE vs PvP
             if (CurrentGameMode == GameMode.PvE)
             {
-                // Logic cũ cho PvE
-                if (CurrentPlayer == 0)
+                // Nếu đang chơi với Bot, Bot sẽ đi sau khi người chơi đánh
+                if (CurrentPlayer == 0)  // Player 1 là người chơi, Bot là Player 2
                 {
-                    CurrentPlayer = 1;
-                    isThinking = true;
+                    CurrentPlayer = 1;  // Đổi lượt cho Bot
+                    isThinking = true;  // Đánh dấu Bot đang suy nghĩ
 
-                    await Task.Delay(100);
-                    await BotPlay();
+                    await Task.Delay(100);  // Đợi một chút để không bị block UI
+                    await BotPlay();  // Bot thực hiện nước đi
 
-                    isThinking = false;
+                    isThinking = false;  // Đánh dấu Bot đã hoàn thành
                 }
             }
-            else // === PvP ===
+            else  // Chế độ PvP
             {
-                // Gửi nước đi lên server và KHÓA lượt lại
+                // Gửi nước đi lên server cho đối thủ và khóa lượt
                 PlayerClickedNode?.Invoke(p);
-                IsMyTurn = false;  // Sau khi gửi đi, đổi lượt lại cho đối thủ
+                IsMyTurn = false;  // Đổi lượt cho đối thủ
+
+                // Chờ đối thủ đi xong rồi mới cho phép mình đi tiếp
             }
         }
-
 
         //Kết thúc trò chơi
         private void EndGame(string winnerName)
