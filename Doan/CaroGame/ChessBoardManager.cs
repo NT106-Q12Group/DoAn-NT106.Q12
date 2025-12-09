@@ -213,7 +213,7 @@ namespace CaroGame
             }
 
             // Đối thủ vừa đi xong -> bây giờ tới lượt MÌNH
-            IsMyTurn = true;
+            IsMyTurn = true;  // Cập nhật lại lượt của người chơi
         }
 
 
@@ -285,8 +285,7 @@ namespace CaroGame
             {
                 // Gửi nước đi lên server và KHÓA lượt lại
                 PlayerClickedNode?.Invoke(p);
-                IsMyTurn = false;
-                // Không cần đổi CurrentPlayer ở đây nữa
+                IsMyTurn = false;  // Sau khi gửi đi, đổi lượt lại cho đối thủ
             }
         }
 
