@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CaroGame_TCPClient;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -17,6 +18,9 @@ namespace CaroGame
         private int playerNumber;
         private Form _userInfoForm;
         private string _loggedInUser;
+        private PlayerView pv;
+        private TCPClient _client;
+
         public Dashboard()
         {
             InitializeComponent();
@@ -96,11 +100,23 @@ namespace CaroGame
             this.Hide();
         }
 
-        public event Action OnOpenUserInfo;
+        private void LoadPlayer(string username, string email, string birthday)
+        {
+            pv = new PlayerView
+            {
+                PlayerID = 0,
+                PlayerName = username,
+                Email = email,
+                Birthday = birthday
+            };
+        }
 
         private void btnSettings_Click(object sender, EventArgs e)
         {
-            OnOpenUserInfo?.Invoke();
+            var userInfoForm = new UserInfo(pv, _client);
+            userInfoForm.FormClosed += (s, args) => this.Show();
+            this.Hide();
+            userInfoForm.Show();
         }
 
         private void btnPlayInstant_Click(object sender, EventArgs e)

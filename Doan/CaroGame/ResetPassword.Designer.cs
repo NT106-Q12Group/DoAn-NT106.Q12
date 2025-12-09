@@ -1,4 +1,4 @@
-﻿namespace CaroGame_TCPClient
+﻿namespace CaroGame
 {
     partial class ResetPassword
     {

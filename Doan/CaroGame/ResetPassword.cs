@@ -9,8 +9,9 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Net.Mail;
 using System.Net;
+using CaroGame_TCPClient;
 
-namespace CaroGame_TCPClient
+namespace CaroGame
 {
     public partial class ResetPassword : Form
     {

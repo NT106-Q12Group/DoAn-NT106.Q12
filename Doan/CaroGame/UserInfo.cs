@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Drawing;
+using CaroGame_TCPClient;
 using System.Windows.Forms;
 
-namespace CaroGame_TCPClient
+namespace CaroGame
 {
     public partial class UserInfo : Form
     {
@@ -81,11 +82,9 @@ namespace CaroGame_TCPClient
             base.OnFormClosing(e);
         }
 
-        public event Action OnBack;
-
         private void btnBack_Click(object sender, EventArgs e)
         {
-            OnBack?.Invoke();
+            
         }
     }
 }

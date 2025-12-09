@@ -1,4 +1,4 @@
-﻿namespace CaroGame_TCPClient
+﻿namespace CaroGame
 {
     partial class UserInfo
     {
@@ -98,7 +98,6 @@
             // 
             // pictureBox1
             // 
-            pictureBox1.BackgroundImage = Properties.Resources.accountCaro1;
             pictureBox1.BackgroundImageLayout = ImageLayout.Stretch;
             pictureBox1.BorderStyle = BorderStyle.Fixed3D;
             pictureBox1.Location = new Point(164, 52);
@@ -199,7 +198,6 @@
             // btnEditFullName
             // 
             btnEditFullName.BackColor = Color.Transparent;
-            btnEditFullName.BackgroundImage = Properties.Resources.editCaro;
             btnEditFullName.BackgroundImageLayout = ImageLayout.Stretch;
             btnEditFullName.Cursor = Cursors.Hand;
             btnEditFullName.FlatAppearance.BorderSize = 0;
@@ -214,7 +212,6 @@
             // 
             // btnEditUsername
             // 
-            btnEditUsername.BackgroundImage = Properties.Resources.editCaro;
             btnEditUsername.BackgroundImageLayout = ImageLayout.Stretch;
             btnEditUsername.Cursor = Cursors.Hand;
             btnEditUsername.FlatAppearance.BorderSize = 0;
@@ -229,7 +226,6 @@
             // 
             // btnEditPassword
             // 
-            btnEditPassword.BackgroundImage = Properties.Resources.editCaro;
             btnEditPassword.BackgroundImageLayout = ImageLayout.Stretch;
             btnEditPassword.Cursor = Cursors.Hand;
             btnEditPassword.FlatAppearance.BorderSize = 0;
@@ -244,7 +240,6 @@
             // 
             // btnEditEmail
             // 
-            btnEditEmail.BackgroundImage = Properties.Resources.editCaro;
             btnEditEmail.BackgroundImageLayout = ImageLayout.Stretch;
             btnEditEmail.Cursor = Cursors.Hand;
             btnEditEmail.FlatAppearance.BorderSize = 0;
@@ -259,7 +254,6 @@
             // 
             // btnEditBirth
             // 
-            btnEditBirth.BackgroundImage = Properties.Resources.editCaro;
             btnEditBirth.BackgroundImageLayout = ImageLayout.Stretch;
             btnEditBirth.Cursor = Cursors.Hand;
             btnEditBirth.FlatAppearance.BorderSize = 0;
