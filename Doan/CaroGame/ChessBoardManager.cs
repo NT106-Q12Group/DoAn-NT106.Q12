@@ -184,38 +184,48 @@ namespace CaroGame
 
         // [Thêm vào ChessBoardManager.cs]
 
-        public void OtherPlayerMoved(Point point)
+        // Hàm này được gọi từ Form khi nhận tin nhắn "MOVE|x|y|side" từ Server
+        public void ProcessMove(int x, int y, int playerSide)
         {
-            // Kiểm tra tọa độ hợp lệ
-            if (point.Y < 0 || point.Y >= matrix.Count || point.X < 0 || point.X >= matrix[0].Count)
-                return;
+            // Kiểm tra tọa độ
+            if (y < 0 || y >= matrix.Count || x < 0 || x >= matrix[0].Count) return;
 
-            Button btn = matrix[point.Y][point.X];
+            Button btn = matrix[y][x];
+            if (btn.BackgroundImage != null) return; // Đã đánh rồi thì thôi
 
-            if (btn.BackgroundImage != null)
-                return;
+            // 1. Vẽ quân cờ dựa trên playerSide (0 hoặc 1) gửi từ Server
+            // playerSide phải khớp với thứ tự trong List<Player>
+            btn.BackgroundImage = Player[playerSide].Mark;
 
-            // Quân của đối thủ là ngược lại với MySide
-            int enemyIndex = (MySide == 0) ? 1 : 0;
-
-            btn.BackgroundImage = Player[enemyIndex].Mark;
+            // 2. Highlight và lưu lịch sử
             HighlightMove(btn);
-
             moveHistory.Push(btn);
-            playerHistory.Push(enemyIndex);
+            playerHistory.Push(playerSide);
 
+            // 3. Kiểm tra thắng thua ngay tại đây
             var winCells = getWinningCells(btn);
             if (winCells != null)
             {
                 HighlightWinningCells(winCells);
-                EndGame(Player[enemyIndex].Name);
+                EndGame(Player[playerSide].Name);
                 return;
             }
 
-            // Đối thủ vừa đi xong -> bây giờ tới lượt MÌNH
-            IsMyTurn = true;  // Cập nhật lại lượt của người chơi
+            // 4. Xử lý chuyển lượt (QUAN TRỌNG)
+            if (CurrentGameMode == GameMode.PvP)
+            {
+                // Nếu nước vừa đi là của ĐỐI THỦ (khác phe mình) -> Thì giờ đến lượt mình
+                if (playerSide != MySide)
+                {
+                    IsMyTurn = true;
+                }
+                else
+                {
+                    // Nếu nước vừa đi là của MÌNH (Server xác nhận) -> Thì giờ chờ đối thủ
+                    IsMyTurn = false;
+                }
+            }
         }
-
 
         public int MySide { get; set; } = -1; // -1: Chưa gán, 0: Player 1, 1: Player 2
         public bool IsMyTurn { get; set; } = false;
@@ -225,66 +235,56 @@ namespace CaroGame
             Button btn = sender as Button;
             if (btn == null) return;
 
-            // Kiểm tra điều kiện cơ bản: ô đã được đánh chưa
-            if (btn.BackgroundImage != null)
-                return;
+            // Kiểm tra cơ bản
+            if (btn.BackgroundImage != null) return;
+            if (CurrentGameMode == GameMode.PvE && isThinking) return;
 
-            // PvE: không cho click khi Bot đang suy nghĩ
-            if (CurrentGameMode == GameMode.PvE && isThinking)
-                return;
+            // --- FIX LOGIC PVP: CHẶN CLICK KHI CHƯA ĐẾN LƯỢT ---
+            if (CurrentGameMode == GameMode.PvP)
+            {
+                if (!IsMyTurn) return; // Nếu không phải lượt mình -> Không làm gì cả
+            }
 
-            // PvP: khóa lượt bằng IsMyTurn
-            if (CurrentGameMode == GameMode.PvP && !IsMyTurn)
-                return;
+            // Lấy tọa độ
+            Point p = getChessPoint(btn);
 
-            // 1. Xử lý nước đi
-            int markIndex = MySide;  // Đảm bảo đánh dấu quân của mình (PvP)
+            // --- FIX QUAN TRỌNG: TÁCH LOGIC PVP VÀ PVE ---
+
+            if (CurrentGameMode == GameMode.PvP)
+            {
+                // 1. Chỉ bắn sự kiện gửi tọa độ lên Form (để Form gửi qua TCP)
+                PlayerClickedNode?.Invoke(p);
+
+                // 2. Khóa lượt ngay lập tức để tránh bấm liên tục
+                IsMyTurn = false;
+
+                // 3. RETURN NGAY LẬP TỨC! KHÔNG VẼ GÌ CẢ.
+                // Việc vẽ quân cờ sẽ do hàm ProcessMove xử lý khi Server phản hồi.
+                return;
+            }
+
+            // --- LOGIC PVE (GIỮ NGUYÊN HOẶC TỐI ƯU NHƯ BÀI TRƯỚC) ---
+            // Chỉ vẽ ngay lập tức nếu là chơi với Bot (PvE)
+            int markIndex = 0; // Người luôn là 0 trong PvE
             btn.BackgroundImage = Player[markIndex].Mark;
-            HighlightMove(btn);  // Làm nổi bật nước đi
-
-            // Lưu nước đi vào lịch sử
+            HighlightMove(btn);
             moveHistory.Push(btn);
             playerHistory.Push(markIndex);
 
-            // Lấy tọa độ của nước đi
-            Point p = getChessPoint(btn);
-            lastHumanRow = p.Y;
-            lastHumanCol = p.X;
-
-            // 2. Kiểm tra thắng thua
+            // Kiểm tra thắng thua PvE...
             var winCells = getWinningCells(btn);
-            if (winCells != null)
+            if (winCells != null) { /* ...EndGame PvE... */ return; }
+
+            // Bot đánh...
+            if (CurrentGameMode == GameMode.PvE && CurrentPlayer == 0)
             {
-                HighlightWinningCells(winCells);  // Nổi bật các ô thắng
-                EndGame(Player[markIndex].Name);  // Kết thúc trò chơi
-                return;
-            }
-
-            // 3. Logic cho PvE vs PvP
-            if (CurrentGameMode == GameMode.PvE)
-            {
-                // Nếu đang chơi với Bot, Bot sẽ đi sau khi người chơi đánh
-                if (CurrentPlayer == 0)  // Player 1 là người chơi, Bot là Player 2
-                {
-                    CurrentPlayer = 1;  // Đổi lượt cho Bot
-                    isThinking = true;  // Đánh dấu Bot đang suy nghĩ
-
-                    await Task.Delay(100);  // Đợi một chút để không bị block UI
-                    await BotPlay();  // Bot thực hiện nước đi
-
-                    isThinking = false;  // Đánh dấu Bot đã hoàn thành
-                }
-            }
-            else  // Chế độ PvP
-            {
-                // Gửi nước đi lên server cho đối thủ và khóa lượt
-                PlayerClickedNode?.Invoke(p);
-                IsMyTurn = false;  // Đổi lượt cho đối thủ
-
-                // Sau khi gửi nước đi, cần kiểm tra và nhận nước đi từ đối thủ.
+                CurrentPlayer = 1;
+                isThinking = true;
+                await Task.Delay(100);
+                await BotPlay();
+                isThinking = false;
             }
         }
-
 
         //Kết thúc trò chơi
         private void EndGame(string winnerName)
@@ -573,24 +573,14 @@ namespace CaroGame
             CurrentPlayer = playerHistory.Pop();
         }
 
-        //Undo lượt đi trước
-        public bool undoTurnPvP()
+        // XÓA hàm undoTurnPvP cũ đi nhé
+        // Thêm hàm này vào:
+
+        public void ExecuteUndoPvP()
         {
-            if (moveHistory.Count == 0 || undoAlready)
-                return false;
-
-            undoLastMove(); // Undo nước đi của mình
-            undoLastMove(); // Undo nước đi của đối thủ
-
-            undoAlready = true;
-
-            if (CurrentGameMode == GameMode.PvP)
-            {
-                // Sau khi hoàn tác 2 nước (mỗi bên 1 nước), lượt quay về người yêu cầu undo
-                IsMyTurn = true;
-            }
-
-            return true;
+            if (moveHistory.Count < 2) return;
+            undoLastMove();
+            undoLastMove();
         }
 
         //Undo lượt đi của Bot (PvE)

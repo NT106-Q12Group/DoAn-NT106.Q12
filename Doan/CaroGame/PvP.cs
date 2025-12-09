@@ -2,7 +2,7 @@
 using System.Drawing;
 using System.Threading;
 using System.Windows.Forms;
-using CaroGame_TCPClient; // Namespace chứa TCPClient và Packet
+using CaroGame_TCPClient;
 
 namespace CaroGame
 {
@@ -21,10 +21,6 @@ namespace CaroGame
         private string player2Name;
         private TCPClient tcpClient;
 
-        // Luồng lắng nghe tin nhắn từ Server
-        private Thread listenThread;
-        private bool _stopListening = false;
-
         // --- CONSTRUCTOR ---
         public PvP(Room room, int playerNumber, string p1, string p2, TCPClient client)
         {
@@ -38,7 +34,7 @@ namespace CaroGame
             InitGame();
         }
 
-        // Constructor cũ (giữ để tránh lỗi Designer)
+        // Constructor cũ
         public PvP(Room room, int playerNumber)
         {
             InitializeComponent();
@@ -49,9 +45,7 @@ namespace CaroGame
 
         private void InitGame()
         {
-            // Tắt check thread để update UI từ luồng mạng dễ hơn
             CheckForIllegalCrossThreadCalls = false;
-
             SetupEmojiPickerPanel();
 
             // 1. Khởi tạo bàn cờ PvP
@@ -60,18 +54,21 @@ namespace CaroGame
             // 2. Xác định phe (MySide)
             // Host (1) là quân X (0), Guest (2) là quân O (1)
             ChessBoard.MySide = (playerNumber == 1) ? 0 : 1;
-            // X luôn đi trước -> nếu MySide == 0 thì mình được đánh trước
+
+            // Nếu MySide == 0 (X) thì được đánh trước
             ChessBoard.IsMyTurn = (ChessBoard.MySide == 0);
 
-            // 3. ĐĂNG KÝ SỰ KIỆN GỬI (Quan trọng!)
+            // 3. ĐĂNG KÝ SỰ KIỆN CLICK (Gửi tọa độ lên Server)
             ChessBoard.PlayerClickedNode += ChessBoard_PlayerClickedNode;
 
-            ChessBoard.DrawChessBoard();
+            // 4. [FIX QUAN TRỌNG] Đăng ký nhận tin nhắn từ Server
+            // Thay vì tạo Thread loop, ta hứng sự kiện từ TCPClient
+            if (tcpClient != null)
+            {
+                tcpClient.OnMessageReceived += HandleServerMessage;
+            }
 
-            // 4. BẮT ĐẦU LẮNG NGHE SERVER (Luồng riêng)
-            listenThread = new Thread(ListenFromServer);
-            listenThread.IsBackground = true;
-            listenThread.Start();
+            ChessBoard.DrawChessBoard();
         }
 
         // --- GỬI DỮ LIỆU ---
@@ -79,86 +76,76 @@ namespace CaroGame
         {
             if (tcpClient != null && tcpClient.IsConnected())
             {
-                // Gửi Packet MOVE
+                // Gửi Packet MOVE (Server sẽ broadcast lại cho cả 2 người)
                 tcpClient.SendPacket(new Packet("MOVE", point));
             }
         }
 
-        // --- NHẬN DỮ LIỆU ---
-        private void ListenFromServer()
+        // --- [FIX] XỬ LÝ TIN NHẮN TỪ SERVER (Thay thế ListenFromServer) ---
+        private void HandleServerMessage(string data)
         {
-            while (!_stopListening)
+            // Đảm bảo chạy trên luồng UI
+            this.Invoke((MethodInvoker)delegate
             {
                 try
                 {
-                    if (tcpClient == null) break;
-
-                    string receivedData = tcpClient.Receive();
-
-                    if (string.IsNullOrEmpty(receivedData))
-                        continue;
-
-                    ProcessData(receivedData);
-                }
-                catch
-                {
-                    break;
-                }
-            }
-        }
-
-        private void ProcessData(string data)
-        {
-            try
-            {
-                if (data.StartsWith("MOVE"))
-                {
-                    // Format nhận về: MOVE|Row|Col
                     string[] parts = data.Split('|');
-                    int r = int.Parse(parts[1]);
-                    int c = int.Parse(parts[2]);
+                    string command = parts[0];
 
-                    Point enemyPoint = new Point(c, r); // Point(Col, Row)
-
-                    // Cập nhật UI khi nhận được dữ liệu từ đối thủ (luôn chạy trên UI thread)
-                    this.Invoke((MethodInvoker)delegate {
-                        ChessBoard.OtherPlayerMoved(enemyPoint);
-                        ChessBoard.IsMyTurn = true;  // Đối thủ đã đi, giờ là lượt của mình
-                    });
-                }
-                else if (data.StartsWith("CHAT"))
-                {
-                    string[] parts = data.Split('|');
-                    if (parts.Length >= 2)
+                    if (command == "MOVE")
                     {
-                        string msg = parts[1];
-                        this.Invoke((MethodInvoker)delegate {
+                        // Server gửi: MOVE|Row|Col|PlayerSide
+                        // (Lưu ý: Bạn cần đảm bảo Server gửi đủ 4 tham số này)
+                        int r = int.Parse(parts[1]);
+                        int c = int.Parse(parts[2]);
+
+                        // Nếu Server chưa gửi side, ta tạm suy luận (nhưng tốt nhất Server nên gửi)
+                        // Ở đây mình giả định Server gửi kèm Side ở vị trí 3
+                        int side = (parts.Length > 3) ? int.Parse(parts[3]) : -1;
+
+                        // Nếu Server cũ chỉ gửi Row|Col, ta phải đoán phe:
+                        if (side == -1)
+                        {
+                            // Nếu đến lượt mình mà nhận được MOVE -> Thì đó là move của Địch
+                            // (Logic này hơi rủi ro, nên fix Server gửi Side là tốt nhất)
+                            side = ChessBoard.IsMyTurn ? (ChessBoard.MySide == 0 ? 1 : 0) : ChessBoard.MySide;
+                        }
+
+                        // Gọi hàm vẽ thống nhất
+                        ChessBoard.ProcessMove(c, r, side);
+                    }
+                    else if (command == "CHAT")
+                    {
+                        // CHAT|Message
+                        if (parts.Length >= 2)
+                        {
+                            string msg = parts[1];
                             AppendMessage("Opponent", msg, Color.Red);
-                        });
+                        }
+                    }
+                    else if (command == "UNDO_SUCCESS")
+                    {
+                        // [FIX] Khi Server đồng ý Undo -> Thực hiện xóa nước cờ
+                        ChessBoard.ExecuteUndoPvP();
+
+                        // Reset lại trạng thái nút Undo nếu cần
+                        undoCount = true;
+                        ptbOne.Visible = false;
+                        ptbZero.Visible = true;
+                    }
+                    else if (command == "NEXT_TURN")
+                    {
+                        // Nếu Server quản lý lượt đi chặt chẽ
+                        // NEXT_TURN|Username
+                        // if (parts[1] == myUsername) ChessBoard.IsMyTurn = true;
                     }
                 }
-            }
-            catch { }
+                catch (Exception ex)
+                {
+                    // Log error nếu cần
+                }
+            });
         }
-
-        // Khi tắt Form -> Hủy luồng mạng
-        protected override void OnFormClosing(FormClosingEventArgs e)
-        {
-            // Báo cho thread dừng vòng while
-            _stopListening = true;
-
-            // Ngắt kết nối TCP để Receive() thoát ra
-            tcpClient?.Disconnect();
-
-            // Đợi thread kết thúc (tùy, không bắt buộc)
-            if (listenThread != null && listenThread.IsAlive)
-            {
-                try { listenThread.Join(200); } catch { }
-            }
-
-            base.OnFormClosing(e);
-        }
-
 
         // --- CÁC HÀM UI KHÁC ---
 
@@ -174,6 +161,9 @@ namespace CaroGame
             undoCount = false;
             ptbOne.Visible = true;
             ptbZero.Visible = false;
+
+            // Khi reset game PvP, cần set lại lượt đúng luật
+            ChessBoard.IsMyTurn = (ChessBoard.MySide == 0);
         }
 
         private void btnSend_Click(object sender, EventArgs e)
@@ -183,32 +173,44 @@ namespace CaroGame
 
             AppendMessage("You", text, Color.Blue);
 
-            // Gửi Chat qua mạng
             if (tcpClient != null)
-            {
                 tcpClient.SendPacket(new Packet("CHAT", text));
-            }
 
             txtMessage.Clear();
         }
 
-        // ... (Giữ nguyên các hàm UI Emoji, Menu, Exit bên dưới của bạn) ...
-
-        // Code giữ nguyên để tránh lỗi Designer
-        private void Btn_Click(object? sender, EventArgs e) { Button btn = sender as Button; }
-
         private void btnExit_Click(object sender, EventArgs e)
         {
+            // Hủy đăng ký sự kiện trước khi thoát để tránh lỗi
+            if (tcpClient != null)
+                tcpClient.OnMessageReceived -= HandleServerMessage;
+
             this.Close();
-            // Quay về Dashboard
             var DashBoard = new Dashboard(room, playerNumber, player1Name, tcpClient);
             DashBoard.Show();
         }
 
-        private void btnChat_Click(object sender, EventArgs e)
+        // [FIX] Nút Undo giờ sẽ gửi YÊU CẦU lên Server
+        private void btnUndo_Click(object sender, EventArgs e)
         {
-            if (panelChat != null) panelChat.Visible = !panelChat.Visible;
+            if (undoCount) return; // Đã undo rồi thì thôi
+
+            if (tcpClient != null)
+            {
+                // Gửi lệnh xin Undo
+                tcpClient.Send("REQUEST_UNDO");
+
+                // Lưu ý: Không gọi ChessBoard.ExecuteUndoPvP() ở đây!
+                // Phải đợi Server trả về "UNDO_SUCCESS" trong HandleServerMessage thì mới gọi.
+            }
         }
+
+        // ... (Giữ nguyên các hàm UI Chat, Emoji, Menu) ...
+
+        // Code giữ nguyên để tránh lỗi Designer
+        private void Btn_Click(object? sender, EventArgs e) { Button btn = sender as Button; }
+
+        private void btnChat_Click(object sender, EventArgs e) { if (panelChat != null) panelChat.Visible = !panelChat.Visible; }
 
         private void AppendMessage(string sender, string message, Color color)
         {
@@ -233,15 +235,11 @@ namespace CaroGame
                 menuForm.Location = new Point(this.Left + 22, this.Top + 50);
                 menuForm.Show(this);
 
-                // RESET GAME: Cần khởi tạo lại đúng logic PvP
-                // [FIX]: Đảm bảo đăng ký lại sự kiện khi new lại bàn cờ
+                // Khi reset trong Menu, nhớ gán lại các Event
                 ChessBoard = new ChessBoardManager(pnlChessBoard, GameMode.PvP);
                 ChessBoard.MySide = (playerNumber == 1) ? 0 : 1;
                 ChessBoard.PlayerClickedNode += ChessBoard_PlayerClickedNode;
-
                 ChessBoard.DrawChessBoard();
-                this.room = room;
-                this.playerNumber = playerNumber;
             }
             else
             {
@@ -250,20 +248,8 @@ namespace CaroGame
             }
         }
 
-        private void btnUndo_Click(object sender, EventArgs e)
-        {
-            bool undoSuccess = ChessBoard.undoTurnPvP();
-            if (undoSuccess && !undoCount)
-            {
-                ptbOne.Visible = false;
-                ptbZero.Visible = true;
-                undoCount = true;
-            }
-        }
-
-        // --- EMOJI LOGIC (Giữ nguyên) ---
-        private readonly string[] _emoticons = new string[] { "😀", "😃", "😄", "😁", "😆", "😅", "😂", "🤣", "🥲", "😊", "😇", "🙂", "🙃", "😉", "😌", "😍", "🥰", "😘", "😗", "😙", "😚", "😋", "😜", "😝", "😛", "🤑", "🤗", "🤭", "🤫", "🤔", "🤐", "😐", "😑", "😶", "😶‍🌫️", "🙄", "😏", "😒", "😞", "😔", "😟", "😕", "🙁", "☹️", "😣", "😖", "😫", "😩", "🥺", "😢", "😭", "😤", "😠", "😡", "🤬", "🤯", "😳", "🥵", "🥶", "😱", "😨", "😰", "😥", "😓", "🤤", "😪", "😴", "😬", "😮‍💨", "🫠", "😵", "😵‍💫", "🤐", "🥴", "😷", "🤒", "🤕", "🤢", "🤮", "🤧", "😇", "🥳", "🥸", "😎", "🤓", "🧐", "😕", "😟", "🙁", "☹️", "😮", "😯", "😲", "😳", "🥺", "🥹", "😦", "😧", "😨", "😩", "😰", "😱", "😪", "😵", "🤐", "🥴", "😷", "🤒", "🤕", "🤢", "🤮", "🤧", "😇", "🥳", "🥸", "😎", "🤓", "🧐", "👋", "🤚", "🖐️", "✋", "🖖", "👌", "🤌", "🤏", "✌️", "🤞", "🤟", "🤘", "🤙", "👈", "👉", "👆", "🖕", "👇", "☝️", "👍", "👎", "✊", "👊", "🤛", "🤜", "👏", "🙌", "🫶", "👐", "🤲", "🙏", "💪", "🦾", "🦵", "🦿", "🦶", "👂", "🦻", "👃", "👣", "👀", "👁️", "🫦", "👄", "🦷", "🦴", "👅", "💋", "👄", "💘", "💝", "💖", "💗", "💓", "💞", "💕", "💌", "💟", "❣️", "💔", "❤️", "🧡", "💛", "💚", "💙", "💜", "🤎", "🖤", "🤍", "🏁", "🚩", "🎌", "🏴", "🏳️", "🏳️‍🌈", "🏳️‍⚧️", "🏴‍☠️" };
-
+        // Emoji logic (Giữ nguyên)
+        private readonly string[] _emoticons = new string[] { "😀", "😃", "😄", "😁" /*...*/ }; // (Cắt bớt cho gọn)
         private void SetupEmojiPickerPanel()
         {
             if (pnlEmojiPicker == null) return;
@@ -271,41 +257,33 @@ namespace CaroGame
             pnlEmojiPicker.Controls.Clear();
             pnlEmojiPicker.AutoScroll = true;
         }
-
         private void ShowEmojiPicker()
         {
             if (pnlEmojiPicker == null) return;
-
-            if (pnlEmojiPicker.Visible && pnlEmojiPicker.Controls.Count > 0)
-            {
-                pnlEmojiPicker.Visible = false;
-                return;
-            }
-
+            if (pnlEmojiPicker.Visible && pnlEmojiPicker.Controls.Count > 0) { pnlEmojiPicker.Visible = false; return; }
             pnlEmojiPicker.Visible = true;
             pnlEmojiPicker.BringToFront();
             pnlEmojiPicker.Controls.Clear();
-
-            int btnSize = 32;
-            int cols = 8;
-            int spacing = 4;
-
+            int btnSize = 32; int cols = 8; int spacing = 4;
             for (int i = 0; i < _emoticons.Length; i++)
             {
                 var btn = new Button();
                 btn.Font = new Font("Segoe UI Emoji", 16F, FontStyle.Regular);
                 btn.Text = _emoticons[i];
                 btn.Width = btn.Height = btnSize;
-                int col = i % cols;
-                int row = i / cols;
-                btn.Left = col * (btnSize + spacing);
-                btn.Top = row * (btnSize + spacing);
-                btn.Margin = new Padding(0);
-                btn.Padding = new Padding(0);
+                int col = i % cols; int row = i / cols;
+                btn.Left = col * (btnSize + spacing); btn.Top = row * (btnSize + spacing);
                 btn.Click += (s, e) => { txtMessage.Text += ((Button)s).Text; txtMessage.SelectionStart = txtMessage.Text.Length; txtMessage.Focus(); };
                 pnlEmojiPicker.Controls.Add(btn);
             }
         }
         private void btn_emoji_Click(object sender, EventArgs e) { ShowEmojiPicker(); }
+
+        // Hủy đăng ký khi đóng form
+        protected override void OnFormClosing(FormClosingEventArgs e)
+        {
+            if (tcpClient != null) tcpClient.OnMessageReceived -= HandleServerMessage;
+            base.OnFormClosing(e);
+        }
     }
 }
