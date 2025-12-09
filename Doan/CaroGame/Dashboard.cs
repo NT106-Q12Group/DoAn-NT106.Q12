@@ -1,13 +1,6 @@
 ﻿using CaroGame_TCPClient;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Net.Sockets;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace CaroGame
@@ -16,38 +9,49 @@ namespace CaroGame
     {
         private Room room;
         private int playerNumber;
-        private Form _userInfoForm;
         private string _loggedInUser;
         private PlayerView pv;
 
         // Biến quan trọng để lưu kết nối mạng
-        // Nếu biến này null => Đang offline hoặc chưa đăng nhập
         private TCPClient _client;
 
-        // Constructor 1: Mặc định (Dùng cho Designer hoặc Test giao diện)
+        // Biến trạng thái tìm trận
+        private bool isFindingMatch = false;
+
+        // Event để SignIn bắt được khi bấm nút User Info (nếu dùng)
+        public event Action OnOpenUserInfo;
+
+        // --- CONSTRUCTORS ---
+
+        // 1. Mặc định
         public Dashboard()
         {
             InitializeComponent();
             _loggedInUser = "Player";
         }
 
-        // Constructor 2: Nhận user (Offline test)
+        // 2. Offline Test
         public Dashboard(string username)
         {
             InitializeComponent();
             _loggedInUser = username;
+            if (lblWelcome != null) lblWelcome.Text = "Welcome, " + username;
         }
 
-        // Constructor 3: Dùng cho Login -> Dashboard (QUAN TRỌNG NHẤT)
-        // Đây là constructor bạn PHẢI dùng ở SignIn.cs
+        // 3. [QUAN TRỌNG] Dùng cho Login -> Dashboard
         public Dashboard(string username, TCPClient client)
         {
             InitializeComponent();
             _loggedInUser = username;
-            _client = client; // Lưu kết nối mạng vào biến toàn cục
+            _client = client;
+
+            if (lblWelcome != null) lblWelcome.Text = "Welcome, " + username;
+
+            // Đăng ký lắng nghe Server ngay khi vào Dashboard
+            RegisterServerListener();
         }
 
-        // Constructor 4: Dùng khi quay lại từ PvP (Giữ phòng và Client)
+        // 4. Dùng khi quay lại từ PvP
         public Dashboard(Room room, int playerNumber, string username, TCPClient client)
         {
             InitializeComponent();
@@ -55,7 +59,81 @@ namespace CaroGame
             this.playerNumber = playerNumber;
             this._loggedInUser = username;
             this._client = client;
+
+            if (lblWelcome != null) lblWelcome.Text = "Welcome, " + username;
+
+            // Đăng ký lắng nghe lại
+            RegisterServerListener();
         }
+
+        // --- HÀM HỖ TRỢ LẮNG NGHE SERVER ---
+        private void RegisterServerListener()
+        {
+            if (_client != null)
+            {
+                // Hủy đăng ký cũ trước khi thêm mới để tránh nhận tin nhắn 2 lần
+                _client.OnMessageReceived -= Dashboard_OnMessageReceived;
+                _client.OnMessageReceived += Dashboard_OnMessageReceived;
+            }
+        }
+
+        // --- [CORE] XỬ LÝ TIN NHẮN TỪ SERVER ---
+        private void Dashboard_OnMessageReceived(string data)
+        {
+            this.Invoke((MethodInvoker)delegate
+            {
+                try
+                {
+                    // Debug: Console.WriteLine("Dash received: " + data);
+                    string[] parts = data.Split('|');
+                    string command = parts[0];
+
+                    // 1. XỬ LÝ KHI TÌM ĐƯỢC TRẬN
+                    // Server gửi: MATCH_FOUND | RoomID | MySide | OpponentName
+                    if (command == "MATCH_FOUND")
+                    {
+                        // Reset trạng thái nút
+                        isFindingMatch = false;
+                        if (btnPlayInstant != null) btnPlayInstant.Text = "Play Instant";
+
+                        // Parse dữ liệu
+                        string roomID = parts.Length > 1 ? parts[1] : "Room_001";
+                        int mySide = parts.Length > 2 ? int.Parse(parts[2]) : 2;
+                        string opponentName = parts.Length > 3 ? parts[3] : "Unknown";
+
+                        // Xác định tên người chơi
+                        string p1 = (mySide == 1) ? _loggedInUser : opponentName; // Host (Side 1)
+                        string p2 = (mySide == 1) ? opponentName : _loggedInUser; // Guest (Side 2)
+
+                        // Tạo Room ảo
+                        Room newRoom = new Room(1, roomID, "");
+
+                        // Hủy lắng nghe ở Dashboard để chuyển quyền cho PvP
+                        if (_client != null) _client.OnMessageReceived -= Dashboard_OnMessageReceived;
+
+                        // MỞ BÀN CỜ PVP
+                        // Lưu ý: PvP constructor nhận mySide (1 hoặc 2) để biết mình là X hay O
+                        // Nếu PvP của bạn dùng 1=Host, 2=Guest thì truyền mySide là đúng.
+                        PvP pvpForm = new PvP(newRoom, mySide, p1, p2, _client);
+
+                        // Khi tắt PvP thì hiện lại Dashboard và lắng nghe lại
+                        pvpForm.FormClosed += (s, args) => {
+                            this.Show();
+                            RegisterServerListener(); // Nghe lại tin nhắn
+                        };
+
+                        this.Hide();
+                        pvpForm.Show();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // MessageBox.Show("Lỗi Dashboard: " + ex.Message);
+                }
+            });
+        }
+
+        // --- CÁC SỰ KIỆN NÚT BẤM ---
 
         private void btnPvE_Click(object sender, EventArgs e)
         {
@@ -64,24 +142,59 @@ namespace CaroGame
             this.Hide();
         }
 
-        private void pnlNaviBar_Paint(object sender, PaintEventArgs e)
+        // NÚT PLAY INSTANT (QUICK MATCH)
+        private void btnPlayInstant_Click(object sender, EventArgs e)
         {
+            // 1. Kiểm tra kết nối
+            if (_client == null || !_client.IsConnected())
+            {
+                MessageBox.Show("Mất kết nối Server! Vui lòng đăng nhập lại.", "Lỗi Mạng", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
 
+            if (!isFindingMatch)
+            {
+                // Gửi lệnh tìm trận
+                _client.Send("FIND_MATCH"); // Kiểm tra lại lệnh bên Server xem đúng không
+
+                isFindingMatch = true;
+                btnPlayInstant.Text = "Finding... (Cancel)";
+            }
+            else
+            {
+                // Hủy tìm trận
+                _client.Send("CANCEL_FIND");
+
+                isFindingMatch = false;
+                btnPlayInstant.Text = "Play Instant";
+            }
         }
+
+        private void btnSettings_Click(object sender, EventArgs e)
+        {
+            // Cần truyền Client vào UserInfo để đổi pass được
+            // Load lại thông tin user nếu cần thiết
+            if (pv == null) LoadPlayer(_loggedInUser, "", ""); // Dummy load
+
+            var userInfoForm = new UserInfo(pv, _client);
+            userInfoForm.FormClosed += (s, args) => this.Show();
+            this.Hide();
+            userInfoForm.Show();
+        }
+
+        // --- CÁC HÀM CŨ (Giữ nguyên để tránh lỗi Designer) ---
 
         private void btnPvP_Click(object sender, EventArgs e)
         {
-            if (pnlPvPMenu != null)
-                pnlPvPMenu.Visible = !pnlPvPMenu.Visible;
+            if (pnlPvPMenu != null) pnlPvPMenu.Visible = !pnlPvPMenu.Visible;
         }
 
         private void btnCreateRoom_Click(object sender, EventArgs e)
         {
-            // Logic tạo phòng Local (Cũ)
+            // Logic cũ (Offline LAN)
             Room newRoom = RoomManager.createRoom();
             room = newRoom;
             playerNumber = 1;
-
             var newWaitingRoom = new WaitingRoom(newRoom, 1);
             newWaitingRoom.Show();
             this.Hide();
@@ -98,25 +211,22 @@ namespace CaroGame
 
         private void btnBack_Click(object sender, EventArgs e)
         {
-            if (pnlDashBoard != null)
-                pnlDashBoard.Visible = !pnlDashBoard.Visible;
+            if (pnlDashBoard != null) pnlDashBoard.Visible = !pnlDashBoard.Visible;
         }
 
         private void btnJoin_Click(object sender, EventArgs e)
         {
             string id = tbRoomID.Text.Trim();
-
             Room joinedRoom = RoomManager.JoinRoom(id, out int pNumber);
 
             if (joinedRoom == null)
             {
-                MessageBox.Show("Phòng không tồn tại hoặc đã đủ 2 người!");
+                MessageBox.Show("Phòng không tồn tại hoặc đã đủ người!");
                 return;
             }
 
             room = joinedRoom;
             playerNumber = pNumber;
-
             var waitingroom = new WaitingRoom(joinedRoom, pNumber);
             waitingroom.Show();
             this.Hide();
@@ -133,40 +243,16 @@ namespace CaroGame
             };
         }
 
-        private void btnSettings_Click(object sender, EventArgs e)
+        protected override void OnFormClosing(FormClosingEventArgs e)
         {
-            // Cần truyền Client vào UserInfo để đổi pass được
-            var userInfoForm = new UserInfo(pv, _client);
-            userInfoForm.FormClosed += (s, args) => this.Show();
-            this.Hide();
-            userInfoForm.Show();
-        }
-
-        // --- NÚT PLAY INSTANT (QUICK MATCH) ---
-        private void btnPlayInstant_Click(object sender, EventArgs e)
-        {
-            // 1. KIỂM TRA KẾT NỐI TRƯỚC KHI MỞ LOBBY
-            // Nếu _client bị null (do mở bằng Dashboard() thường) -> Báo lỗi
-            if (_client == null || !_client.IsConnected())
+            // Hủy đăng ký sự kiện khi đóng form để tránh lỗi
+            if (_client != null)
             {
-                MessageBox.Show("Tính năng này yêu cầu kết nối Server (Online).\nVui lòng đăng nhập lại từ màn hình SignIn.",
-                                "Lỗi Kết Nối",
-                                MessageBoxButtons.OK,
-                                MessageBoxIcon.Warning);
-                return;
+                _client.OnMessageReceived -= Dashboard_OnMessageReceived;
             }
-
-            // 2. Mở màn hình chờ Quick Match (PvPLobby)
-            // Truyền username và biến client đang kết nối sang đó
-            // isQuickMatch = true (mặc định) để nó tự tìm trận ngay
-            var waitingScreen = new PvPLobby(_loggedInUser, _client, true);
-
-            this.Hide();
-
-            // Khi form chờ đóng lại, hiện lại Dashboard
-            waitingScreen.FormClosed += (s, args) => this.Show();
-
-            waitingScreen.Show();
+            base.OnFormClosing(e);
         }
+
+        private void pnlNaviBar_Paint(object sender, PaintEventArgs e) { }
     }
 }
