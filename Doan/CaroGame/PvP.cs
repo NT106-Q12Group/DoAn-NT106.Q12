@@ -23,6 +23,7 @@ namespace CaroGame
 
         // Luồng lắng nghe tin nhắn từ Server
         private Thread listenThread;
+        private bool _stopListening = false;
 
         // --- CONSTRUCTOR ---
         public PvP(Room room, int playerNumber, string p1, string p2, TCPClient client)
@@ -86,27 +87,26 @@ namespace CaroGame
         // --- NHẬN DỮ LIỆU ---
         private void ListenFromServer()
         {
-            while (true)
+            while (!_stopListening)
             {
                 try
                 {
                     if (tcpClient == null) break;
 
-                    // Hàm Receive() này sẽ chờ cho đến khi có tin nhắn
                     string receivedData = tcpClient.Receive();
 
-                    if (string.IsNullOrEmpty(receivedData)) continue;
+                    if (string.IsNullOrEmpty(receivedData))
+                        continue;
 
-                    // Xử lý dữ liệu
                     ProcessData(receivedData);
                 }
                 catch
                 {
-                    // Mất kết nối -> thoát luồng
                     break;
                 }
             }
         }
+
 
         // --- XỬ LÝ LOGIC ---
         private void ProcessData(string data)
@@ -147,12 +147,21 @@ namespace CaroGame
         // Khi tắt Form -> Hủy luồng mạng
         protected override void OnFormClosing(FormClosingEventArgs e)
         {
+            // Báo cho thread dừng vòng while
+            _stopListening = true;
+
+            // Ngắt kết nối TCP để Receive() thoát ra
+            tcpClient?.Disconnect();
+
+            // Đợi thread kết thúc (tùy, không bắt buộc)
             if (listenThread != null && listenThread.IsAlive)
             {
-                listenThread.Abort();
+                try { listenThread.Join(200); } catch { }
             }
+
             base.OnFormClosing(e);
         }
+
 
         // --- CÁC HÀM UI KHÁC ---
 
