@@ -225,15 +225,20 @@ namespace CaroGame
         // --- HÀM XỬ LÝ NƯỚC ĐI TỪ SERVER (FIX BUG LOCK TURN & SAI HÌNH) ---
         public void ProcessMove(int x, int y, int playerSide)
         {
+            // Kiểm tra tọa độ
             if (y < 0 || y >= matrix.Count || x < 0 || x >= matrix[0].Count) return;
+
+            // --- [FIX] CHẶN SIDE -1 NGAY LẬP TỨC ---
+            // Nếu side < 0, thoát luôn để không vẽ bậy và không check thắng thua tào lao
+            if (playerSide < 0 || playerSide >= Player.Count) return;
+            // ---------------------------------------
 
             Button btn = matrix[y][x];
             if (btn.BackgroundImage != null) return;
 
-            // 1. Vẽ hình đúng phe (0: X, 1: O)
-            // Lấy từ danh sách Player đã khởi tạo ở trên
-            if (playerSide >= 0 && playerSide < Player.Count)
-                btn.BackgroundImage = Player[playerSide].Mark;
+            // ... (Code phía dưới giữ nguyên) ...
+            // Lúc này playerSide chắc chắn đúng, code sẽ chạy mượt.
+            btn.BackgroundImage = Player[playerSide].Mark;
 
             // 2. Highlight và lưu lịch sử
             HighlightMove(btn);

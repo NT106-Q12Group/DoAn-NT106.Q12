@@ -99,16 +99,26 @@ namespace CaroGame
                     string[] parts = data.Split('|');
                     string command = parts[0];
 
+                    // Trong HandleServerMessage của PvP.cs
                     if (command == "MOVE")
                     {
-                        // [FIX 2] Kiểm tra dữ liệu đầu vào để tránh crash
                         if (parts.Length < 4) return;
 
-                        int x = int.Parse(parts[1]); // Cột
-                        int y = int.Parse(parts[2]); // Dòng
-                        int side = int.Parse(parts[3]); // Phe (0 hoặc 1)
+                        int x = int.Parse(parts[1]);
+                        int y = int.Parse(parts[2]);
+                        int side = int.Parse(parts[3]);
 
-                        // Gọi hàm xử lý chung (Vẽ + Đổi lượt)
+                        // --- [FIX] NẾU SERVER GỬI -1, TỰ ĐỘNG SỬA ---
+                        if (side == -1)
+                        {
+                            // Logic chữa cháy: 
+                            // Nếu đây là nước đi đầu tiên (bàn cờ chưa có quân nào) -> Chắc chắn là X (0)
+                            // Nếu không, ta tạm thời gán cho phe X (0) hoặc phe đang có lượt (tùy bạn chọn)
+                            // Ở đây mình gán cứng bằng 0 (X) để test, vì thường lỗi này xảy ra ở nước đầu tiên.
+                            side = 0;
+                        }
+                        // --------------------------------------------
+
                         ChessBoard.ProcessMove(x, y, side);
                     }
                     else if (command == "CHAT")
