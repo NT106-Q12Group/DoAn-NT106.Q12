@@ -47,7 +47,7 @@ namespace CaroGame
         private void InitGame()
         {
             SetupEmojiPickerPanel();
-            ChessBoard = new ChessBoardManager(pnlChessBoard);
+            ChessBoard = new ChessBoardManager(pnlChessBoard, GameMode.PvP);
             ChessBoard.DrawChessBoard();
         }
 
