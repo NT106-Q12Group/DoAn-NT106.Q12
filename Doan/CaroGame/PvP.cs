@@ -59,6 +59,8 @@ namespace CaroGame
             // 2. Xác định phe (MySide)
             // Host (1) là quân X (0), Guest (2) là quân O (1)
             ChessBoard.MySide = (playerNumber == 1) ? 0 : 1;
+            // X luôn đi trước -> nếu MySide == 0 thì mình được đánh trước
+            ChessBoard.IsMyTurn = (ChessBoard.MySide == 0);
 
             // 3. ĐĂNG KÝ SỰ KIỆN GỬI (Quan trọng!)
             ChessBoard.PlayerClickedNode += ChessBoard_PlayerClickedNode;
