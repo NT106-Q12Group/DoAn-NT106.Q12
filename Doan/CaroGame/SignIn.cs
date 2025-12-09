@@ -13,6 +13,7 @@ namespace CaroGame
         private bool _signingIn = false;
         private string _currentUser = "";
 
+        // Constructor mặc định kết nối tới IP server
         public SignIn() : this(new TCPClient("3.230.162.159", 25565)) { }
 
         public SignIn(TCPClient sharedClient)
@@ -112,6 +113,7 @@ namespace CaroGame
                     string email = "";
                     string birthday = "";
 
+                    // Lấy thông tin user (Optional)
                     string getResp = _client.GetUser(uname);
                     var p2 = getResp.Split('|');
                     if (p2.Length > 0 && p2[0].Equals("SUCCESS", StringComparison.OrdinalIgnoreCase))
@@ -128,21 +130,19 @@ namespace CaroGame
                         Birthday = birthday
                     };
 
-                    var Dash = new Dashboard(uname);
+                    // --- [FIXED QUAN TRỌNG] TRUYỀN CLIENT SANG DASHBOARD ---
+                    var Dash = new Dashboard(uname, _client);
+                    // -------------------------------------------------------
 
+                    // Sự kiện mở UserInfo (Giữ nguyên logic của bạn)
                     Dash.OnOpenUserInfo += () =>
                     {
                         var userInfo = new UserInfo(pv, _client);
-
-                        // Khi UserInfo BACK → callback về Dashboard
                         userInfo.OnBack += (updatedPv) =>
                         {
-                            // cập nhật player view lại Dashboard
                             pv = updatedPv;
-
                             Dash.Show();
                         };
-
                         Dash.Hide();
                         userInfo.Show();
                     };
@@ -150,7 +150,6 @@ namespace CaroGame
                     Dash.FormClosed += (s, _) => Close();
                     Hide();
                     Dash.Show();
-
 
                     MessageBox.Show("Signed in successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
