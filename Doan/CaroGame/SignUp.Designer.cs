@@ -216,6 +216,7 @@
             // 
             // pictureBox1
             // 
+            pictureBox1.BackgroundImage = Properties.Resources.CaroPicGame;
             pictureBox1.BackgroundImageLayout = ImageLayout.Stretch;
             pictureBox1.BorderStyle = BorderStyle.Fixed3D;
             pictureBox1.Location = new Point(192, 12);
