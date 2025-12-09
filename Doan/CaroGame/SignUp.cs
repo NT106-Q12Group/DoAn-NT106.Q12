@@ -13,6 +13,7 @@ namespace CaroGame
         private const string PH_PASSWORD = "Password";
         private const string PH_CONFIRM = "Confirm password";
         private const string PH_BIRTH = "Birthdate (yyyy-MM-dd)";
+        private const string PH_FULLNAME = "Full name";
         private readonly TCPClient _client;
 
         public SignUp(TCPClient client)
@@ -25,6 +26,7 @@ namespace CaroGame
             SetPswPlaceholder(tb_psw, PH_PASSWORD);
             SetPswPlaceholder(tb_cfpsw, PH_CONFIRM);
             SetPlaceholder(tb_birth, PH_BIRTH);
+            SetPlaceholder(tb_fullname, PH_FULLNAME);
 
             tb_psw.KeyPress += BlockWhitespace_KeyPress;
             tb_cfpsw.KeyPress += BlockWhitespace_KeyPress;
@@ -85,12 +87,17 @@ namespace CaroGame
         private void btn_signup_Click(object? sender, EventArgs e)
         {
             var ep = new ErrorProvider();
+            string fullname = tb_fullname.Text.Trim(); 
             string email = tb_email.Text.Trim();
             string username = tb_username.Text.Trim();
             string password = tb_psw.Text;
             string confirm = tb_cfpsw.Text;
             string birth = (tb_birth.Text == PH_BIRTH) ? "" : tb_birth.Text.Trim();
             bool ok = true;
+
+            if (fullname == PH_FULLNAME || fullname.Length < 4 || fullname.Length > 50)
+                { ep.SetError(tb_fullname, "Full name must be 4-50 characters!"); ok = false; }
+            else ep.SetError(tb_fullname, "");
 
             if (email == PH_EMAIL || !email.Contains('@') || !email.Contains('.'))
             { ep.SetError(tb_email, "Invalid email address!"); ok = false; }
@@ -134,7 +141,7 @@ namespace CaroGame
                     }
                 }
 
-                string response = _client.Register(username, password, email, birth);
+                string response = _client.Register(fullname, username, password, email, birth);
                 var parts = response.Split('|');
 
                 if (parts.Length > 0 && parts[0].Equals("SUCCESS", StringComparison.OrdinalIgnoreCase))

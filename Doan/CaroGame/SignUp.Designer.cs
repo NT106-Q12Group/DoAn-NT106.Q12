@@ -50,6 +50,14 @@
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             SuspendLayout();
             // 
+            // tb_fullname
+            // 
+            tb_fullname.Font = new Font("Segoe UI", 10F);
+            tb_fullname.Location = new Point(29, 213);
+            tb_fullname.Name = "tb_fullname";
+            tb_fullname.Size = new Size(445, 30);
+            tb_fullname.TabIndex = 0;
+            // 
             // tb_username
             // 
             tb_username.Font = new Font("Segoe UI", 10F);
@@ -57,7 +65,7 @@
             tb_username.Margin = new Padding(3, 4, 3, 4);
             tb_username.Name = "tb_username";
             tb_username.Size = new Size(445, 30);
-            tb_username.TabIndex = 0;
+            tb_username.TabIndex = 1;
             // 
             // tb_cfpsw
             // 
@@ -66,7 +74,7 @@
             tb_cfpsw.Margin = new Padding(3, 4, 3, 4);
             tb_cfpsw.Name = "tb_cfpsw";
             tb_cfpsw.Size = new Size(445, 30);
-            tb_cfpsw.TabIndex = 1;
+            tb_cfpsw.TabIndex = 2;
             // 
             // tb_birth
             // 
@@ -225,14 +233,6 @@
             pictureBox1.TabIndex = 17;
             pictureBox1.TabStop = false;
             // 
-            // tb_fullname
-            // 
-            tb_fullname.Font = new Font("Segoe UI", 10F);
-            tb_fullname.Location = new Point(29, 213);
-            tb_fullname.Name = "tb_fullname";
-            tb_fullname.Size = new Size(445, 30);
-            tb_fullname.TabIndex = 18;
-            // 
             // lblFullName
             // 
             lblFullName.AutoSize = true;
@@ -240,7 +240,7 @@
             lblFullName.Location = new Point(29, 187);
             lblFullName.Name = "lblFullName";
             lblFullName.Size = new Size(91, 23);
-            lblFullName.TabIndex = 19;
+            lblFullName.TabIndex = 18;
             lblFullName.Text = "Full Name";
             // 
             // SignUp

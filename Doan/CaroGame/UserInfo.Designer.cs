@@ -51,6 +51,15 @@
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             SuspendLayout();
             // 
+            // tb_fullname
+            // 
+            tb_fullname.BorderStyle = BorderStyle.FixedSingle;
+            tb_fullname.Font = new Font("Segoe UI", 10F);
+            tb_fullname.Location = new Point(27, 240);
+            tb_fullname.Name = "tb_fullname";
+            tb_fullname.Size = new Size(382, 30);
+            tb_fullname.TabIndex = 0;
+            // 
             // tb_username
             // 
             tb_username.BorderStyle = BorderStyle.FixedSingle;
@@ -60,7 +69,7 @@
             tb_username.Name = "tb_username";
             tb_username.ReadOnly = true;
             tb_username.Size = new Size(382, 30);
-            tb_username.TabIndex = 0;
+            tb_username.TabIndex = 1;
             // 
             // tb_email
             // 
@@ -71,7 +80,7 @@
             tb_email.Name = "tb_email";
             tb_email.ReadOnly = true;
             tb_email.Size = new Size(382, 30);
-            tb_email.TabIndex = 4;
+            tb_email.TabIndex = 2;
             // 
             // tb_birthdate
             // 
@@ -82,7 +91,7 @@
             tb_birthdate.Name = "tb_birthdate";
             tb_birthdate.ReadOnly = true;
             tb_birthdate.Size = new Size(382, 30);
-            tb_birthdate.TabIndex = 5;
+            tb_birthdate.TabIndex = 3;
             // 
             // btn_signout
             // 
@@ -91,7 +100,7 @@
             btn_signout.Margin = new Padding(3, 4, 3, 4);
             btn_signout.Name = "btn_signout";
             btn_signout.Size = new Size(86, 31);
-            btn_signout.TabIndex = 6;
+            btn_signout.TabIndex = 4;
             btn_signout.Text = "Sign Out";
             btn_signout.UseVisualStyleBackColor = true;
             btn_signout.Click += btn_signout_Click;
@@ -104,7 +113,7 @@
             pictureBox1.Location = new Point(164, 52);
             pictureBox1.Name = "pictureBox1";
             pictureBox1.Size = new Size(142, 150);
-            pictureBox1.TabIndex = 7;
+            pictureBox1.TabIndex = 5;
             pictureBox1.TabStop = false;
             // 
             // lblUsernameUInfo
@@ -114,7 +123,7 @@
             lblUsernameUInfo.Location = new Point(27, 281);
             lblUsernameUInfo.Name = "lblUsernameUInfo";
             lblUsernameUInfo.Size = new Size(89, 23);
-            lblUsernameUInfo.TabIndex = 8;
+            lblUsernameUInfo.TabIndex = 6;
             lblUsernameUInfo.Text = "Username";
             // 
             // lblEmailUInfo
@@ -124,7 +133,7 @@
             lblEmailUInfo.Location = new Point(27, 421);
             lblEmailUInfo.Name = "lblEmailUInfo";
             lblEmailUInfo.Size = new Size(54, 23);
-            lblEmailUInfo.TabIndex = 9;
+            lblEmailUInfo.TabIndex = 7;
             lblEmailUInfo.Text = "Email";
             // 
             // lblBirthUinfo
@@ -134,7 +143,7 @@
             lblBirthUinfo.Location = new Point(27, 491);
             lblBirthUinfo.Name = "lblBirthUinfo";
             lblBirthUinfo.Size = new Size(50, 23);
-            lblBirthUinfo.TabIndex = 10;
+            lblBirthUinfo.TabIndex = 8;
             lblBirthUinfo.Text = "Birth";
             // 
             // label4
@@ -144,7 +153,7 @@
             label4.Location = new Point(124, 10);
             label4.Name = "label4";
             label4.Size = new Size(226, 37);
-            label4.TabIndex = 11;
+            label4.TabIndex = 9;
             label4.Text = "User Infomation";
             // 
             // lblFullNameUInfo
@@ -154,17 +163,8 @@
             lblFullNameUInfo.Location = new Point(27, 212);
             lblFullNameUInfo.Name = "lblFullNameUInfo";
             lblFullNameUInfo.Size = new Size(91, 23);
-            lblFullNameUInfo.TabIndex = 12;
+            lblFullNameUInfo.TabIndex = 10;
             lblFullNameUInfo.Text = "Full Name";
-            // 
-            // tb_fullname
-            // 
-            tb_fullname.BorderStyle = BorderStyle.FixedSingle;
-            tb_fullname.Font = new Font("Segoe UI", 10F);
-            tb_fullname.Location = new Point(27, 240);
-            tb_fullname.Name = "tb_fullname";
-            tb_fullname.Size = new Size(382, 30);
-            tb_fullname.TabIndex = 13;
             // 
             // tb_password
             // 
@@ -173,7 +173,7 @@
             tb_password.Location = new Point(27, 379);
             tb_password.Name = "tb_password";
             tb_password.Size = new Size(382, 30);
-            tb_password.TabIndex = 14;
+            tb_password.TabIndex = 11;
             // 
             // lblPasswordUinfo
             // 
@@ -182,7 +182,7 @@
             lblPasswordUinfo.Location = new Point(27, 353);
             lblPasswordUinfo.Name = "lblPasswordUinfo";
             lblPasswordUinfo.Size = new Size(85, 23);
-            lblPasswordUinfo.TabIndex = 15;
+            lblPasswordUinfo.TabIndex = 12;
             lblPasswordUinfo.Text = "Password";
             // 
             // cb_showcfpswUInfo
@@ -192,7 +192,7 @@
             cb_showcfpswUInfo.Location = new Point(275, 352);
             cb_showcfpswUInfo.Name = "cb_showcfpswUInfo";
             cb_showcfpswUInfo.Size = new Size(134, 24);
-            cb_showcfpswUInfo.TabIndex = 16;
+            cb_showcfpswUInfo.TabIndex = 13;
             cb_showcfpswUInfo.Text = "Show password";
             cb_showcfpswUInfo.UseVisualStyleBackColor = true;
             // 
@@ -209,7 +209,7 @@
             btnEditFullName.Location = new Point(418, 238);
             btnEditFullName.Name = "btnEditFullName";
             btnEditFullName.Size = new Size(30, 29);
-            btnEditFullName.TabIndex = 17;
+            btnEditFullName.TabIndex = 14;
             btnEditFullName.UseVisualStyleBackColor = false;
             // 
             // btnEditUsername
@@ -224,7 +224,7 @@
             btnEditUsername.Location = new Point(418, 306);
             btnEditUsername.Name = "btnEditUsername";
             btnEditUsername.Size = new Size(30, 29);
-            btnEditUsername.TabIndex = 18;
+            btnEditUsername.TabIndex = 15;
             btnEditUsername.UseVisualStyleBackColor = true;
             // 
             // btnEditPassword
@@ -239,7 +239,7 @@
             btnEditPassword.Location = new Point(418, 377);
             btnEditPassword.Name = "btnEditPassword";
             btnEditPassword.Size = new Size(30, 29);
-            btnEditPassword.TabIndex = 19;
+            btnEditPassword.TabIndex = 16;
             btnEditPassword.UseVisualStyleBackColor = true;
             // 
             // btnEditEmail
@@ -254,7 +254,7 @@
             btnEditEmail.Location = new Point(418, 446);
             btnEditEmail.Name = "btnEditEmail";
             btnEditEmail.Size = new Size(30, 29);
-            btnEditEmail.TabIndex = 20;
+            btnEditEmail.TabIndex = 17;
             btnEditEmail.UseVisualStyleBackColor = true;
             // 
             // btnEditBirth
@@ -269,7 +269,7 @@
             btnEditBirth.Location = new Point(418, 516);
             btnEditBirth.Name = "btnEditBirth";
             btnEditBirth.Size = new Size(30, 29);
-            btnEditBirth.TabIndex = 21;
+            btnEditBirth.TabIndex = 18;
             btnEditBirth.UseVisualStyleBackColor = true;
             // 
             // btnBack
@@ -279,7 +279,7 @@
             btnBack.Margin = new Padding(3, 4, 3, 4);
             btnBack.Name = "btnBack";
             btnBack.Size = new Size(86, 31);
-            btnBack.TabIndex = 22;
+            btnBack.TabIndex = 19;
             btnBack.Text = "Back";
             btnBack.UseVisualStyleBackColor = true;
             btnBack.Click += btnBack_Click;
