@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Text;
 using System.Net.Sockets;
+using System.Threading; // Cần thư viện này để chạy luồng ngầm
 
 namespace CaroGame_TCPClient
 {
@@ -11,6 +12,10 @@ namespace CaroGame_TCPClient
         private TcpClient? client;
         private bool isConnected;
         private NetworkStream? stream;
+
+        // --- SỰ KIỆN MỚI: Để báo tin nhắn từ Server về Form (dùng khi Tìm trận/Chơi game) ---
+        public event Action<string>? OnMessageReceived;
+        private Thread? listenerThread;
 
         public TCPClient(string IP, int port)
         {
@@ -25,53 +30,58 @@ namespace CaroGame_TCPClient
         {
             try
             {
-                if (isConnected) return true;
+                if (isConnected && client != null && client.Connected) return true;
+
                 client = new TcpClient();
                 client.Connect(serverIP, serverPort);
                 stream = client.GetStream();
                 isConnected = true;
+
+                // Lưu ý: Chưa gọi StartListening() ở đây. 
+                // Ta sẽ gọi nó thủ công sau khi Đăng nhập thành công để tránh xung đột luồng.
+
                 return true;
             }
             catch (Exception e)
             {
                 isConnected = false;
                 Console.WriteLine($"[DEBUG] Connect error: {e.Message}");
-                // tạm thời cho hiện MessageBox nếu là WinForms/WPF
-                System.Windows.Forms.MessageBox.Show(
-                    "Connect error: " + e.Message,
-                    "DEBUG",
-                    System.Windows.Forms.MessageBoxButtons.OK,
-                    System.Windows.Forms.MessageBoxIcon.Error
-                );
                 return false;
             }
         }
 
         public void Disconnect()
         {
+            isConnected = false;
             try { stream?.Close(); stream?.Dispose(); } catch { }
             try { client?.Close(); } catch { }
             stream = null;
             client = null;
-            isConnected = false;
         }
 
+        // --- HÀM 1: GỬI VÀ CHỜ PHẢN HỒI (Dùng cho Login, Register, GetEmail...) ---
         private string SendRequest(string request)
         {
             try
             {
                 if (!isConnected || stream == null)
                 {
-                    if (!Connect())
-                        return "ERROR|Cannot connect to server";
+                    if (!Connect()) return "ERROR|Cannot connect to server";
                 }
 
                 var s = stream!;
                 byte[] data = Encoding.UTF8.GetBytes(request);
                 s.Write(data, 0, data.Length);
 
+                // --- QUAN TRỌNG: FIX LỖI KẸT DỮ LIỆU ---
+                s.Flush(); // Ép dữ liệu gửi đi ngay lập tức
+                // ---------------------------------------
+
+                // Nếu đang trong chế độ Lắng nghe (Game), không được dùng hàm này để đọc
+                // Tuy nhiên, logic hiện tại tách biệt Login (Request) và Game (Listener) nên ổn.
                 byte[] buffer = new byte[4096];
                 int bytesRead = s.Read(buffer, 0, buffer.Length);
+
                 if (bytesRead == 0)
                 {
                     Disconnect();
@@ -86,6 +96,50 @@ namespace CaroGame_TCPClient
                 return $"ERROR|Connection error: {ex.Message}";
             }
         }
+
+        // --- HÀM 2: GỬI NHANH (Dùng cho Tìm trận, Đánh cờ - Không chờ phản hồi tại chỗ) ---
+        public void Send(string data)
+        {
+            try
+            {
+                if (isConnected && stream != null)
+                {
+                    byte[] bytes = Encoding.UTF8.GetBytes(data);
+                    stream.Write(bytes, 0, bytes.Length);
+                    stream.Flush(); // Quan trọng
+                }
+            }
+            catch { Disconnect(); }
+        }
+
+        // --- HÀM 3: BẮT ĐẦU NGHE (Gọi hàm này sau khi Login thành công) ---
+        public void StartListening()
+        {
+            if (listenerThread != null && listenerThread.IsAlive) return;
+
+            listenerThread = new Thread(() =>
+            {
+                try
+                {
+                    byte[] buffer = new byte[4096];
+                    while (isConnected && client != null && stream != null)
+                    {
+                        int bytesRead = stream.Read(buffer, 0, buffer.Length);
+                        if (bytesRead == 0) { Disconnect(); break; }
+
+                        string message = Encoding.UTF8.GetString(buffer, 0, bytesRead);
+
+                        // Bắn sự kiện ra ngoài Form
+                        OnMessageReceived?.Invoke(message);
+                    }
+                }
+                catch { Disconnect(); }
+            });
+            listenerThread.IsBackground = true;
+            listenerThread.Start();
+        }
+
+        // --- CÁC HÀM NGHIỆP VỤ CŨ (GIỮ NGUYÊN) ---
 
         public string Register(string username, string password, string email, string birthday)
         {
@@ -103,44 +157,48 @@ namespace CaroGame_TCPClient
 
         public string GetUser(string username)
         {
-            string request = $"GETPLAYER|{username}";
-            return SendRequest(request);
+            return SendRequest($"GETPLAYER|{username}");
         }
 
         public string Logout(string username)
         {
-            string request = $"SIGNOUT|{username}";
-            string response = SendRequest(request);
+            // Với Logout, gửi thông báo rồi cắt luôn, không cần chờ phản hồi
+            Send($"SIGNOUT|{username}");
             Disconnect();
-            return response;
-        }
-
-        public bool TestConnection()
-        {
-            if (isConnected) return true;
-            return Connect();
-        }
-
-        public bool IsConnected()
-        {
-            return isConnected;
+            return "Success";
         }
 
         public string GetEmail(string username)
         {
-            string request = $"GETEMAIL|{username}";
-            return SendRequest(request);
+            return SendRequest($"GETEMAIL|{username}");
         }
 
         public string UpdatePassword(string username, string newPassword)
         {
             string hashedPassword = HashUtil.Sha256(newPassword);
-
-            string request = $"UPDATEPASS|{username}|{hashedPassword}";
-
-            return SendRequest(request);
+            return SendRequest($"UPDATEPASS|{username}|{hashedPassword}");
         }
 
+        public bool IsConnected() => isConnected;
+
+        // --- CÁC HÀM MỚI CHO GAME (MATCHMAKING) ---
+
+        public void FindMatch(string username)
+        {
+            // Gửi lệnh tìm trận, kết quả sẽ trả về qua OnMessageReceived
+            Send($"FIND_MATCH|{username}");
+        }
+
+        public void CancelMatch(string username)
+        {
+            Send($"CANCEL_MATCH|{username}");
+        }
+
+        // Hàm đánh cờ (sẽ dùng sau)
+        public void SendMove(int x, int y, int roomId)
+        {
+            Send($"MOVE|{x}|{y}|{roomId}");
+        }
     }
 
     public static class HashUtil

@@ -19,18 +19,40 @@ namespace CaroGame
         private Form _userInfoForm;
         private string _loggedInUser;
         private PlayerView pv;
+
+        // Biến quan trọng để lưu kết nối mạng
         private TCPClient _client;
 
+        // Constructor 1: Mặc định
         public Dashboard()
         {
             InitializeComponent();
-            _loggedInUser = "Player"; // Mặc định nếu không truyền gì
+            _loggedInUser = "Player";
         }
 
+        // Constructor 2: Nhận user (Offline test)
         public Dashboard(string username)
         {
             InitializeComponent();
             _loggedInUser = username;
+        }
+
+        // Constructor 3: Dùng cho Login -> Dashboard (QUAN TRỌNG)
+        public Dashboard(string username, TCPClient client)
+        {
+            InitializeComponent();
+            _loggedInUser = username;
+            _client = client;
+        }
+
+        // Constructor 4: Dùng khi quay lại từ PvP (Giữ phòng và Client)
+        public Dashboard(Room room, int playerNumber, string username, TCPClient client)
+        {
+            InitializeComponent();
+            this.room = room;
+            this.playerNumber = playerNumber;
+            this._loggedInUser = username;
+            this._client = client;
         }
 
         private void btnPvE_Click(object sender, EventArgs e)
@@ -49,9 +71,13 @@ namespace CaroGame
         {
             if (pnlPvPMenu != null)
                 pnlPvPMenu.Visible = !pnlPvPMenu.Visible;
-            //var newGameForm = new PvP();
-            //newGameForm.Show();
-            //this.Hide();
+
+            // Nếu muốn mở Lobby (Sảnh chờ) thì bỏ comment dòng dưới:
+            /*
+            var lobby = new PvPLobby(_loggedInUser, _client);
+            lobby.Show();
+            this.Hide();
+            */
         }
 
         private void btnCreateRoom_Click(object sender, EventArgs e)
@@ -121,7 +147,18 @@ namespace CaroGame
 
         private void btnPlayInstant_Click(object sender, EventArgs e)
         {
-            var newGameForm = new PvP(room, playerNumber);
+            if (this.room == null)
+            {
+                MessageBox.Show("Vui lòng tạo hoặc tham gia phòng trước!");
+                return;
+            }
+
+            // Lấy tên người chơi
+            string p1 = _loggedInUser;
+            string p2 = "Opponent"; // Có thể lấy từ object Room nếu có
+
+            // Gọi PvP với đầy đủ tham số để không bị lỗi
+            var newGameForm = new PvP(room, playerNumber, p1, p2, _client);
             newGameForm.Show();
             this.Hide();
         }
