@@ -78,14 +78,56 @@ namespace CaroGame
         public ChessBoardManager(Panel chessBoard, GameMode mode = GameMode.PvE)
         {
             this.chessBoard = chessBoard;
-            this.CurrentGameMode = mode; // Lưu chế độ chơi
+            this.CurrentGameMode = mode;
+
+            // --- FIX 1: SAFETY IMAGE LOADER ---
+            // This prevents the game from crashing or having null images
+            Image imgX = null;
+            Image imgO = null;
+
+            try
+            {
+                // Try loading from file
+                string path = Application.StartupPath + "\\Resources\\";
+                if (System.IO.File.Exists(path + "Caro Game.png")) imgX = Image.FromFile(path + "Caro Game.png");
+                if (System.IO.File.Exists(path + "Caro Game (1).png")) imgO = Image.FromFile(path + "Caro Game (1).png");
+            }
+            catch { }
+
+            // If loading failed, CREATE a backup image (Red/Blue square)
+            // This ensures you never have "null" images causing the green screen bug
+            if (imgX == null) imgX = CreateFallbackImage(Color.Red, "X");
+            if (imgO == null) imgO = CreateFallbackImage(Color.Blue, "O");
 
             this.Player = new List<Player>()
-        {
-            new Player ("Player 1", Image.FromFile(Application.StartupPath + "\\Resources\\Caro Game.png")),
-            new Player ("Player 2", Image.FromFile(Application.StartupPath + "\\Resources\\Caro Game (1).png")),
-        };
+            {
+                new Player("Player 1", imgX),
+                new Player("Player 2", imgO)
+            };
             CurrentPlayer = 0;
+        }
+
+        private Image CreateFallbackImage(Color color, string text)
+        {
+            Bitmap bmp = new Bitmap(Cons.CHESS_WIDTH, Cons.CHESS_HEIGHT);
+            using (Graphics g = Graphics.FromImage(bmp))
+            {
+                g.Clear(Color.White);
+                using (Pen pen = new Pen(color, 2))
+                {
+                    g.DrawRectangle(pen, 2, 2, bmp.Width - 4, bmp.Height - 4);
+                    if (text == "X")
+                    {
+                        g.DrawLine(pen, 5, 5, bmp.Width - 5, bmp.Height - 5);
+                        g.DrawLine(pen, bmp.Width - 5, 5, 5, bmp.Height - 5);
+                    }
+                    else
+                    {
+                        g.DrawEllipse(pen, 5, 5, bmp.Width - 10, bmp.Height - 10);
+                    }
+                }
+            }
+            return bmp;
         }
         #endregion
 
