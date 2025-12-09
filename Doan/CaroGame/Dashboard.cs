@@ -21,9 +21,10 @@ namespace CaroGame
         private PlayerView pv;
 
         // Biến quan trọng để lưu kết nối mạng
+        // Nếu biến này null => Đang offline hoặc chưa đăng nhập
         private TCPClient _client;
 
-        // Constructor 1: Mặc định
+        // Constructor 1: Mặc định (Dùng cho Designer hoặc Test giao diện)
         public Dashboard()
         {
             InitializeComponent();
@@ -37,12 +38,13 @@ namespace CaroGame
             _loggedInUser = username;
         }
 
-        // Constructor 3: Dùng cho Login -> Dashboard (QUAN TRỌNG)
+        // Constructor 3: Dùng cho Login -> Dashboard (QUAN TRỌNG NHẤT)
+        // Đây là constructor bạn PHẢI dùng ở SignIn.cs
         public Dashboard(string username, TCPClient client)
         {
             InitializeComponent();
             _loggedInUser = username;
-            _client = client;
+            _client = client; // Lưu kết nối mạng vào biến toàn cục
         }
 
         // Constructor 4: Dùng khi quay lại từ PvP (Giữ phòng và Client)
@@ -71,17 +73,11 @@ namespace CaroGame
         {
             if (pnlPvPMenu != null)
                 pnlPvPMenu.Visible = !pnlPvPMenu.Visible;
-
-            // Nếu muốn mở Lobby (Sảnh chờ) thì bỏ comment dòng dưới:
-            /*
-            var lobby = new PvPLobby(_loggedInUser, _client);
-            lobby.Show();
-            this.Hide();
-            */
         }
 
         private void btnCreateRoom_Click(object sender, EventArgs e)
         {
+            // Logic tạo phòng Local (Cũ)
             Room newRoom = RoomManager.createRoom();
             room = newRoom;
             playerNumber = 1;
@@ -139,28 +135,38 @@ namespace CaroGame
 
         private void btnSettings_Click(object sender, EventArgs e)
         {
+            // Cần truyền Client vào UserInfo để đổi pass được
             var userInfoForm = new UserInfo(pv, _client);
             userInfoForm.FormClosed += (s, args) => this.Show();
             this.Hide();
             userInfoForm.Show();
         }
 
+        // --- NÚT PLAY INSTANT (QUICK MATCH) ---
         private void btnPlayInstant_Click(object sender, EventArgs e)
         {
-            if (this.room == null)
+            // 1. KIỂM TRA KẾT NỐI TRƯỚC KHI MỞ LOBBY
+            // Nếu _client bị null (do mở bằng Dashboard() thường) -> Báo lỗi
+            if (_client == null || !_client.IsConnected())
             {
-                MessageBox.Show("Vui lòng tạo hoặc tham gia phòng trước!");
+                MessageBox.Show("Tính năng này yêu cầu kết nối Server (Online).\nVui lòng đăng nhập lại từ màn hình SignIn.",
+                                "Lỗi Kết Nối",
+                                MessageBoxButtons.OK,
+                                MessageBoxIcon.Warning);
                 return;
             }
 
-            // Lấy tên người chơi
-            string p1 = _loggedInUser;
-            string p2 = "Opponent"; // Có thể lấy từ object Room nếu có
+            // 2. Mở màn hình chờ Quick Match (PvPLobby)
+            // Truyền username và biến client đang kết nối sang đó
+            // isQuickMatch = true (mặc định) để nó tự tìm trận ngay
+            var waitingScreen = new PvPLobby(_loggedInUser, _client, true);
 
-            // Gọi PvP với đầy đủ tham số để không bị lỗi
-            var newGameForm = new PvP(room, playerNumber, p1, p2, _client);
-            newGameForm.Show();
             this.Hide();
+
+            // Khi form chờ đóng lại, hiện lại Dashboard
+            waitingScreen.FormClosed += (s, args) => this.Show();
+
+            waitingScreen.Show();
         }
     }
 }
