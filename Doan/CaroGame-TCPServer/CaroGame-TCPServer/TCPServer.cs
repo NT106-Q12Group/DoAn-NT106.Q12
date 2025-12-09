@@ -76,42 +76,57 @@ namespace CaroGame_TCPServer
         }
 
         // --- HÀM XỬ LÝ CHÍNH (ĐÃ FIX READ/WRITE) ---
+        // Thay thế hàm HandleClient cũ bằng hàm này
         private void HandleClient(TcpClient client)
         {
             NetworkStream stream = null;
-            StreamReader reader = null;
-            StreamWriter writer = null;
             string clientIP = ((IPEndPoint)client.Client.RemoteEndPoint).Address.ToString();
-            string currentUsername = null; // Lưu tên người dùng của socket này
+            string currentUsername = null;
 
             try
             {
                 stream = client.GetStream();
-                // Dùng UTF8 để đọc tiếng Việt và AutoFlush để gửi ngay lập tức
-                reader = new StreamReader(stream, Encoding.UTF8);
-                writer = new StreamWriter(stream, Encoding.UTF8) { AutoFlush = true };
+
+                // Buffer để chứa dữ liệu nhận được
+                byte[] buffer = new byte[4096];
 
                 while (isRunning && client.Connected)
                 {
-                    // 1. Đọc tin nhắn (Chờ đến khi có \n)
-                    string request = reader.ReadLine();
-                    if (request == null) break; // Client ngắt kết nối
+                    // 1. ĐỌC DỮ LIỆU (Dùng stream.Read thay vì ReadLine để tránh bị đơ)
+                    // Hàm này sẽ trả về số byte đọc được ngay lập tức, không chờ \n
+                    int bytesRead = stream.Read(buffer, 0, buffer.Length);
 
-                    // Log request (ẩn pass)
+                    // Nếu bytesRead = 0 nghĩa là Client đã ngắt kết nối
+                    if (bytesRead == 0) break;
+
+                    // Chuyển byte thành chuỗi
+                    string request = Encoding.UTF8.GetString(buffer, 0, bytesRead);
+
+                    // Xử lý trường hợp chuỗi có chứa ký tự xuống dòng thừa (\r\n) thì cắt bỏ
+                    request = request.Trim();
+
+                    // Log request
                     string logRequest = HidePassword(request);
                     Console.WriteLine($"[RECV] {clientIP}: {logRequest}");
 
-                    // 2. Xử lý logic và lấy phản hồi
+                    // 2. XỬ LÝ
                     string response = ProcessRequest(request, client, ref currentUsername);
 
-                    // 3. Gửi phản hồi (Kèm \n để Client không bị treo)
+                    // 3. PHẢN HỒI (Gửi lại Client)
                     if (!string.IsNullOrEmpty(response))
                     {
-                        writer.WriteLine(response);
+                        // Thêm ký tự xuống dòng \n vào cuối để đề phòng Client bên kia dùng ReadLine
+                        byte[] responseBytes = Encoding.UTF8.GetBytes(response + "\n");
+                        stream.Write(responseBytes, 0, responseBytes.Length);
+
                         string logResponse = HidePassword(response);
                         Console.WriteLine($"[SEND] {clientIP}: {logResponse}");
                     }
                 }
+            }
+            catch (IOException)
+            {
+                // Lỗi này thường xảy ra khi Client tắt đột ngột -> Không cần log lỗi đỏ lòm
             }
             catch (Exception ex)
             {
@@ -119,7 +134,6 @@ namespace CaroGame_TCPServer
             }
             finally
             {
-                // Dọn dẹp khi ngắt kết nối
                 CleanupClient(client, currentUsername);
             }
         }
