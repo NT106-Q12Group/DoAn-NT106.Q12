@@ -75,6 +75,7 @@ namespace CaroGame
             }
 
             string response = _client.GetEmail(username);
+
             var p = response.Split('|');
             if (p[0] != "OK")
             {
@@ -82,7 +83,7 @@ namespace CaroGame
                 return;
             }
 
-            string realEmail = p[1];   
+            string realEmail = p[1];
 
             _currentOtp = GenerateOtp(); 
 
