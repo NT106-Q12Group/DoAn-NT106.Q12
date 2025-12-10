@@ -7,8 +7,6 @@ namespace CaroGame
 {
     public partial class Dashboard : Form
     {
-        private Room room;
-        private int playerNumber;
         private string _loggedInUser;
         private PlayerView pv;
         private TCPClient _client;
@@ -31,16 +29,6 @@ namespace CaroGame
             InitializeComponent();
             _loggedInUser = username;
             _client = client;
-            RegisterServerListener();
-        }
-
-        public Dashboard(Room room, int playerNumber, string username, TCPClient client)
-        {
-            InitializeComponent();
-            this.room = room;
-            this.playerNumber = playerNumber;
-            this._loggedInUser = username;
-            this._client = client;
             RegisterServerListener();
         }
 
@@ -70,17 +58,15 @@ namespace CaroGame
                         if (btnPlayInstant != null) btnPlayInstant.Text = "Play Instant";
 
                         string roomID = parts.Length > 1 ? parts[1] : "Room_001";
-                        // Use int.Parse or TryParse safely
                         int mySide = (parts.Length > 2 && int.TryParse(parts[2], out int side)) ? side : 2;
                         string opponentName = parts.Length > 3 ? parts[3] : "Unknown";
 
-                        string p1 = (mySide == 1) ? _loggedInUser : opponentName;
-                        string p2 = (mySide == 1) ? opponentName : _loggedInUser;
+                        string p1 = (mySide == 0) ? _loggedInUser : opponentName; // Side 0 là X
+                        string p2 = (mySide == 0) ? opponentName : _loggedInUser;
 
-                        // Create room object with ID
                         Room newRoom = new Room(roomID, p1, p2);
 
-                        // IMPORTANT: Unsubscribe Dashboard before opening PvP to avoid conflicts
+                        // Unsubscribe Dashboard before opening PvP
                         if (_client != null) _client.OnMessageReceived -= Dashboard_OnMessageReceived;
 
                         PvP pvpForm = new PvP(newRoom, mySide, p1, p2, _client);
@@ -93,10 +79,15 @@ namespace CaroGame
                         this.Hide();
                         pvpForm.Show();
                     }
+                    // [MỚI] Xử lý khi vào phòng thất bại
+                    else if (command == "JOIN_FAIL")
+                    {
+                        string reason = parts.Length > 1 ? parts[1] : "Lỗi không xác định";
+                        MessageBox.Show(reason, "Lỗi vào phòng", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
                 }
                 catch (Exception ex)
                 {
-                    // Log error if needed: Console.WriteLine(ex.Message);
                 }
             });
         }
@@ -105,45 +96,85 @@ namespace CaroGame
         private void btnPvE_Click(object sender, EventArgs e)
         {
             var newGameForm = new BotDifficulty(_loggedInUser);
-
-            // Re-show Dashboard when Bot game closes
             newGameForm.FormClosed += (s, args) => this.Show();
-
             this.Hide();
             newGameForm.Show();
         }
 
-        // --- [FIXED] PLAY INSTANT BUTTON ---
+        // --- PLAY INSTANT BUTTON (Quick Match) ---
         private void btnPlayInstant_Click(object sender, EventArgs e)
         {
-            // 1. Check connection
             if (_client == null || !_client.IsConnected())
             {
                 MessageBox.Show("Mất kết nối Server! Vui lòng đăng nhập lại.", "Lỗi Mạng", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            // 2. Unsubscribe Dashboard listener to let PvPLobby handle messages
             if (_client != null)
-            {
                 _client.OnMessageReceived -= Dashboard_OnMessageReceived;
-            }
 
-            // 3. Open PvPLobby
-            // true means "Start searching immediately"
+            // Mở Lobby ở chế độ Quick Match (true)
             var waitingScreen = new PvPLobby(_loggedInUser, _client, true);
 
             this.Hide();
-
-            // 4. When PvPLobby closes, re-show Dashboard and re-subscribe
             waitingScreen.FormClosed += (s, args) =>
             {
                 this.Show();
                 RegisterServerListener();
             };
-
             waitingScreen.Show();
         }
+
+        // --- [FIXED] CREATE ROOM BUTTON ---
+        private void btnCreateRoom_Click(object sender, EventArgs e)
+        {
+            if (_client == null || !_client.IsConnected())
+            {
+                MessageBox.Show("Mất kết nối!", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            // Gửi lệnh tạo phòng
+            _client.Send($"CREATE_ROOM|{_loggedInUser}");
+
+            // Tạm thời Unsubscribe để PvPLobby hứng sự kiện ROOM_CREATED
+            if (_client != null) _client.OnMessageReceived -= Dashboard_OnMessageReceived;
+
+            // Mở Lobby ở chế độ Custom (false)
+            var waitingScreen = new PvPLobby(_loggedInUser, _client, false);
+
+            this.Hide();
+            waitingScreen.FormClosed += (s, args) =>
+            {
+                this.Show();
+                RegisterServerListener();
+            };
+            waitingScreen.Show();
+        }
+
+        // --- [FIXED] JOIN ROOM BUTTON ---
+        private void btnJoin_Click(object sender, EventArgs e)
+        {
+            // Lấy ID từ TextBox (Giả sử bạn có tbRoomID)
+            string id = tbRoomID.Text.Trim();
+            if (string.IsNullOrEmpty(id))
+            {
+                MessageBox.Show("Vui lòng nhập ID phòng!");
+                return;
+            }
+
+            if (_client == null || !_client.IsConnected())
+            {
+                MessageBox.Show("Mất kết nối!", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            // Gửi lệnh JOIN và chờ Server phản hồi (MATCH_FOUND hoặc JOIN_FAIL)
+            // Dashboard vẫn lắng nghe nên không cần mở Lobby
+            _client.Send($"JOIN_ROOM|{_loggedInUser}|{id}");
+        }
+
+        // ------------------------------------
 
         public void SetPlayer(PlayerView player)
         {
@@ -154,29 +185,13 @@ namespace CaroGame
         {
             var userInfoForm = new UserInfo(pv, _client);
             this.Hide();
-
-            userInfoForm.FormClosed += (s, args) =>
-            {
-                this.Show();
-            };
-
+            userInfoForm.FormClosed += (s, args) => this.Show();
             userInfoForm.Show();
         }
 
-        // --- OTHER HANDLERS ---
         private void btnPvP_Click(object sender, EventArgs e)
         {
             if (pnlPvPMenu != null) pnlPvPMenu.Visible = !pnlPvPMenu.Visible;
-        }
-
-        private void btnCreateRoom_Click(object sender, EventArgs e)
-        {
-            Room newRoom = RoomManager.createRoom();
-            room = newRoom;
-            playerNumber = 1;
-            var newWaitingRoom = new WaitingRoom(newRoom, 1);
-            newWaitingRoom.Show();
-            this.Hide();
         }
 
         private void btnJoinRoom_Click(object sender, EventArgs e)
@@ -191,22 +206,6 @@ namespace CaroGame
         private void btnBack_Click(object sender, EventArgs e)
         {
             if (pnlDashBoard != null) pnlDashBoard.Visible = !pnlDashBoard.Visible;
-        }
-
-        private void btnJoin_Click(object sender, EventArgs e)
-        {
-            string id = tbRoomID.Text.Trim();
-            Room joinedRoom = RoomManager.JoinRoom(id, out int pNumber);
-            if (joinedRoom == null)
-            {
-                MessageBox.Show("Phòng không tồn tại!");
-                return;
-            }
-            room = joinedRoom;
-            playerNumber = pNumber;
-            var waitingroom = new WaitingRoom(joinedRoom, pNumber);
-            waitingroom.Show();
-            this.Hide();
         }
 
         private void LoadPlayer(string username, string email, string birthday)

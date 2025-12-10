@@ -22,8 +22,8 @@ namespace CaroGame
         private bool undoCount = false;
 
         // Các biến kết nối mạng
-        private string player1Name; // Player 1 (X)
-        private string player2Name; // Player 2 (O)
+        private string player1Name;
+        private string player2Name;
         private TCPClient tcpClient;
 
         // --- CONSTRUCTOR ---
@@ -32,8 +32,8 @@ namespace CaroGame
             InitializeComponent();
             this.room = room;
             this.MySide = mySide;
-            this.player1Name = p1; // Người cầm X
-            this.player2Name = p2; // Người cầm O
+            this.player1Name = p1;
+            this.player2Name = p2;
             this.tcpClient = client;
 
             InitGame();
@@ -56,27 +56,21 @@ namespace CaroGame
             SetupEmojiPickerPanel();
             pnlChessBoard.BringToFront();
 
-            // 1. Cài đặt thông tin Player (Avatar, Tên)
             SetupPlayerInfo();
 
-            // 2. Khởi tạo bàn cờ PvP
+            // Khởi tạo bàn cờ PvP
             ChessBoard = new ChessBoardManager(pnlChessBoard, GameMode.PvP);
             ChessBoard.MySide = this.MySide;
-
-            // 3. Quy tắc: Phe 0 (X) luôn đi trước
             ChessBoard.IsMyTurn = (this.MySide == 0);
 
-            // Cập nhật Title Bar
             this.Text = $"PvP Room - Bạn là: {(this.MySide == 0 ? "X (Đi trước)" : "O (Đi sau)")}";
 
-            // 4. Đăng ký sự kiện
             ChessBoard.PlayerClickedNode -= ChessBoard_PlayerClickedNode;
             ChessBoard.PlayerClickedNode += ChessBoard_PlayerClickedNode;
 
             ChessBoard.GameEnded -= ChessBoard_GameEnded;
             ChessBoard.GameEnded += ChessBoard_GameEnded;
 
-            // 5. Đăng ký mạng
             if (tcpClient != null)
             {
                 tcpClient.OnMessageReceived -= HandleServerMessage;
@@ -86,14 +80,11 @@ namespace CaroGame
             ChessBoard.DrawChessBoard();
         }
 
-        // --- [MỚI] HÀM CÀI ĐẶT UI PLAYER ---
         private void SetupPlayerInfo()
         {
-            // 1. Cài đặt tên (Label)
-            if (label1 != null) label1.Text = player1Name; // P1 (X)
-            if (label2 != null) label2.Text = player2Name; // P2 (O)
+            if (label1 != null) label1.Text = player1Name;
+            if (label2 != null) label2.Text = player2Name;
 
-            // 2. Highlight tên của MÌNH (In đậm + Đổi màu)
             if (MySide == 0) // Mình là P1
             {
                 if (label1 != null) { label1.ForeColor = Color.Red; label1.Font = new Font(label1.Font, FontStyle.Bold); }
@@ -105,27 +96,13 @@ namespace CaroGame
                 if (label2 != null) { label2.ForeColor = Color.Blue; label2.Font = new Font(label2.Font, FontStyle.Bold); }
             }
 
-            // 3. Cài đặt Avatar (Load ảnh X và O vào PictureBox)
-            // ptbAvaP1 -> X, ptbAvaP2 -> O
-            string path = Application.StartupPath + "\\Resources\\";
-
+            // Avatar placeholder
             try
             {
-                if (ptbAvaP1 != null)
-                {
-                    ptbAvaP1.SizeMode = PictureBoxSizeMode.StretchImage;
-                    if (File.Exists(path + "Caro Game.png"))
-                        ptbAvaP1.Image = Image.FromFile(path + "Caro Game.png"); // Ảnh X
-                }
-
-                if (ptbAvaP2 != null)
-                {
-                    ptbAvaP2.SizeMode = PictureBoxSizeMode.StretchImage;
-                    if (File.Exists(path + "Caro Game (1).png"))
-                        ptbAvaP2.Image = Image.FromFile(path + "Caro Game (1).png"); // Ảnh O
-                }
+                if (ptbAvaP1 != null) { ptbAvaP1.Image = null; ptbAvaP1.BackColor = Color.LightGray; }
+                if (ptbAvaP2 != null) { ptbAvaP2.Image = null; ptbAvaP2.BackColor = Color.LightGray; }
             }
-            catch { /* Bỏ qua lỗi nếu không tìm thấy ảnh */ }
+            catch { }
         }
 
         private void ChessBoard_GameEnded(string winnerName)
@@ -133,7 +110,6 @@ namespace CaroGame
             MessageBox.Show($"Trận đấu kết thúc!\nNgười chiến thắng: {winnerName}", "Kết quả", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
-        // --- GỬI DỮ LIỆU ---
         private void ChessBoard_PlayerClickedNode(Point point)
         {
             if (tcpClient != null && tcpClient.IsConnected())
@@ -180,14 +156,13 @@ namespace CaroGame
                     else if (command == "OPPONENT_LEFT")
                     {
                         MessageBox.Show("Đối thủ đã thoát trận! Bạn thắng.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                        this.Close();
+                        this.Close(); // Đóng form -> Dashboard tự hiện lại
                     }
                 }
                 catch (Exception ex) { }
             });
         }
 
-        // --- UI HANDLERS ---
         private void btnUndo_Click(object sender, EventArgs e)
         {
             if (undoCount) return;
@@ -207,17 +182,35 @@ namespace CaroGame
             txtMessage.Clear();
         }
 
+        // --- [FIXED] NÚT THOÁT GAME ---
         private void btnExit_Click(object sender, EventArgs e)
         {
-            if (tcpClient != null)
+            // 1. Hiện bảng hỏi xác nhận
+            DialogResult result = MessageBox.Show(
+                "Bạn có chắc chắn muốn thoát trận đấu?\nBạn sẽ bị xử thua ngay lập tức.",
+                "Xác nhận thoát",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Warning
+            );
+
+            // 2. Nếu chọn YES thì mới thực hiện
+            if (result == DialogResult.Yes)
             {
-                tcpClient.OnMessageReceived -= HandleServerMessage;
-                tcpClient.CancelMatch(player1Name);
+                if (tcpClient != null)
+                {
+                    // Hủy nhận tin nhắn để tránh lỗi
+                    tcpClient.OnMessageReceived -= HandleServerMessage;
+
+                    // Gửi lệnh đầu hàng
+                    tcpClient.Send("SURRENDER");
+                }
+
+                // 3. CHỈ ĐÓNG FORM HIỆN TẠI
+                // Dashboard cũ sẽ tự hiện lên nhờ sự kiện FormClosed đã đăng ký bên Dashboard.cs
+                this.Close();
+
+                // [ĐÃ XÓA] var DashBoard = new Dashboard(...) -> Không tạo Dashboard mới nữa
             }
-            this.Close();
-            // Mở lại Dashboard
-            var DashBoard = new Dashboard(player1Name, tcpClient);
-            DashBoard.Show();
         }
 
         private void AppendMessage(string sender, string message, Color color)

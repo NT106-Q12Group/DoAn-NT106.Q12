@@ -204,6 +204,17 @@ namespace CaroGame_TCPClient
             Send($"CANCEL_MATCH|{username}");
         }
 
+        // Trong class TCPClient
+        public void CreateRoom(string username)
+        {
+            Send($"CREATE_ROOM|{username}");
+        }
+
+        public void JoinRoom(string username, string roomId)
+        {
+            Send($"JOIN_ROOM|{username}|{roomId}");
+        }
+
         // Hàm này ít dùng trực tiếp, thường dùng SendPacket
         public void SendMove(int x, int y, int roomId)
         {

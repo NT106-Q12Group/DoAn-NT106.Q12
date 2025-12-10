@@ -220,12 +220,15 @@ WHERE PlayerName = @playername;";
                 return false;
             }
         }
-        public static bool UpdatePassword(string username, string newPassword)
+        public static bool UpdatePassword(string playername, string newPassword)
         {
-            const string sql = @"
-UPDATE Player
-SET Password = @password
-WHERE PlayerName = @playername;";
+            if (string.IsNullOrWhiteSpace(playername) || string.IsNullOrWhiteSpace(newPassword))
+            {
+                Console.WriteLine($"[{Now()}] [ERROR] UpdatePassword failed: missing username or new password.");
+                return false;
+            }
+
+            const string sql = @"UPDATE Player SET Password = @password WHERE PlayerName = @playername;";
 
             try
             {
@@ -233,15 +236,15 @@ WHERE PlayerName = @playername;";
                 conn.Open();
 
                 using var cmd = new SQLiteCommand(sql, conn);
-                cmd.Parameters.Add("@password", DbType.String).Value = newPassword ?? string.Empty;
-                cmd.Parameters.Add("@playername", DbType.String).Value = username ?? string.Empty;
+                cmd.Parameters.Add("@password", DbType.String).Value = newPassword;
+                cmd.Parameters.Add("@playername", DbType.String).Value = playername;
 
                 var rows = cmd.ExecuteNonQuery();
                 var success = rows > 0;
 
                 Console.WriteLine(success
-                    ? $"[{Now()}] [INFO] Password updated for user: {username}"
-                    : $"[{Now()}] [WARN] No password updated (username not found?).");
+                    ? $"[{Now()}] [INFO] Password updated for: {playername}"
+                    : $"[{Now()}] [WARN] Password update failed (user not found?): {playername}");
 
                 return success;
             }
@@ -251,7 +254,5 @@ WHERE PlayerName = @playername;";
                 return false;
             }
         }
-
-
     }
 }
