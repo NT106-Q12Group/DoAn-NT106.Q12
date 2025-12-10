@@ -13,11 +13,18 @@ namespace CaroGame
         private PlayerView pv;
         private TCPClient _client;
         private bool isFindingMatch = false;
-        public event Action OnOpenUserInfo;
 
         // --- CONSTRUCTORS ---
-        public Dashboard() { InitializeComponent(); _loggedInUser = "Player"; }
-        public Dashboard(string username) { InitializeComponent(); _loggedInUser = username; }
+        public Dashboard() 
+        { 
+            InitializeComponent(); 
+            _loggedInUser = "Player"; 
+        }
+        public Dashboard(string username) 
+        { 
+            InitializeComponent(); 
+            _loggedInUser = username; 
+        }
 
         public Dashboard(string username, TCPClient client)
         {
@@ -136,7 +143,24 @@ namespace CaroGame
             waitingScreen.Show();
         }
 
-        private void btnSettings_Click(object sender, EventArgs e) { OnOpenUserInfo?.Invoke(); }
+        public void SetPlayer(PlayerView player)
+        {
+            pv = player;
+        }
+
+
+        private void btnSettings_Click(object sender, EventArgs e) 
+        { 
+            var userInfoForm = new UserInfo(pv, _client);
+            this.Hide();
+
+            userInfoForm.FormClosed += (s, args) => 
+            {
+                this.Show();
+            };
+
+            userInfoForm.Show(); 
+        }
 
         // --- CÁC HÀM CŨ ---
         private void btnPvP_Click(object sender, EventArgs e) { if (pnlPvPMenu != null) pnlPvPMenu.Visible = !pnlPvPMenu.Visible; }

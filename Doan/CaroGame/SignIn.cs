@@ -12,6 +12,7 @@ namespace CaroGame
         private readonly TCPClient _client;
         private bool _signingIn = false;
         private string _currentUser = "";
+        private readonly Dashboard dashboard;
 
         // Constructor mặc định kết nối tới IP server
         public SignIn() : this(new TCPClient("3.230.162.159", 25565)) { }
@@ -132,21 +133,10 @@ namespace CaroGame
 
                     // --- [FIXED QUAN TRỌNG] TRUYỀN CLIENT SANG DASHBOARD ---
                     var Dash = new Dashboard(uname, _client);
-                    // -------------------------------------------------------
+
+                    Dash.SetPlayer(pv);
 
                     // Sự kiện mở UserInfo (Giữ nguyên logic của bạn)
-                    Dash.OnOpenUserInfo += () =>
-                    {
-                        var userInfo = new UserInfo(pv, _client);
-                        userInfo.OnBack += (updatedPv) =>
-                        {
-                            pv = updatedPv;
-                            Dash.Show();
-                        };
-                        Dash.Hide();
-                        userInfo.Show();
-                    };
-
                     Dash.FormClosed += (s, _) => Close();
                     Hide();
                     Dash.Show();

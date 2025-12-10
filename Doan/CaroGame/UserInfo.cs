@@ -10,8 +10,6 @@ namespace CaroGame
         private readonly PlayerView _player;
         private readonly TCPClient _client;
 
-        public Action<PlayerView>? OnBack;
-
         public UserInfo(PlayerView player, TCPClient client)
         {
             InitializeComponent();
