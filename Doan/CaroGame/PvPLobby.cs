@@ -124,25 +124,39 @@ namespace CaroGame
             }
         }
 
-        // --- XỬ LÝ TIN NHẮN SERVER ---
         public void ProcessServerMessage(string message)
         {
+            // Đảm bảo chạy trên UI Thread
             if (this.InvokeRequired)
             {
                 this.Invoke(new Action<string>(ProcessServerMessage), new object[] { message });
                 return;
             }
 
-            string[] parts = message.Split('|');
-            string command = parts[0];
-
-            if (command == "MATCH_FOUND" && parts.Length >= 2)
+            try
             {
-                _matchFound = true; // Đánh dấu đã tìm thấy
-                string opponentName = parts[1];
-                string mySymbol = parts.Length > 2 ? parts[2] : "O";
+                // [DEBUG] Uncomment dòng này để chắc chắn tin nhắn đã đến Client
+                // MessageBox.Show("Lobby nhận: " + message); 
 
-                OnMatchFound(opponentName, mySymbol);
+                string[] parts = message.Trim().Split('|');
+                string command = parts[0];
+
+                if (command == "MATCH_FOUND")
+                {
+                    // Hủy đăng ký sự kiện ngay để không nhận tin trùng lặp
+                    if (_client != null) _client.OnMessageReceived -= ProcessServerMessage;
+
+                    // Kiểm tra kỹ độ dài mảng để tránh lỗi IndexOutOfRange
+                    string opponentName = parts.Length > 1 ? parts[1] : "Unknown";
+                    string sideRaw = parts.Length > 2 ? parts[2] : "O";
+
+                    // Gọi hàm chuyển cảnh
+                    OnMatchFound(opponentName, sideRaw);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Lỗi Lobby: " + ex.Message);
             }
         }
 
