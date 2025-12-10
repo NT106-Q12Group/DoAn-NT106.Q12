@@ -39,10 +39,10 @@ namespace CaroGame
             CenterControls();
         }
 
-        // --- XỬ LÝ TIN NHẮN SERVER (QUAN TRỌNG NHẤT) ---
+        // Trong PvPLobby.cs -> Hàm ProcessServerMessage
+
         public void ProcessServerMessage(string message)
         {
-            // Đảm bảo chạy trên luồng UI
             if (this.InvokeRequired)
             {
                 this.Invoke(new Action<string>(ProcessServerMessage), new object[] { message });
@@ -51,30 +51,30 @@ namespace CaroGame
 
             try
             {
-                // [DEBUG]: Bật dòng này lên để xem chính xác Server gửi gì về
-                // MessageBox.Show("Server gửi: " + message);
+                // [DEBUG] BỎ COMMENT DÒNG NÀY ĐỂ KIỂM TRA
+                // MessageBox.Show("Lobby nhận: " + message); 
 
                 string[] parts = message.Trim().Split('|');
                 string command = parts[0];
 
                 if (command == "MATCH_FOUND")
                 {
-                    _matchFound = true;
+                    // Hủy đăng ký ngay lập tức để tránh nhận tin nhắn trùng
+                    if (_client != null) _client.OnMessageReceived -= ProcessServerMessage;
 
-                    // Format mong đợi: MATCH_FOUND | OpponentName | Symbol(X/O) hoặc ID(1/2)
+                    _matchFound = true;
                     string opponentName = parts.Length > 1 ? parts[1] : "Unknown";
                     string sideRaw = parts.Length > 2 ? parts[2] : "O";
 
+                    // Vào game
                     OnMatchFound(opponentName, sideRaw);
                 }
             }
             catch (Exception ex)
             {
-                // Hiện lỗi để biết tại sao code dừng lại
-                MessageBox.Show("Lỗi xử lý tin nhắn: " + ex.Message);
+                MessageBox.Show("Lỗi Lobby: " + ex.Message);
             }
         }
-
         private void OnMatchFound(string opponentName, string sideRaw)
         {
             if (progressBar1 != null) progressBar1.Visible = false;
