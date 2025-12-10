@@ -36,6 +36,7 @@
             pictureBox3 = new PictureBox();
             pictureBox5 = new PictureBox();
             pictureBox4 = new PictureBox();
+            label1 = new Label();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pictureBox2).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pictureBox3).BeginInit();
@@ -47,7 +48,7 @@
             // 
             pictureBox1.BackgroundImage = Properties.Resources.lose;
             pictureBox1.BackgroundImageLayout = ImageLayout.Stretch;
-            pictureBox1.Location = new Point(89, 12);
+            pictureBox1.Location = new Point(89, 7);
             pictureBox1.Name = "pictureBox1";
             pictureBox1.Size = new Size(150, 150);
             pictureBox1.TabIndex = 0;
@@ -55,6 +56,7 @@
             // 
             // btnExit
             // 
+            btnExit.Cursor = Cursors.Hand;
             btnExit.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
             btnExit.Location = new Point(110, 285);
             btnExit.Name = "btnExit";
@@ -67,15 +69,16 @@
             // lblLose
             // 
             lblLose.AutoSize = true;
-            lblLose.Font = new Font("Segoe UI", 12F, FontStyle.Italic);
-            lblLose.Location = new Point(32, 175);
+            lblLose.Font = new Font("Segoe UI", 14F, FontStyle.Bold | FontStyle.Italic);
+            lblLose.Location = new Point(92, 161);
             lblLose.Name = "lblLose";
-            lblLose.Size = new Size(276, 28);
+            lblLose.Size = new Size(152, 32);
             lblLose.TabIndex = 5;
-            lblLose.Text = "Bạn thua rồi, bạn còn non lém";
+            lblLose.Text = "THUA RỒI!!!";
             // 
             // btnRematch
             // 
+            btnRematch.Cursor = Cursors.Hand;
             btnRematch.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
             btnRematch.Location = new Point(110, 230);
             btnRematch.Name = "btnRematch";
@@ -128,18 +131,29 @@
             pictureBox4.TabIndex = 11;
             pictureBox4.TabStop = false;
             // 
+            // label1
+            // 
+            label1.AutoSize = true;
+            label1.Font = new Font("Segoe UI", 13F, FontStyle.Bold | FontStyle.Italic);
+            label1.Location = new Point(72, 190);
+            label1.Name = "label1";
+            label1.Size = new Size(184, 30);
+            label1.TabIndex = 12;
+            label1.Text = "Bạn còn non lém";
+            // 
             // LoseMatch
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.RoyalBlue;
             ClientSize = new Size(341, 359);
+            Controls.Add(lblLose);
+            Controls.Add(label1);
             Controls.Add(pictureBox4);
             Controls.Add(pictureBox5);
             Controls.Add(btnExit);
             Controls.Add(pictureBox3);
             Controls.Add(pictureBox2);
-            Controls.Add(lblLose);
             Controls.Add(btnRematch);
             Controls.Add(pictureBox1);
             FormBorderStyle = FormBorderStyle.None;
@@ -165,5 +179,6 @@
         private PictureBox pictureBox3;
         private PictureBox pictureBox5;
         private PictureBox pictureBox4;
+        private Label label1;
     }
 }

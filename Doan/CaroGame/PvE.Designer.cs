@@ -35,7 +35,6 @@
             ptbAvaP1 = new PictureBox();
             btnExit = new Button();
             btnChat = new Button();
-            btnUndo = new Button();
             btnMenu = new Button();
             label2 = new Label();
             label1 = new Label();
@@ -44,6 +43,7 @@
             pgbP1 = new ProgressBar();
             ptbX = new PictureBox();
             ptbZero = new PictureBox();
+            btnUndo = new Button();
             panelChat = new Panel();
             label4 = new Label();
             btnSend = new Button();
@@ -165,24 +165,6 @@
             btnChat.TabIndex = 7;
             btnChat.UseVisualStyleBackColor = false;
             // 
-            // btnUndo
-            // 
-            btnUndo.Anchor = AnchorStyles.Top;
-            btnUndo.BackColor = Color.Transparent;
-            btnUndo.BackgroundImage = Properties.Resources.Caro_Game__5_;
-            btnUndo.BackgroundImageLayout = ImageLayout.Stretch;
-            btnUndo.Cursor = Cursors.Hand;
-            btnUndo.FlatAppearance.BorderSize = 0;
-            btnUndo.FlatAppearance.MouseDownBackColor = SystemColors.ButtonHighlight;
-            btnUndo.FlatAppearance.MouseOverBackColor = SystemColors.ButtonHighlight;
-            btnUndo.FlatStyle = FlatStyle.Flat;
-            btnUndo.Location = new Point(143, 243);
-            btnUndo.Name = "btnUndo";
-            btnUndo.Size = new Size(65, 51);
-            btnUndo.TabIndex = 6;
-            btnUndo.UseVisualStyleBackColor = false;
-            btnUndo.Click += btnUndo_Click;
-            // 
             // btnMenu
             // 
             btnMenu.Anchor = AnchorStyles.Top;
@@ -275,6 +257,24 @@
             ptbZero.TabStop = false;
             ptbZero.Visible = false;
             // 
+            // btnUndo
+            // 
+            btnUndo.Anchor = AnchorStyles.Top;
+            btnUndo.BackColor = Color.Transparent;
+            btnUndo.BackgroundImage = Properties.Resources.Caro_Game__5_;
+            btnUndo.BackgroundImageLayout = ImageLayout.Stretch;
+            btnUndo.Cursor = Cursors.Hand;
+            btnUndo.FlatAppearance.BorderSize = 0;
+            btnUndo.FlatAppearance.MouseDownBackColor = SystemColors.ButtonHighlight;
+            btnUndo.FlatAppearance.MouseOverBackColor = SystemColors.ButtonHighlight;
+            btnUndo.FlatStyle = FlatStyle.Flat;
+            btnUndo.Location = new Point(143, 243);
+            btnUndo.Name = "btnUndo";
+            btnUndo.Size = new Size(65, 51);
+            btnUndo.TabIndex = 6;
+            btnUndo.UseVisualStyleBackColor = false;
+            btnUndo.Click += btnUndo_Click;
+            // 
             // panelChat
             // 
             panelChat.BackColor = Color.DeepSkyBlue;
@@ -301,6 +301,7 @@
             // 
             // btnSend
             // 
+            btnSend.Cursor = Cursors.Hand;
             btnSend.Location = new Point(335, 236);
             btnSend.Name = "btnSend";
             btnSend.Size = new Size(82, 37);

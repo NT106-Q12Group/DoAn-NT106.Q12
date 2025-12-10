@@ -41,7 +41,9 @@
             // 
             // pictureBox1
             // 
-            pictureBox1.Location = new Point(232, 212);
+            pictureBox1.BackColor = SystemColors.Control;
+            pictureBox1.BorderStyle = BorderStyle.Fixed3D;
+            pictureBox1.Location = new Point(75, 120);
             pictureBox1.Margin = new Padding(3, 4, 3, 4);
             pictureBox1.Name = "pictureBox1";
             pictureBox1.Size = new Size(107, 108);
@@ -51,7 +53,7 @@
             // lb_username1
             // 
             lb_username1.AutoSize = true;
-            lb_username1.Location = new Point(245, 324);
+            lb_username1.Location = new Point(88, 232);
             lb_username1.Name = "lb_username1";
             lb_username1.Size = new Size(83, 20);
             lb_username1.TabIndex = 1;
@@ -59,7 +61,7 @@
             // 
             // progressBar1
             // 
-            progressBar1.Location = new Point(389, 252);
+            progressBar1.Location = new Point(232, 160);
             progressBar1.Margin = new Padding(3, 4, 3, 4);
             progressBar1.Name = "progressBar1";
             progressBar1.Size = new Size(131, 31);
@@ -68,7 +70,8 @@
             // 
             // btnBack
             // 
-            btnBack.Location = new Point(14, 4);
+            btnBack.Cursor = Cursors.Hand;
+            btnBack.Location = new Point(12, 13);
             btnBack.Margin = new Padding(3, 4, 3, 4);
             btnBack.Name = "btnBack";
             btnBack.Size = new Size(86, 31);
@@ -79,7 +82,9 @@
             // 
             // pictureBox2
             // 
-            pictureBox2.Location = new Point(569, 212);
+            pictureBox2.BackColor = SystemColors.Control;
+            pictureBox2.BorderStyle = BorderStyle.Fixed3D;
+            pictureBox2.Location = new Point(412, 120);
             pictureBox2.Margin = new Padding(3, 4, 3, 4);
             pictureBox2.Name = "pictureBox2";
             pictureBox2.Size = new Size(107, 108);
@@ -89,7 +94,7 @@
             // lb_username2
             // 
             lb_username2.AutoSize = true;
-            lb_username2.Location = new Point(586, 324);
+            lb_username2.Location = new Point(429, 232);
             lb_username2.Name = "lb_username2";
             lb_username2.Size = new Size(83, 20);
             lb_username2.TabIndex = 5;
@@ -98,7 +103,7 @@
             // lb_status
             // 
             lb_status.AutoSize = true;
-            lb_status.Location = new Point(400, 228);
+            lb_status.Location = new Point(243, 136);
             lb_status.Name = "lb_status";
             lb_status.Size = new Size(115, 20);
             lb_status.TabIndex = 6;
@@ -108,7 +113,8 @@
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(914, 600);
+            BackColor = SystemColors.HotTrack;
+            ClientSize = new Size(627, 346);
             Controls.Add(lb_status);
             Controls.Add(lb_username2);
             Controls.Add(pictureBox2);
@@ -116,6 +122,7 @@
             Controls.Add(progressBar1);
             Controls.Add(lb_username1);
             Controls.Add(pictureBox1);
+            FormBorderStyle = FormBorderStyle.None;
             Margin = new Padding(3, 4, 3, 4);
             Name = "PvPLobby";
             Text = "PvPLobby";

@@ -36,6 +36,7 @@
             pictureBox3 = new PictureBox();
             pictureBox4 = new PictureBox();
             pictureBox5 = new PictureBox();
+            label1 = new Label();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pictureBox2).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pictureBox3).BeginInit();
@@ -47,7 +48,7 @@
             // 
             pictureBox1.BackgroundImage = Properties.Resources.win;
             pictureBox1.BackgroundImageLayout = ImageLayout.Stretch;
-            pictureBox1.Location = new Point(90, 12);
+            pictureBox1.Location = new Point(90, 7);
             pictureBox1.Name = "pictureBox1";
             pictureBox1.Size = new Size(150, 150);
             pictureBox1.TabIndex = 0;
@@ -55,6 +56,7 @@
             // 
             // btnRematch
             // 
+            btnRematch.Cursor = Cursors.Hand;
             btnRematch.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
             btnRematch.Location = new Point(110, 230);
             btnRematch.Name = "btnRematch";
@@ -67,15 +69,16 @@
             // lblWin
             // 
             lblWin.AutoSize = true;
-            lblWin.Font = new Font("Segoe UI", 12F, FontStyle.Italic);
-            lblWin.Location = new Point(12, 175);
+            lblWin.Font = new Font("Segoe UI", 14F, FontStyle.Bold | FontStyle.Italic);
+            lblWin.Location = new Point(72, 152);
             lblWin.Name = "lblWin";
-            lblWin.Size = new Size(319, 28);
+            lblWin.Size = new Size(186, 32);
             lblWin.TabIndex = 2;
-            lblWin.Text = "Bạn đã chiến thắng, xin chúc mừng";
+            lblWin.Text = "CHÚC MỪNG!!!";
             // 
             // btnExit
             // 
+            btnExit.Cursor = Cursors.Hand;
             btnExit.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
             btnExit.Location = new Point(110, 285);
             btnExit.Name = "btnExit";
@@ -125,12 +128,23 @@
             pictureBox5.TabIndex = 7;
             pictureBox5.TabStop = false;
             // 
+            // label1
+            // 
+            label1.AutoSize = true;
+            label1.Font = new Font("Segoe UI", 13F, FontStyle.Bold | FontStyle.Italic);
+            label1.Location = new Point(58, 185);
+            label1.Name = "label1";
+            label1.Size = new Size(211, 30);
+            label1.TabIndex = 8;
+            label1.Text = "Bạn đã chiến thắng";
+            // 
             // WinMatch
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.Chocolate;
             ClientSize = new Size(341, 359);
+            Controls.Add(label1);
             Controls.Add(pictureBox5);
             Controls.Add(pictureBox4);
             Controls.Add(pictureBox3);
@@ -162,5 +176,6 @@
         private PictureBox pictureBox3;
         private PictureBox pictureBox4;
         private PictureBox pictureBox5;
+        private Label label1;
     }
 }

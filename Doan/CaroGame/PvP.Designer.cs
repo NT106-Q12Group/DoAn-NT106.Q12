@@ -30,6 +30,8 @@
         {
             pnlLeaderBoard = new Panel();
             pnlInfo = new Panel();
+            ptbOne = new PictureBox();
+            ptbZero = new PictureBox();
             ptbAvaP2 = new PictureBox();
             ptbAvaP1 = new PictureBox();
             btnExit = new Button();
@@ -51,16 +53,14 @@
             btnSend = new Button();
             txtMessage = new TextBox();
             label3 = new Label();
-            ptbOne = new PictureBox();
-            ptbZero = new PictureBox();
             pnlInfo.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)ptbOne).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)ptbZero).BeginInit();
             ((System.ComponentModel.ISupportInitialize)ptbAvaP2).BeginInit();
             ((System.ComponentModel.ISupportInitialize)ptbAvaP1).BeginInit();
             ((System.ComponentModel.ISupportInitialize)ptbO).BeginInit();
             ((System.ComponentModel.ISupportInitialize)ptbX).BeginInit();
             panelChat.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)ptbOne).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)ptbZero).BeginInit();
             SuspendLayout();
             // 
             // pnlLeaderBoard
@@ -95,6 +95,31 @@
             pnlInfo.Name = "pnlInfo";
             pnlInfo.Size = new Size(449, 311);
             pnlInfo.TabIndex = 1;
+            // 
+            // ptbOne
+            // 
+            ptbOne.BackColor = Color.Transparent;
+            ptbOne.BackgroundImage = Properties.Resources.number_11;
+            ptbOne.BackgroundImageLayout = ImageLayout.Stretch;
+            ptbOne.Cursor = Cursors.Hand;
+            ptbOne.Location = new Point(192, 239);
+            ptbOne.Name = "ptbOne";
+            ptbOne.Size = new Size(20, 20);
+            ptbOne.TabIndex = 13;
+            ptbOne.TabStop = false;
+            // 
+            // ptbZero
+            // 
+            ptbZero.BackColor = Color.Transparent;
+            ptbZero.BackgroundImage = Properties.Resources.zero;
+            ptbZero.BackgroundImageLayout = ImageLayout.Stretch;
+            ptbZero.Cursor = Cursors.Hand;
+            ptbZero.Location = new Point(192, 239);
+            ptbZero.Name = "ptbZero";
+            ptbZero.Size = new Size(20, 20);
+            ptbZero.TabIndex = 14;
+            ptbZero.TabStop = false;
+            ptbZero.Visible = false;
             // 
             // ptbAvaP2
             // 
@@ -294,6 +319,7 @@
             // 
             // btn_emoji
             // 
+            btn_emoji.Cursor = Cursors.Hand;
             btn_emoji.Location = new Point(325, 236);
             btn_emoji.Name = "btn_emoji";
             btn_emoji.Size = new Size(33, 39);
@@ -314,6 +340,7 @@
             // 
             // btnSend
             // 
+            btnSend.Cursor = Cursors.Hand;
             btnSend.Location = new Point(364, 236);
             btnSend.Name = "btnSend";
             btnSend.Size = new Size(82, 37);
@@ -342,31 +369,6 @@
             label3.TabIndex = 9;
             label3.Text = "Leaderboard";
             // 
-            // ptbOne
-            // 
-            ptbOne.BackColor = Color.Transparent;
-            ptbOne.BackgroundImage = Properties.Resources.number_11;
-            ptbOne.BackgroundImageLayout = ImageLayout.Stretch;
-            ptbOne.Cursor = Cursors.Hand;
-            ptbOne.Location = new Point(192, 239);
-            ptbOne.Name = "ptbOne";
-            ptbOne.Size = new Size(20, 20);
-            ptbOne.TabIndex = 13;
-            ptbOne.TabStop = false;
-            // 
-            // ptbZero
-            // 
-            ptbZero.BackColor = Color.Transparent;
-            ptbZero.BackgroundImage = Properties.Resources.zero;
-            ptbZero.BackgroundImageLayout = ImageLayout.Stretch;
-            ptbZero.Cursor = Cursors.Hand;
-            ptbZero.Location = new Point(192, 239);
-            ptbZero.Name = "ptbZero";
-            ptbZero.Size = new Size(20, 20);
-            ptbZero.TabIndex = 14;
-            ptbZero.TabStop = false;
-            ptbZero.Visible = false;
-            // 
             // PvP
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
@@ -385,14 +387,14 @@
             Text = "Cờ Caro";
             pnlInfo.ResumeLayout(false);
             pnlInfo.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)ptbOne).EndInit();
+            ((System.ComponentModel.ISupportInitialize)ptbZero).EndInit();
             ((System.ComponentModel.ISupportInitialize)ptbAvaP2).EndInit();
             ((System.ComponentModel.ISupportInitialize)ptbAvaP1).EndInit();
             ((System.ComponentModel.ISupportInitialize)ptbO).EndInit();
             ((System.ComponentModel.ISupportInitialize)ptbX).EndInit();
             panelChat.ResumeLayout(false);
             panelChat.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)ptbOne).EndInit();
-            ((System.ComponentModel.ISupportInitialize)ptbZero).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }

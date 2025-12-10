@@ -151,6 +151,7 @@
             // 
             // btnReady
             // 
+            btnReady.Cursor = Cursors.Hand;
             btnReady.Font = new Font("Segoe UI", 14F, FontStyle.Bold);
             btnReady.Location = new Point(212, 317);
             btnReady.Name = "btnReady";
