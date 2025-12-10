@@ -18,13 +18,32 @@ namespace CaroGame
         private readonly TCPClient _client;
         private readonly PlayerView _player;
         private string _currentOtp = string.Empty;
+        private const string PH_PASSWORD = "Password";
+        private const string PH_CONFIRM = "Confirm password";
         public ResetPassword(TCPClient client)
         {
             InitializeComponent();
             _client = client;
- 
+
+            newPassword_tb.Enabled = false;
+            confirmPassword_tb.Enabled = false;
+            newPassword_tb.KeyPress += BlockWhitespace_KeyPress;
+            confirmPassword_tb.KeyPress += BlockWhitespace_KeyPress;
+
+            checkBox1.CheckedChanged += checkBox1_CheckedChanged;
+            checkBox1.CheckedChanged += checkBox2_CheckedChanged;
 
         }
+
+        private void BlockWhitespace_KeyPress(object? sender, KeyPressEventArgs e)
+        {
+            if (char.IsWhiteSpace(e.KeyChar))
+            {
+                e.Handled = true;
+                MessageBox.Show("Password must not contain spaces!", "Validation", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+        }
+
 
         public static string GenerateOtp()
         {
@@ -82,24 +101,24 @@ namespace CaroGame
                 MessageBox.Show($" Không tồn tại hoặc không thể kết nối đến email: {p[1]}", "Lỗi");
                 return;
             }
-            
+
 
             string realEmail = p[1];
 
-            _currentOtp = GenerateOtp(); 
+            _currentOtp = GenerateOtp();
 
             string err;
             bool ok = SendOtp(realEmail, _currentOtp, out err);
 
             if (ok)
             {
-            
+
                 MessageBox.Show($"Mã OTP đã được gửi đến email: {p[1]} đăng ký. Vui lòng kiểm tra hộp thư.", "Thành công");
 
 
                 OTP_tb.Enabled = true;
                 confirmOtp_btn.Enabled = true;
-                sendOtp_btn.Enabled = false; 
+                sendOtp_btn.Enabled = false;
             }
             else
             {
@@ -121,7 +140,7 @@ namespace CaroGame
             {
                 MessageBox.Show("Xác nhận OTP thành công! Vui lòng đặt mật khẩu mới.", "Thành công");
 
-               
+
                 newPassword_tb.Enabled = true;
                 confirmPassword_tb.Enabled = true;
                 save_btn.Enabled = true;
@@ -160,12 +179,29 @@ namespace CaroGame
 )
             {
                 MessageBox.Show("Đặt lại mật khẩu thành công! Bạn có thể đăng nhập ngay.", "Thành công");
-                this.Close(); 
+                this.Close();
             }
             else
             {
                 MessageBox.Show($"Lỗi khi cập nhật mật khẩu: {p[1]}", "Lỗi");
             }
+        }
+
+        private void ResetPassword_Load(object sender, EventArgs e)
+        {
+
+        }
+
+        private void checkBox1_CheckedChanged(object sender, EventArgs e)
+        {
+            if (newPassword_tb.Text == PH_PASSWORD) { newPassword_tb.UseSystemPasswordChar = false; return; }
+            newPassword_tb.UseSystemPasswordChar = !checkBox1.Checked;
+        }
+
+        private void checkBox2_CheckedChanged(object sender, EventArgs e)
+        {
+            if (confirmPassword_tb.Text == PH_CONFIRM) { confirmPassword_tb.UseSystemPasswordChar = false; return; }
+            confirmPassword_tb.UseSystemPasswordChar = !checkBox2.Checked;
         }
     }
 }
