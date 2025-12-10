@@ -1,6 +1,8 @@
-﻿using System;
+﻿using CaroGame_TCPClient;
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.Drawing;
+using System.Security.Policy;
 using System.Windows.Forms;
 using static CaroGame.ChessBoardManager;
 
@@ -14,13 +16,13 @@ namespace CaroGame
         private string _playerName;
         private Menu menuForm;
         private bool undoCount = false;
+
         #endregion
 
         // Constructor nhận tham số difficulty
         public PvE(string difficulty, string playerName)
         {
             InitializeComponent();
-            _playerName = playerName;
 
             if (label1 != null)
                 label1.Text = _playerName;
@@ -75,7 +77,7 @@ namespace CaroGame
 
                 win.winExit += () =>
                 {
-                    result.Close();
+                    result.Close(); 
                     backToDashboard();
                 };
             }
@@ -109,7 +111,9 @@ namespace CaroGame
         public void backToDashboard()
         {
             this.Hide();
+
             var dash = new Dashboard(_playerName);
+            dash.SetPlayer(new PlayerView { PlayerName = _playerName });
             dash.FormClosed += (s, e) => this.Close();
             dash.Show();
         }
