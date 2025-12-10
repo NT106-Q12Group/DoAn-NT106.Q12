@@ -12,7 +12,6 @@ namespace CaroGame
         private TCPClient _client;
         private bool isFindingMatch = false;
 
-        // --- CONSTRUCTORS ---
         public Dashboard()
         {
             InitializeComponent();
@@ -36,63 +35,67 @@ namespace CaroGame
         {
             if (_client != null)
             {
-                // Ensure we don't subscribe multiple times
+                // Hủy đăng ký cũ trước khi đăng ký mới để tránh nhận tin nhắn 2 lần (duplicate events)
                 _client.OnMessageReceived -= Dashboard_OnMessageReceived;
                 _client.OnMessageReceived += Dashboard_OnMessageReceived;
             }
         }
 
-        // --- [CORE] PROCESS MESSAGES FROM SERVER ---
         private void Dashboard_OnMessageReceived(string data)
         {
-            this.Invoke((MethodInvoker)delegate
+            // Kiểm tra nếu Form đã đóng hoặc chưa tạo Handle thì dừng ngay để tránh lỗi Invoke khi đóng app
+            if (this.IsDisposed || !this.IsHandleCreated) return;
+
+            try
             {
-                try
+                this.Invoke((MethodInvoker)delegate
                 {
-                    string[] parts = data.Split('|');
-                    string command = parts[0];
+                    if (this.IsDisposed) return;
 
-                    if (command == "MATCH_FOUND")
+                    try
                     {
-                        isFindingMatch = false;
-                        if (btnPlayInstant != null) btnPlayInstant.Text = "Play Instant";
+                        string[] parts = data.Split('|');
+                        string command = parts[0];
 
-                        string roomID = parts.Length > 1 ? parts[1] : "Room_001";
-                        int mySide = (parts.Length > 2 && int.TryParse(parts[2], out int side)) ? side : 2;
-                        string opponentName = parts.Length > 3 ? parts[3] : "Unknown";
+                        if (command == "MATCH_FOUND")
+                        {
+                            isFindingMatch = false;
+                            if (btnPlayInstant != null) btnPlayInstant.Text = "Play Instant";
 
-                        string p1 = (mySide == 0) ? _loggedInUser : opponentName; // Side 0 là X
-                        string p2 = (mySide == 0) ? opponentName : _loggedInUser;
+                            string roomID = parts.Length > 1 ? parts[1] : "Room_001";
+                            int mySide = (parts.Length > 2 && int.TryParse(parts[2], out int side)) ? side : 2;
+                            string opponentName = parts.Length > 3 ? parts[3] : "Unknown";
 
-                        Room newRoom = new Room(roomID, p1, p2);
+                            string p1 = (mySide == 0) ? _loggedInUser : opponentName; // Side 0 là X (đi trước)
+                            string p2 = (mySide == 0) ? opponentName : _loggedInUser;
 
-                        // Unsubscribe Dashboard before opening PvP
-                        if (_client != null) _client.OnMessageReceived -= Dashboard_OnMessageReceived;
+                            Room newRoom = new Room(roomID, p1, p2);
 
-                        PvP pvpForm = new PvP(newRoom, mySide, p1, p2, _client);
+                            // Hủy đăng ký Dashboard trước khi mở PvP để tránh xung đột xử lý tin nhắn
+                            if (_client != null) _client.OnMessageReceived -= Dashboard_OnMessageReceived;
 
-                        pvpForm.FormClosed += (s, args) => {
-                            this.Show();
-                            RegisterServerListener(); // Re-subscribe when game ends
-                        };
+                            PvP pvpForm = new PvP(newRoom, mySide, p1, p2, _client);
 
-                        this.Hide();
-                        pvpForm.Show();
+                            pvpForm.FormClosed += (s, args) => {
+                                this.Show();
+                                RegisterServerListener(); // Đăng ký lại lắng nghe khi kết thúc trận đấu
+                            };
+
+                            this.Hide();
+                            pvpForm.Show();
+                        }
+                        else if (command == "JOIN_FAIL")
+                        {
+                            string reason = parts.Length > 1 ? parts[1] : "Lỗi không xác định";
+                            MessageBox.Show(reason, "Lỗi vào phòng", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
                     }
-                    // [MỚI] Xử lý khi vào phòng thất bại
-                    else if (command == "JOIN_FAIL")
-                    {
-                        string reason = parts.Length > 1 ? parts[1] : "Lỗi không xác định";
-                        MessageBox.Show(reason, "Lỗi vào phòng", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
-                }
-                catch (Exception ex)
-                {
-                }
-            });
+                    catch (Exception ex) { }
+                });
+            }
+            catch { }
         }
 
-        // --- EVENT HANDLERS ---
         private void btnPvE_Click(object sender, EventArgs e)
         {
             var newGameForm = new BotDifficulty(_loggedInUser);
@@ -101,7 +104,6 @@ namespace CaroGame
             newGameForm.Show();
         }
 
-        // --- PLAY INSTANT BUTTON (Quick Match) ---
         private void btnPlayInstant_Click(object sender, EventArgs e)
         {
             if (_client == null || !_client.IsConnected())
@@ -110,11 +112,9 @@ namespace CaroGame
                 return;
             }
 
-            if (_client != null)
-                _client.OnMessageReceived -= Dashboard_OnMessageReceived;
+            if (_client != null) _client.OnMessageReceived -= Dashboard_OnMessageReceived;
 
-            // Mở Lobby ở chế độ Quick Match (true)
-            var waitingScreen = new PvPLobby(_loggedInUser, _client, true);
+            var waitingScreen = new PvPLobby(_loggedInUser, _client, true); // true = Quick Match
 
             this.Hide();
             waitingScreen.FormClosed += (s, args) =>
@@ -125,7 +125,6 @@ namespace CaroGame
             waitingScreen.Show();
         }
 
-        // --- [FIXED] CREATE ROOM BUTTON ---
         private void btnCreateRoom_Click(object sender, EventArgs e)
         {
             if (_client == null || !_client.IsConnected())
@@ -134,14 +133,11 @@ namespace CaroGame
                 return;
             }
 
-            // Gửi lệnh tạo phòng
             _client.Send($"CREATE_ROOM|{_loggedInUser}");
 
-            // Tạm thời Unsubscribe để PvPLobby hứng sự kiện ROOM_CREATED
             if (_client != null) _client.OnMessageReceived -= Dashboard_OnMessageReceived;
 
-            // Mở Lobby ở chế độ Custom (false)
-            var waitingScreen = new PvPLobby(_loggedInUser, _client, false);
+            var waitingScreen = new PvPLobby(_loggedInUser, _client, false); // false = Custom Room (Chờ ID)
 
             this.Hide();
             waitingScreen.FormClosed += (s, args) =>
@@ -152,10 +148,8 @@ namespace CaroGame
             waitingScreen.Show();
         }
 
-        // --- [FIXED] JOIN ROOM BUTTON ---
         private void btnJoin_Click(object sender, EventArgs e)
         {
-            // Lấy ID từ TextBox (Giả sử bạn có tbRoomID)
             string id = tbRoomID.Text.Trim();
             if (string.IsNullOrEmpty(id))
             {
@@ -169,24 +163,30 @@ namespace CaroGame
                 return;
             }
 
-            // Gửi lệnh JOIN và chờ Server phản hồi (MATCH_FOUND hoặc JOIN_FAIL)
-            // Dashboard vẫn lắng nghe nên không cần mở Lobby
+            // Gửi lệnh Join và chờ Server phản hồi (Dashboard vẫn đang lắng nghe để hứng MATCH_FOUND hoặc JOIN_FAIL)
             _client.Send($"JOIN_ROOM|{_loggedInUser}|{id}");
-        }
-
-        // ------------------------------------
-
-        public void SetPlayer(PlayerView player)
-        {
-            pv = player;
         }
 
         private void btnSettings_Click(object sender, EventArgs e)
         {
+            // Hủy sự kiện ở Dashboard để tránh xung đột với UserInfo (nếu UserInfo cũng dùng mạng)
+            if (_client != null) _client.OnMessageReceived -= Dashboard_OnMessageReceived;
+
             var userInfoForm = new UserInfo(pv, _client);
             this.Hide();
-            userInfoForm.FormClosed += (s, args) => this.Show();
+
+            userInfoForm.FormClosed += (s, args) =>
+            {
+                this.Show();
+                RegisterServerListener();
+            };
+
             userInfoForm.Show();
+        }
+
+        public void SetPlayer(PlayerView player)
+        {
+            pv = player;
         }
 
         private void btnPvP_Click(object sender, EventArgs e)
@@ -215,6 +215,7 @@ namespace CaroGame
 
         protected override void OnFormClosing(FormClosingEventArgs e)
         {
+            // Hủy đăng ký sự kiện khi đóng form để tránh gọi Invoke lên form đã đóng
             if (_client != null)
             {
                 _client.OnMessageReceived -= Dashboard_OnMessageReceived;
