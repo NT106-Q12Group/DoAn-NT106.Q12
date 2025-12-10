@@ -29,13 +29,12 @@ namespace CaroGame
 
         public Tile()
         {
-            BackgroundImage = null; // Khởi tạo các ô cờ
+            BackgroundImage = null;
         }
     }
 
     internal class ChessBoardManager
     {
-
         #region Properties
         private Panel chessBoard;
         private Stack<Button> moveHistory = new Stack<Button>();
@@ -97,8 +96,8 @@ namespace CaroGame
 
             this.Player = new List<Player>()
             {
-                new Player("Player 1", imgX), // Index 0 là X
-                new Player("Player 2", imgO)  // Index 1 là O
+                new Player("Player 1", imgX),
+                new Player("Player 2", imgO)
             };
             CurrentPlayer = 0;
         }
@@ -168,13 +167,9 @@ namespace CaroGame
 
                     btn.FlatAppearance.BorderColor = Color.Silver;
                     btn.FlatAppearance.BorderSize = 1;
-
                     btn.Click += Btn_Click;
-
                     chessBoard.Controls.Add(btn);
-
                     matrix[i].Add(btn);
-
                     oldButton = btn;
                 }
                 oldButton.Location = new Point(0, oldButton.Location.Y + Cons.CHESS_HEIGHT);
@@ -205,23 +200,17 @@ namespace CaroGame
 
         private bool isThinking = false;
 
-        // --- [FIXED] HÀM XỬ LÝ NƯỚC ĐI TỪ SERVER ---
         public void ProcessMove(int x, int y, int playerSide)
         {
             if (y < 0 || y >= matrix.Count || x < 0 || x >= matrix[0].Count) return;
 
-            // [LOGIC SỬA LỖI QUAN TRỌNG]
-            // Không tin tưởng 'playerSide' từ Server vì Server có thể gửi sai (ví dụ gửi 1 thay vì 0).
-            // Tự tính toán phe dựa trên lịch sử nước đi:
-            // - Nước đi số 0, 2, 4... -> Auto là X (Side 0)
-            // - Nước đi số 1, 3, 5... -> Auto là O (Side 1)
-
+            // Tự tính toán phe dựa trên lịch sử nước đi để tránh tin tưởng hoàn toàn vào server
+            // Nước chẵn (0, 2, 4...) là X, lẻ là O
             int autoSide = moveHistory.Count % 2;
 
             Button btn = matrix[y][x];
             if (btn.BackgroundImage != null) return;
 
-            // Vẽ quân cờ dựa trên phe TỰ TÍNH (đảm bảo P1 luôn ra X, P2 luôn ra O)
             btn.BackgroundImage = Player[autoSide].Mark;
 
             HighlightMove(btn);
@@ -236,18 +225,16 @@ namespace CaroGame
                 return;
             }
 
-            // --- XỬ LÝ CHUYỂN LƯỢT PVP ---
             if (CurrentGameMode == GameMode.PvP)
             {
-                // Nếu phe vừa đánh (autoSide) TRÙNG với phe của mình (MySide)
-                // => Tức là mình vừa đánh xong => Khóa lượt
+                // Nếu mình vừa đánh (autoSide trùng MySide) -> Khóa lượt
+                // Nếu đối thủ vừa đánh -> Mở lượt
                 if (autoSide == MySide)
                 {
                     IsMyTurn = false;
                 }
                 else
                 {
-                    // Nếu phe vừa đánh KHÁC phe mình => Đối thủ đánh => Mở lượt
                     IsMyTurn = true;
                 }
             }
@@ -264,10 +251,9 @@ namespace CaroGame
             if (btn.BackgroundImage != null) return;
             if (CurrentGameMode == GameMode.PvE && isThinking) return;
 
-            // --- PVP LOGIC ---
             if (CurrentGameMode == GameMode.PvP)
             {
-                if (!IsMyTurn) return; // Chưa đến lượt thì chặn
+                if (!IsMyTurn) return;
 
                 Point p = getChessPoint(btn);
                 PlayerClickedNode?.Invoke(p); // Gửi tọa độ lên Server
@@ -276,7 +262,7 @@ namespace CaroGame
                 return;
             }
 
-            // --- PVE LOGIC ---
+            // PVE LOGIC
             int markIndex = 0;
             btn.BackgroundImage = Player[markIndex].Mark;
             HighlightMove(btn);
@@ -332,7 +318,6 @@ namespace CaroGame
             undoAlready = false;
             undoUsedInBot = false;
 
-            // Reset lượt PvP: X (Side 0) đi trước
             if (CurrentGameMode == GameMode.PvP)
             {
                 IsMyTurn = (MySide == 0);
@@ -392,23 +377,13 @@ namespace CaroGame
             return true;
         }
 
-        //Lấy các ô thắng
         private List<Button> getWinningCells(Button btn)
         {
             List<Button> win;
-
-            win = getHorizontalCells(btn);
-            if (win != null) return win;
-
-            win = getVerticalCells(btn);
-            if (win != null) return win;
-
-            win = getMainDiagonalCells(btn);
-            if (win != null) return win;
-
-            win = getSecondaryDiagonalCells(btn);
-            if (win != null) return win;
-
+            win = getHorizontalCells(btn); if (win != null) return win;
+            win = getVerticalCells(btn); if (win != null) return win;
+            win = getMainDiagonalCells(btn); if (win != null) return win;
+            win = getSecondaryDiagonalCells(btn); if (win != null) return win;
             return null;
         }
 
@@ -426,18 +401,14 @@ namespace CaroGame
 
             for (int i = point.X; i >= 0; i--)
             {
-                if (matrix[point.Y][i].BackgroundImage == btn.BackgroundImage)
-                    cells.Insert(0, matrix[point.Y][i]);
+                if (matrix[point.Y][i].BackgroundImage == btn.BackgroundImage) cells.Insert(0, matrix[point.Y][i]);
                 else break;
             }
-
             for (int i = point.X + 1; i < Cons.CHESS_BOARD_WIDTH; i++)
             {
-                if (matrix[point.Y][i].BackgroundImage == btn.BackgroundImage)
-                    cells.Add(matrix[point.Y][i]);
+                if (matrix[point.Y][i].BackgroundImage == btn.BackgroundImage) cells.Add(matrix[point.Y][i]);
                 else break;
             }
-
             if (cells.Count < 5) return null;
             return cells.GetRange(0, 5);
         }
@@ -449,18 +420,14 @@ namespace CaroGame
 
             for (int i = point.Y; i >= 0; i--)
             {
-                if (matrix[i][point.X].BackgroundImage == btn.BackgroundImage)
-                    cells.Insert(0, matrix[i][point.X]);
+                if (matrix[i][point.X].BackgroundImage == btn.BackgroundImage) cells.Insert(0, matrix[i][point.X]);
                 else break;
             }
-
             for (int i = point.Y + 1; i < Cons.CHESS_BOARD_HEIGHT; i++)
             {
-                if (matrix[i][point.X].BackgroundImage == btn.BackgroundImage)
-                    cells.Add(matrix[i][point.X]);
+                if (matrix[i][point.X].BackgroundImage == btn.BackgroundImage) cells.Add(matrix[i][point.X]);
                 else break;
             }
-
             if (cells.Count < 5) return null;
             return cells.GetRange(0, 5);
         }
@@ -473,19 +440,15 @@ namespace CaroGame
             for (int i = 0; i <= point.X; i++)
             {
                 if (point.X - i < 0 || point.Y - i < 0) break;
-                if (matrix[point.Y - i][point.X - i].BackgroundImage == btn.BackgroundImage)
-                    cells.Insert(0, matrix[point.Y - i][point.X - i]);
+                if (matrix[point.Y - i][point.X - i].BackgroundImage == btn.BackgroundImage) cells.Insert(0, matrix[point.Y - i][point.X - i]);
                 else break;
             }
-
             for (int i = 1; i <= Cons.CHESS_WIDTH - point.X; i++)
             {
                 if (point.Y + i >= Cons.CHESS_BOARD_HEIGHT || point.X + i >= Cons.CHESS_BOARD_WIDTH) break;
-                if (matrix[point.Y + i][point.X + i].BackgroundImage == btn.BackgroundImage)
-                    cells.Add(matrix[point.Y + i][point.X + i]);
+                if (matrix[point.Y + i][point.X + i].BackgroundImage == btn.BackgroundImage) cells.Add(matrix[point.Y + i][point.X + i]);
                 else break;
             }
-
             if (cells.Count < 5) return null;
             return cells.GetRange(0, 5);
         }
@@ -498,19 +461,15 @@ namespace CaroGame
             for (int i = 0; i <= point.X; i++)
             {
                 if (point.X + i >= Cons.CHESS_BOARD_WIDTH || point.Y - i < 0) break;
-                if (matrix[point.Y - i][point.X + i].BackgroundImage == btn.BackgroundImage)
-                    cells.Insert(0, matrix[point.Y - i][point.X + i]);
+                if (matrix[point.Y - i][point.X + i].BackgroundImage == btn.BackgroundImage) cells.Insert(0, matrix[point.Y - i][point.X + i]);
                 else break;
             }
-
             for (int i = 1; i <= Cons.CHESS_WIDTH - point.X; i++)
             {
                 if (point.Y + i >= Cons.CHESS_BOARD_HEIGHT || point.X - i < 0) break;
-                if (matrix[point.Y + i][point.X - i].BackgroundImage == btn.BackgroundImage)
-                    cells.Add(matrix[point.Y + i][point.X - i]);
+                if (matrix[point.Y + i][point.X - i].BackgroundImage == btn.BackgroundImage) cells.Add(matrix[point.Y + i][point.X - i]);
                 else break;
             }
-
             if (cells.Count < 5) return null;
             return cells.GetRange(0, 5);
         }
@@ -524,7 +483,9 @@ namespace CaroGame
                 b.FlatAppearance.BorderSize = 3;
             }
         }
-        #region Bot
+
+        #region Bot AI
+        // Bảng điểm tấn công và phòng thủ để đánh giá thế cờ
         long[] AttackScore = new long[] { 0, 10, 100, 1000, 100000, 10000000 };
         long[] DefendScore = new long[] { 0, 12, 120, 1500, 200000, 10000000 };
         const int EMPTY = 0;
@@ -534,8 +495,10 @@ namespace CaroGame
         private async Task BotPlay()
         {
             int[,] board = GetIntBoard();
+            // Nếu bàn cờ trống, đánh vào giữa cho nhanh
             if (IsBoardEmpty(board)) { MakeMove(Cons.CHESS_BOARD_HEIGHT / 2, Cons.CHESS_BOARD_WIDTH / 2); return; }
 
+            // Cấu hình độ khó
             int targetDepth = 1;
             if (Difficulty == DifficultyLevel.ExtremelyHard) { timeLimitMillis = 25000; targetDepth = 12; }
             else if (Difficulty == DifficultyLevel.Hard) { timeLimitMillis = 12000; targetDepth = 6; }
@@ -544,11 +507,16 @@ namespace CaroGame
             botTimer.Restart();
             isTimeOut = false;
 
+            // Chạy thuật toán trong Task để không treo UI
             Point bestMove = await Task.Run(() =>
             {
+                // 1. Lọc bớt các nước đi vô nghĩa (chỉ xét các ô xung quanh quân đã đánh)
                 List<Point> possibleMoves = GetPossibleMoves(board);
+
+                // 2. Sắp xếp nước đi để cắt tỉa Alpha-Beta tốt hơn
                 var orderedMoves = SortMoves(possibleMoves, board);
 
+                // Check thắng/thua ngay lập tức (1-ply search) để phản ứng nhanh
                 foreach (var move in orderedMoves)
                 {
                     board[move.X, move.Y] = BOT;
@@ -564,6 +532,7 @@ namespace CaroGame
 
                 Point currentFinalMove = orderedMoves[0];
 
+                // Iterative Deepening: Tìm kiếm độ sâu tăng dần (1, 2, ... targetDepth)
                 for (int currentDepth = 1; currentDepth <= targetDepth; currentDepth++)
                 {
                     long maxScore = long.MinValue;
@@ -575,6 +544,8 @@ namespace CaroGame
                         if (botTimer.ElapsedMilliseconds > timeLimitMillis) { isTimeOut = true; break; }
                         Point move = orderedMoves[i];
                         board[move.X, move.Y] = BOT;
+
+                        // Gọi đệ quy Minimax
                         long score = Minimax(board, currentDepth - 1, long.MinValue, long.MaxValue, false);
                         board[move.X, move.Y] = EMPTY;
 
@@ -582,7 +553,7 @@ namespace CaroGame
                     }
                     if (isTimeOut) break;
                     if (currentBestMove.X != -1) currentFinalMove = currentBestMove;
-                    if (maxScore > 5000000) break;
+                    if (maxScore > 5000000) break; // Đã tìm thấy nước thắng chắc chắn
                     if (currentDepth == targetDepth) break;
                 }
                 return currentFinalMove;
@@ -590,6 +561,7 @@ namespace CaroGame
             MakeMove(bestMove.X, bestMove.Y);
         }
 
+        // Kiểm tra nhanh xem có đủ 5 quân liên tiếp không
         private bool CheckWin(int r, int c, int[,] board, int player)
         {
             if (CountConsecutive(r, c, 1, 0, board, player) >= 5) return true;
@@ -615,6 +587,7 @@ namespace CaroGame
             return count;
         }
 
+        // Sắp xếp nước đi dựa trên điểm heuristic sơ bộ
         private List<Point> SortMoves(List<Point> moves, int[,] board)
         {
             List<KeyValuePair<Point, long>> rankedMoves = new List<KeyValuePair<Point, long>>();
@@ -663,6 +636,7 @@ namespace CaroGame
             return true;
         }
 
+        // Candidate Generation: Chỉ lấy các ô trống lân cận các quân cờ đã đánh
         private List<Point> GetPossibleMoves(int[,] board)
         {
             List<Point> moves = new List<Point>();
@@ -697,17 +671,20 @@ namespace CaroGame
 
         private long Minimax(int[,] board, int depth, long alpha, long beta, bool isMaximizing)
         {
+            // Kiểm tra timeout để ngắt sớm
             if (isTimeOut || botTimer.ElapsedMilliseconds > timeLimitMillis) { isTimeOut = true; return 0; }
+
             long currentScore = EvaluateBoard(board);
-            if (Math.Abs(currentScore) > 5000000) return currentScore;
+            if (Math.Abs(currentScore) > 5000000) return currentScore; // Đã có người thắng/thua
             if (depth == 0) return currentScore;
 
             var moves = GetPossibleMoves(board);
             if (moves.Count == 0) return currentScore;
-            var orderedMoves = SortMoves(moves, board);
-            int movesCheckLimit = 20;
 
-            if (isMaximizing)
+            var orderedMoves = SortMoves(moves, board);
+            int movesCheckLimit = 20; // Giới hạn số nhánh để tăng tốc
+
+            if (isMaximizing) // Lượt Bot
             {
                 long maxScore = long.MinValue;
                 for (int i = 0; i < Math.Min(orderedMoves.Count, movesCheckLimit); i++)
@@ -715,16 +692,18 @@ namespace CaroGame
                     Point move = orderedMoves[i];
                     board[move.X, move.Y] = BOT;
                     if (CheckWin(move.X, move.Y, board, BOT)) { board[move.X, move.Y] = EMPTY; return 100000000; }
+
                     long score = Minimax(board, depth - 1, alpha, beta, false);
                     board[move.X, move.Y] = EMPTY;
+
                     if (isTimeOut) return 0;
                     maxScore = Math.Max(maxScore, score);
                     alpha = Math.Max(alpha, score);
-                    if (beta <= alpha) break;
+                    if (beta <= alpha) break; // Alpha-Beta Pruning
                 }
                 return maxScore;
             }
-            else
+            else // Lượt Human
             {
                 long minScore = long.MaxValue;
                 for (int i = 0; i < Math.Min(orderedMoves.Count, movesCheckLimit); i++)
@@ -732,16 +711,19 @@ namespace CaroGame
                     Point move = orderedMoves[i];
                     board[move.X, move.Y] = HUMAN;
                     if (CheckWin(move.X, move.Y, board, HUMAN)) { board[move.X, move.Y] = EMPTY; return -100000000; }
+
                     long score = Minimax(board, depth - 1, alpha, beta, true);
                     board[move.X, move.Y] = EMPTY;
+
                     if (isTimeOut) return 0;
                     minScore = Math.Min(minScore, score);
                     beta = Math.Min(beta, score);
-                    if (beta <= alpha) break;
+                    if (beta <= alpha) break; // Alpha-Beta Pruning
                 }
                 return minScore;
             }
         }
+
         private long EvaluateBoard(int[,] board)
         {
             long score = 0;
@@ -766,6 +748,7 @@ namespace CaroGame
             return score;
         }
 
+        // Tính điểm tấn công của Human (mối đe dọa với Bot)
         long CheckAtkOfHuman(int r, int c, int dr, int dc, int[,] board)
         {
             int ta = 0; int blocks = 0;
@@ -785,10 +768,10 @@ namespace CaroGame
                 else if (board[nr, nc] == BOT) { blocks++; break; }
                 else break;
             }
-            if (blocks == 2 && ta < 5) return 0;
+            if (blocks == 2 && ta < 5) return 0; // Bị chặn 2 đầu
             long score = AttackScore[Math.Min(ta, 5)];
             if (blocks == 1) score /= 2;
-            if (ta == 3 && blocks == 0) score *= 2;
+            if (ta == 3 && blocks == 0) score *= 2; // Ưu tiên nước 3 không bị chặn
             if (ta == 4 && blocks == 0) score *= 2;
             if (ta >= 5) score = AttackScore[5];
             return score;

@@ -12,9 +12,8 @@ namespace CaroGame
         private readonly TCPClient _client;
         private bool _signingIn = false;
         private string _currentUser = "";
-        private readonly Dashboard dashboard;
 
-        // Constructor mặc định kết nối tới IP server
+        // Constructor mặc định
         public SignIn() : this(new TCPClient("3.230.162.159", 25565)) { }
 
         public SignIn(TCPClient sharedClient)
@@ -114,7 +113,6 @@ namespace CaroGame
                     string email = "";
                     string birthday = "";
 
-                    // Lấy thông tin user (Optional)
                     string getResp = _client.GetUser(uname);
                     var p2 = getResp.Split('|');
                     if (p2.Length > 0 && p2[0].Equals("SUCCESS", StringComparison.OrdinalIgnoreCase))
@@ -131,16 +129,16 @@ namespace CaroGame
                         Birthday = birthday
                     };
 
+                    // Kích hoạt luồng lắng nghe trước khi vào Dashboard
                     _client.StartListening();
 
-                    // --- [FIXED QUAN TRỌNG] TRUYỀN CLIENT SANG DASHBOARD ---
                     var Dash = new Dashboard(uname, _client);
-
                     Dash.SetPlayer(pv);
 
-                    // Sự kiện mở UserInfo (Giữ nguyên logic của bạn)
-                    Dash.FormClosed += (s, _) => Close();
-                    Hide();
+                    // Khi Dashboard đóng -> Đóng luôn form SignIn (kết thúc app)
+                    Dash.FormClosed += (s, _) => this.Close();
+
+                    this.Hide(); // Ẩn form SignIn đi
                     Dash.Show();
 
                     MessageBox.Show("Signed in successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -174,9 +172,14 @@ namespace CaroGame
         {
             try
             {
-                if (!string.IsNullOrEmpty(_currentUser) && _client.IsConnected())
-                    _client.Logout(_currentUser);
-                _client.Disconnect();
+                // Chỉ disconnect khi form thực sự đóng (không phải Hide)
+                if (_client.IsConnected())
+                {
+                    if (!string.IsNullOrEmpty(_currentUser))
+                        _client.Logout(_currentUser);
+
+                    _client.Disconnect();
+                }
             }
             catch { }
             base.OnFormClosing(e);
