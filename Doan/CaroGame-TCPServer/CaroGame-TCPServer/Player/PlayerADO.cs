@@ -220,5 +220,27 @@ WHERE PlayerName = @playername;";
                 return false;
             }
         }
+        public static bool UpdatePassword(string username, string newHash)
+        {
+            
+            const string sql = "UPDATE Players SET Password = @pass WHERE PlayerName = @user";
+            try
+            {
+                using var conn = CreateConn();
+                conn.Open();
+                using var cmd = new SQLiteCommand(sql, conn);
+                cmd.Parameters.AddWithValue("@pass", newHash);
+                cmd.Parameters.AddWithValue("@user", username);
+
+                return cmd.ExecuteNonQuery() > 0;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[{Now()}] [ERROR] Failed to update password: {ex.Message}");
+                return false;
+            }
+
+        }
+
     }
 }
