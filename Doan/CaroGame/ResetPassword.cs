@@ -77,11 +77,12 @@ namespace CaroGame
             string response = _client.GetEmail(username);
 
             var p = response.Split('|');
-            if (p[0] != "OK")
+            if (!p[0].Equals("SUCCESS", StringComparison.OrdinalIgnoreCase))
             {
-                MessageBox.Show($"Không tìm thấy email hoặc lỗi kết nối: {p[1]}", "Lỗi");
+                MessageBox.Show($" Không tồn tại hoặc không thể kết nối đến email: {p[1]}", "Lỗi");
                 return;
             }
+            
 
             string realEmail = p[1];
 
@@ -93,7 +94,7 @@ namespace CaroGame
             if (ok)
             {
             
-                MessageBox.Show("Mã OTP đã được gửi đến email đăng ký. Vui lòng kiểm tra hộp thư.", "Thành công");
+                MessageBox.Show($"Mã OTP đã được gửi đến email: {p[1]} đăng ký. Vui lòng kiểm tra hộp thư.", "Thành công");
 
 
                 OTP_tb.Enabled = true;
@@ -155,7 +156,8 @@ namespace CaroGame
             string response = _client.UpdatePassword(username, newPass);
             var p = response.Split('|');
 
-            if (p[0] == "OK")
+            if (p[0].Equals("SUCCESS", StringComparison.OrdinalIgnoreCase)
+)
             {
                 MessageBox.Show("Đặt lại mật khẩu thành công! Bạn có thể đăng nhập ngay.", "Thành công");
                 this.Close(); 
