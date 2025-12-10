@@ -343,6 +343,7 @@ namespace CaroGame
                     btn.FlatStyle = FlatStyle.Flat;
                     btn.FlatAppearance.BorderColor = Color.Silver;
                     btn.FlatAppearance.BorderSize = 1;
+                    btn.Enabled = true;
                 }
             }
             CurrentPlayer = 0;

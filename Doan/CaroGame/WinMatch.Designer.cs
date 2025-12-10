@@ -141,6 +141,7 @@
             Controls.Add(pictureBox1);
             FormBorderStyle = FormBorderStyle.None;
             Name = "WinMatch";
+            StartPosition = FormStartPosition.CenterScreen;
             Text = "WinMatch";
             ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
             ((System.ComponentModel.ISupportInitialize)pictureBox2).EndInit();

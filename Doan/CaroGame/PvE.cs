@@ -32,8 +32,6 @@ namespace CaroGame
             ChessBoard.DrawChessBoard();
 
             SetBotDifficulty(botDifficulty);
-
-            ChessBoard = new ChessBoardManager(pnlChessBoard, GameMode.PvE);
         }
 
         private void SetBotDifficulty(string difficulty)
@@ -62,11 +60,11 @@ namespace CaroGame
         }
         private void OnGameEnded(string winner)
         {
-            bool isWin = (winner == _playerName);
+            bool isWin = 
+                (ChessBoard.Player != null && ChessBoard.Player.Count > 0 && winner == ChessBoard.Player[0].Name);
 
             Form result = isWin ? new WinMatch() : new LoseMatch();
 
-            // Attach callbacks
             if (result is WinMatch win)
             {
                 win.winRematch += () =>
