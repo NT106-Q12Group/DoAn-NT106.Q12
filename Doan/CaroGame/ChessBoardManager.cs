@@ -319,7 +319,10 @@ namespace CaroGame
             }
         }
 
-        private void EndGame(string winnerName) => GameEnded?.Invoke(winnerName);
+        private void EndGame(string winnerName)
+        {
+            GameEnded?.Invoke(winnerName);
+        }
 
         public void resetGame()
         {
@@ -639,7 +642,7 @@ namespace CaroGame
                 b.FlatAppearance.BorderSize = 3;
             }
         }
-
+        #region Bot
         long[] AttackScore = new long[] { 0, 10, 100, 1000, 100000, 10000000 };
         long[] DefendScore = new long[] { 0, 12, 120, 1500, 200000, 10000000 };
         // --- CÁC BIẾN CẦN THIẾT ---
@@ -1127,6 +1130,7 @@ namespace CaroGame
         {
             return r >= 0 && r < Cons.CHESS_BOARD_HEIGHT && c >= 0 && c < Cons.CHESS_BOARD_WIDTH;
         }
+        #endregion
         #endregion
     }
 }

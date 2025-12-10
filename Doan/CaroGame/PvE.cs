@@ -32,6 +32,8 @@ namespace CaroGame
             ChessBoard.DrawChessBoard();
 
             SetBotDifficulty(botDifficulty);
+
+            ChessBoard = new ChessBoardManager(pnlChessBoard, GameMode.PvE);
         }
 
         private void SetBotDifficulty(string difficulty)
@@ -58,11 +60,43 @@ namespace CaroGame
                     break;
             }
         }
-
         private void OnGameEnded(string winner)
         {
-            MessageBox.Show($"{winner} chiến thắng!!!");
-            resetChess();
+            bool isWin = (winner == _playerName);
+
+            Form result = isWin ? new WinMatch() : new LoseMatch();
+
+            // Attach callbacks
+            if (result is WinMatch win)
+            {
+                win.winRematch += () =>
+                {
+                    result.Close();
+                    resetChess();
+                };
+
+                win.winExit += () =>
+                {
+                    result.Close();
+                    backToDashboard();
+                };
+            }
+            else if (result is LoseMatch lose)
+            {
+                lose.loseRematch += () =>
+                {
+                    result.Close();
+                    resetChess();
+                };
+
+                lose.loseExit += () =>
+                {
+                    result.Close();
+                    backToDashboard();
+                };
+            }
+
+            result.Show();
         }
 
         private void resetChess()
@@ -72,6 +106,14 @@ namespace CaroGame
             undoCount = false;
             ptbOne.Visible = true;
             ptbZero.Visible = false;
+        }
+
+        public void backToDashboard()
+        {
+            this.Hide();
+            var dash = new Dashboard(_playerName);
+            dash.FormClosed += (s, e) => this.Close();
+            dash.Show();
         }
 
         #region Các hàm để trống (Fix lỗi "Does not exist")
