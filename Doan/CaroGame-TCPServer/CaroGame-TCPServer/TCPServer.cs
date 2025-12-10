@@ -245,45 +245,76 @@ namespace CaroGame_TCPServer
             }
         }
 
-        // --- LOGIC TÌM TRẬN ---
-        private void HandleFindMatch(string username, TcpClient client)
+        private void HandleFindMatch(string username, TcpClient client)
         {
             lock (lockObj)
             {
-                // Nếu hàng chờ trống -> Thêm mình vào đợi
-                if (WaitingQueue.Count == 0)
+                // 1. Kiểm tra xem user này có đang trong hàng chờ rồi không?
+                // Nếu có rồi thì bỏ qua (tránh spam nút tìm trận)
+                if (WaitingQueue.ContainsKey(username)) return;
+
+                // 2. Tìm đối thủ trong hàng chờ
+                string opponentName = null;
+                TcpClient opponentClient = null;
+
+                foreach (var waiter in WaitingQueue)
                 {
-                    WaitingQueue[username] = client;
-                    Console.WriteLine($"[MATCH] {username} added to queue.");
+                    // Không tự ghép với chính mình (đề phòng lỗi logic khác)
+                    if (waiter.Key != username)
+                    {
+                        opponentName = waiter.Key;
+                        opponentClient = waiter.Value;
+                        break; // Tìm thấy 1 người là chốt luôn
+                    }
+                }
+
+                // 3. Xử lý ghép trận
+                if (opponentName != null && opponentClient != null)
+                {
+                    // -- TÌM THẤY ĐỐI THỦ --
+
+                    // Xóa đối thủ khỏi hàng chờ
+                    WaitingQueue.Remove(opponentName);
+
+                    // Kiểm tra kết nối của đối thủ còn sống không
+                    if (!opponentClient.Connected)
+                    {
+                        // Nếu đối thủ rớt mạng rồi, thì tìm người khác (đệ quy hoặc return để client tự retry)
+                        // Ở đây ta đơn giản là xóa nó đi và thêm mình vào hàng chờ
+                        WaitingQueue[username] = client;
+                        Console.WriteLine($"[MATCH] Found dead client {opponentName}, removed. Added {username} to queue.");
+                        return;
+                    }
+
+                    // Lưu cặp đấu
+                    ActiveMatches[username] = opponentName;
+                    ActiveMatches[opponentName] = username;
+
+                    // Lưu phe (Side): 1 là X (đi trước), 2 là O (đi sau)
+                    // Người trong hàng chờ (Opponent) làm Host (X)
+                    // Người vừa vào (Username) làm Guest (O)
+                    PlayerSides[opponentName] = 1;
+                    PlayerSides[username] = 2;
+
+                    // Gửi thông báo START GAME cho cả 2
+                    // Format: MATCH_FOUND | TênĐốiThủ | PheCủaMình (1 hoặc 2)
+
+                    // Gửi cho người vừa vào (O - 2)
+                    SendToPlayer(username, $"MATCH_FOUND|{opponentName}|2");
+
+                    // Gửi cho người đang chờ (X - 1)
+                    SendToPlayer(opponentName, $"MATCH_FOUND|{username}|1");
+
+                    Console.WriteLine($"[MATCH] Started: {opponentName} (X) vs {username} (O)");
                 }
                 else
                 {
-                    // Lấy người đang đợi ra (Người A)
-                    var opponent = WaitingQueue.GetEnumerator();
-                    opponent.MoveNext();
-                    string oppName = opponent.Current.Key;
-                    TcpClient oppClient = opponent.Current.Value;
-
-                    // Xóa A khỏi hàng chờ
-                    WaitingQueue.Remove(oppName);
-
-                    // Kiểm tra nếu A trùng tên với mình (lỗi logic client)
-                    if (username == oppName) return;
-
-                    // Lưu cặp đấu: A vs B và B vs A
-                    ActiveMatches[username] = oppName;
-                    ActiveMatches[oppName] = username;
-
-                    // Gửi thông báo START GAME cho cả 2
-                    // Format: MATCH_FOUND|TênĐốiThủ|KýHiệu(X hoặc O)
-                    SendToPlayer(username, $"MATCH_FOUND|{oppName}|O"); // Người vào sau đánh O (ví dụ)
-                    SendToPlayer(oppName, $"MATCH_FOUND|{username}|X"); // Người đợi trước đánh X
-
-                    Console.WriteLine($"[MATCH] Started: {oppName} (X) vs {username} (O)");
+                    // -- KHÔNG CÓ AI, THÊM MÌNH VÀO HÀNG CHỜ --
+                    WaitingQueue[username] = client;
+                    Console.WriteLine($"[MATCH] {username} added to queue. (Queue size: {WaitingQueue.Count})");
                 }
             }
         }
-
         private void HandleCancelMatch(string username)
         {
             lock (lockObj)
