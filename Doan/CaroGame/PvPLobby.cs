@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Drawing;
 using System.Windows.Forms;
-using CaroGame_TCPClient; // Namespace chứa TCPClient
+using CaroGame_TCPClient;
 
 namespace CaroGame
 {
@@ -12,13 +12,11 @@ namespace CaroGame
         private bool _isQuickMatch;
         private bool _matchFound = false;
 
-        // Constructor mặc định
         public PvPLobby()
         {
             InitializeComponent();
         }
 
-        // Constructor chính
         public PvPLobby(string username, TCPClient client, bool isQuickMatch = true)
         {
             InitializeComponent();
@@ -26,127 +24,58 @@ namespace CaroGame
             _client = client;
             _isQuickMatch = isQuickMatch;
 
-            // --- QUAN TRỌNG: Gắn sự kiện FormClosed thủ công ---
-            // Để đảm bảo dù bấm nút Back hay nút X đỏ thì đều chạy hàm dọn dẹp
             this.FormClosed += PvPLobby_FormClosed;
 
-            // Kiểm tra an toàn trước khi đăng ký sự kiện mạng
             if (_client != null)
             {
+                // Đăng ký nhận tin nhắn
                 _client.OnMessageReceived += ProcessServerMessage;
-            }
-            else
-            {
-                MessageBox.Show("Lỗi: Mất kết nối tới Server (Client is null). Vui lòng đăng nhập lại.", "Lỗi Kết Nối");
             }
         }
 
         private void PvPLobby_Load(object sender, EventArgs e)
         {
             SetupUI();
-
-            // Căn giữa giao diện lúc mới mở
             CenterControls();
         }
 
-        // --- CĂN GIỮA CÁC THÀNH PHẦN ---
-        private void CenterControls()
-        {
-            if (lb_status != null)
-            {
-                lb_status.Left = (this.ClientSize.Width - lb_status.Width) / 2;
-            }
-
-            if (progressBar1 != null)
-            {
-                progressBar1.Left = (this.ClientSize.Width - progressBar1.Width) / 2;
-            }
-        }
-
-        protected override void OnResize(EventArgs e)
-        {
-            base.OnResize(e);
-            CenterControls();
-        }
-
-        private void SetupUI()
-        {
-            // Player 1 (Mình)
-            if (lb_username1 != null)
-            {
-                lb_username1.Text = _username;
-                lb_username1.ForeColor = Color.Black;
-            }
-            if (pictureBox1 != null) pictureBox1.BackColor = Color.LightBlue;
-
-            // Player 2 (Đối thủ - Đang chờ)
-            if (lb_username2 != null)
-            {
-                lb_username2.Text = "???";
-                lb_username2.ForeColor = Color.DimGray;
-                lb_username2.Font = new Font(lb_username2.Font, FontStyle.Italic);
-            }
-            if (pictureBox2 != null)
-            {
-                pictureBox2.Image = null;
-                pictureBox2.BackColor = Color.Silver;
-            }
-
-            if (lb_status != null) lb_status.Text = "Waiting...";
-            if (progressBar1 != null) progressBar1.Visible = false;
-
-            // Tự động tìm trận nếu là QuickMatch
-            if (_isQuickMatch && _client != null)
-            {
-                StartSearching();
-            }
-        }
-
-        private void StartSearching()
-        {
-            if (lb_status != null)
-            {
-                lb_status.Text = "Finding Match...";
-                lb_status.ForeColor = Color.DarkOrange;
-                CenterControls();
-            }
-
-            if (progressBar1 != null)
-            {
-                progressBar1.Visible = true;
-                progressBar1.Style = ProgressBarStyle.Marquee;
-                CenterControls();
-            }
-
-            if (_client != null)
-            {
-                _client.Send($"FIND_MATCH|{_username}");
-            }
-        }
-
-        // --- XỬ LÝ TIN NHẮN SERVER ---
+        // --- XỬ LÝ TIN NHẮN SERVER (QUAN TRỌNG NHẤT) ---
         public void ProcessServerMessage(string message)
         {
+            // Đảm bảo chạy trên luồng UI
             if (this.InvokeRequired)
             {
                 this.Invoke(new Action<string>(ProcessServerMessage), new object[] { message });
                 return;
             }
 
-            string[] parts = message.Split('|');
-            string command = parts[0];
-
-            if (command == "MATCH_FOUND" && parts.Length >= 2)
+            try
             {
-                _matchFound = true; // Đánh dấu đã tìm thấy
-                string opponentName = parts[1];
-                string mySymbol = parts.Length > 2 ? parts[2] : "O";
+                // [DEBUG]: Bật dòng này lên để xem chính xác Server gửi gì về
+                // MessageBox.Show("Server gửi: " + message);
 
-                OnMatchFound(opponentName, mySymbol);
+                string[] parts = message.Trim().Split('|');
+                string command = parts[0];
+
+                if (command == "MATCH_FOUND")
+                {
+                    _matchFound = true;
+
+                    // Format mong đợi: MATCH_FOUND | OpponentName | Symbol(X/O) hoặc ID(1/2)
+                    string opponentName = parts.Length > 1 ? parts[1] : "Unknown";
+                    string sideRaw = parts.Length > 2 ? parts[2] : "O";
+
+                    OnMatchFound(opponentName, sideRaw);
+                }
+            }
+            catch (Exception ex)
+            {
+                // Hiện lỗi để biết tại sao code dừng lại
+                MessageBox.Show("Lỗi xử lý tin nhắn: " + ex.Message);
             }
         }
 
-        private void OnMatchFound(string opponentName, string mySymbol)
+        private void OnMatchFound(string opponentName, string sideRaw)
         {
             if (progressBar1 != null) progressBar1.Visible = false;
 
@@ -172,48 +101,91 @@ namespace CaroGame
             transitionTimer.Tick += (s, e) =>
             {
                 transitionTimer.Stop();
-                EnterGame(opponentName, mySymbol);
+                EnterGame(opponentName, sideRaw);
             };
             transitionTimer.Start();
         }
 
-        private void EnterGame(string opponentName, string mySymbol)
+        private void EnterGame(string opponentName, string sideRaw)
         {
+            // Hủy đăng ký sự kiện ở Lobby để tránh xung đột với bàn cờ
+            if (_client != null) _client.OnMessageReceived -= ProcessServerMessage;
+
             Room roomInfo = new Room();
             string p1, p2;
             int myNumber;
 
-            if (mySymbol == "X")
+            // [FIX LOGIC]: Xử lý cả trường hợp Server gửi "1"/"2" hoặc "X"/"O"
+            // Nếu sideRaw là "1" hoặc "X" -> Mình là Player 1
+            if (sideRaw == "1" || sideRaw.ToUpper() == "X")
             {
-                p1 = _username; p2 = opponentName; myNumber = 1;
+                p1 = _username;
+                p2 = opponentName;
+                myNumber = 1; // Host / Đi trước
             }
             else
             {
-                p1 = opponentName; p2 = _username; myNumber = 2;
+                p1 = opponentName;
+                p2 = _username;
+                myNumber = 2; // Guest / Đi sau
             }
 
+            // Mở bàn cờ
             var gameForm = new PvP(roomInfo, myNumber, p1, p2, _client);
 
             this.Hide();
+
+            // Khi bàn cờ đóng thì đóng luôn Lobby
             gameForm.FormClosed += (s, args) => this.Close();
+
             gameForm.Show();
         }
 
-        // --- NÚT BACK (Sẽ kích hoạt FormClosed) ---
+        // --- CÁC HÀM UI (GIỮ NGUYÊN) ---
+        private void CenterControls()
+        {
+            if (lb_status != null) lb_status.Left = (this.ClientSize.Width - lb_status.Width) / 2;
+            if (progressBar1 != null) progressBar1.Left = (this.ClientSize.Width - progressBar1.Width) / 2;
+        }
+
+        protected override void OnResize(EventArgs e)
+        {
+            base.OnResize(e);
+            CenterControls();
+        }
+
+        private void SetupUI()
+        {
+            if (lb_username1 != null) { lb_username1.Text = _username; lb_username1.ForeColor = Color.Black; }
+            if (pictureBox1 != null) pictureBox1.BackColor = Color.LightBlue;
+
+            if (lb_username2 != null) { lb_username2.Text = "???"; lb_username2.ForeColor = Color.DimGray; }
+            if (pictureBox2 != null) { pictureBox2.Image = null; pictureBox2.BackColor = Color.Silver; }
+
+            if (lb_status != null) lb_status.Text = "Waiting...";
+            if (progressBar1 != null) progressBar1.Visible = false;
+
+            if (_isQuickMatch && _client != null) StartSearching();
+        }
+
+        private void StartSearching()
+        {
+            if (lb_status != null) { lb_status.Text = "Finding Match..."; lb_status.ForeColor = Color.DarkOrange; CenterControls(); }
+            if (progressBar1 != null) { progressBar1.Visible = true; progressBar1.Style = ProgressBarStyle.Marquee; CenterControls(); }
+
+            if (_client != null) _client.Send($"FIND_MATCH|{_username}");
+        }
+
         private void btnBack_Click(object sender, EventArgs e)
         {
             this.Close();
         }
 
-        // --- SỰ KIỆN ĐÓNG FORM (Xử lý hủy trận) ---
         private void PvPLobby_FormClosed(object sender, FormClosedEventArgs e)
         {
             if (_client != null)
             {
-                // 1. Hủy đăng ký sự kiện tin nhắn
                 _client.OnMessageReceived -= ProcessServerMessage;
-
-                // 2. Nếu thoát mà chưa tìm thấy trận -> Gửi lệnh HỦY
                 if (!_matchFound && _isQuickMatch)
                 {
                     _client.Send($"CANCEL_MATCH|{_username}");
