@@ -501,9 +501,15 @@ namespace CaroGame_TCPServer
         private string HandleUpdatePassword(string[] parts)
         {
             if (parts.Length < 3) return "Error|Missing data";
-            // if (PlayerADO.UpdatePassword(parts[1], parts[2])) return "Success|Updated";
-            return "Success|Updated (Fake)"; // Sửa lại gọi ADO thật nhé
+
+            bool ok = PlayerADO.UpdatePassword(parts[1], parts[2]);
+
+            if (ok)
+                return "Success|Updated";
+
+            return "Error|Update failed";
         }
+
 
         private string HidePassword(string text)
         {

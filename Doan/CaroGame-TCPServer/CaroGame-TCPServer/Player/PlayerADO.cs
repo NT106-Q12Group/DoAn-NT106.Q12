@@ -220,5 +220,38 @@ WHERE PlayerName = @playername;";
                 return false;
             }
         }
+        public static bool UpdatePassword(string username, string newPassword)
+        {
+            const string sql = @"
+UPDATE Player
+SET Password = @password
+WHERE PlayerName = @playername;";
+
+            try
+            {
+                using var conn = CreateConn();
+                conn.Open();
+
+                using var cmd = new SQLiteCommand(sql, conn);
+                cmd.Parameters.Add("@password", DbType.String).Value = newPassword ?? string.Empty;
+                cmd.Parameters.Add("@playername", DbType.String).Value = username ?? string.Empty;
+
+                var rows = cmd.ExecuteNonQuery();
+                var success = rows > 0;
+
+                Console.WriteLine(success
+                    ? $"[{Now()}] [INFO] Password updated for user: {username}"
+                    : $"[{Now()}] [WARN] No password updated (username not found?).");
+
+                return success;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[{Now()}] [ERROR] Failed to update password: {ex.Message}");
+                return false;
+            }
+        }
+
+
     }
 }
