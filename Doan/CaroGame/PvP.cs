@@ -21,12 +21,10 @@ namespace CaroGame
         private bool isMyUndoRequest = false;
         private bool undoCount = false;
 
-        // Các biến kết nối mạng
         private string player1Name;
         private string player2Name;
         private TCPClient tcpClient;
 
-        // --- CONSTRUCTOR ---
         public PvP(Room room, int mySide, string p1, string p2, TCPClient client)
         {
             InitializeComponent();
@@ -58,9 +56,10 @@ namespace CaroGame
 
             SetupPlayerInfo();
 
-            // Khởi tạo bàn cờ PvP
             ChessBoard = new ChessBoardManager(pnlChessBoard, GameMode.PvP);
             ChessBoard.MySide = this.MySide;
+
+            // Quy tắc: Phe 0 (X) luôn đi trước
             ChessBoard.IsMyTurn = (this.MySide == 0);
 
             this.Text = $"PvP Room - Bạn là: {(this.MySide == 0 ? "X (Đi trước)" : "O (Đi sau)")}";
@@ -85,6 +84,7 @@ namespace CaroGame
             if (label1 != null) label1.Text = player1Name;
             if (label2 != null) label2.Text = player2Name;
 
+            // Highlight tên của người chơi (In đậm + Đổi màu)
             if (MySide == 0) // Mình là P1
             {
                 if (label1 != null) { label1.ForeColor = Color.Red; label1.Font = new Font(label1.Font, FontStyle.Bold); }
@@ -96,7 +96,7 @@ namespace CaroGame
                 if (label2 != null) { label2.ForeColor = Color.Blue; label2.Font = new Font(label2.Font, FontStyle.Bold); }
             }
 
-            // Avatar placeholder
+            // Avatar placeholder (Tạm thời để trống do chưa có hệ thống Avatar)
             try
             {
                 if (ptbAvaP1 != null) { ptbAvaP1.Image = null; ptbAvaP1.BackColor = Color.LightGray; }
@@ -134,6 +134,7 @@ namespace CaroGame
                         int y = int.Parse(parts[2]);
                         int side = int.Parse(parts[3]);
 
+                        // Fallback nếu server gửi sai side
                         if (side == -1) side = ChessBoard.MoveCount % 2;
                         ChessBoard.ProcessMove(x, y, side);
                     }
@@ -182,10 +183,8 @@ namespace CaroGame
             txtMessage.Clear();
         }
 
-        // --- [FIXED] NÚT THOÁT GAME ---
         private void btnExit_Click(object sender, EventArgs e)
         {
-            // 1. Hiện bảng hỏi xác nhận
             DialogResult result = MessageBox.Show(
                 "Bạn có chắc chắn muốn thoát trận đấu?\nBạn sẽ bị xử thua ngay lập tức.",
                 "Xác nhận thoát",
@@ -193,23 +192,17 @@ namespace CaroGame
                 MessageBoxIcon.Warning
             );
 
-            // 2. Nếu chọn YES thì mới thực hiện
             if (result == DialogResult.Yes)
             {
                 if (tcpClient != null)
                 {
-                    // Hủy nhận tin nhắn để tránh lỗi
+                    // Hủy nhận tin nhắn để tránh lỗi ObjectDisposed khi đóng form
                     tcpClient.OnMessageReceived -= HandleServerMessage;
-
-                    // Gửi lệnh đầu hàng
                     tcpClient.Send("SURRENDER");
                 }
 
-                // 3. CHỈ ĐÓNG FORM HIỆN TẠI
-                // Dashboard cũ sẽ tự hiện lên nhờ sự kiện FormClosed đã đăng ký bên Dashboard.cs
+                // Chỉ cần đóng form này, Dashboard sẽ tự hiện lại nhờ sự kiện FormClosed
                 this.Close();
-
-                // [ĐÃ XÓA] var DashBoard = new Dashboard(...) -> Không tạo Dashboard mới nữa
             }
         }
 
