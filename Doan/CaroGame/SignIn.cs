@@ -131,6 +131,8 @@ namespace CaroGame
                         Birthday = birthday
                     };
 
+                    _client.StartListening();
+
                     // --- [FIXED QUAN TRỌNG] TRUYỀN CLIENT SANG DASHBOARD ---
                     var Dash = new Dashboard(uname, _client);
 

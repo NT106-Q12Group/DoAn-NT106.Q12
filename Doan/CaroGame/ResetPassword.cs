@@ -35,23 +35,24 @@ namespace CaroGame
         public static bool SendOtp(string toEmail, string otp, out string errorMessage)
         {
             errorMessage = "";
+            string fromEmail = "xuanninaa123@gmail.com";
+            string appPassword = "ktctntyubgmyndgc";
 
             try
             {
-                string fromEmail = "xuanninaa123@gmail.com";
-                string appPassword = "ktctntyubgmyndgc";
+                SmtpClient smtp = new SmtpClient("smtp.gmail.com", 587)
+                {
+                    EnableSsl = true,
+                    UseDefaultCredentials = false,
+                    Credentials = new NetworkCredential(fromEmail, appPassword)
+                };
 
-                MailMessage mail = new MailMessage();
-                mail.From = new MailAddress(fromEmail);
-                mail.To.Add(toEmail);
-                mail.Subject = "OTP Reset Password";
-                mail.Body = $"Mã OTP của bạn là: {otp}. Vui lòng không chia sẻ mã này.";
-                mail.IsBodyHtml = false;
-
-                SmtpClient smtp = new SmtpClient("smtp.gmail.com", 587);
-                smtp.EnableSsl = true;
-                smtp.UseDefaultCredentials = false;
-                smtp.Credentials = new NetworkCredential(fromEmail, appPassword);
+                MailMessage mail = new MailMessage(fromEmail, toEmail)
+                {
+                    Subject = "OTP Reset Password",
+                    Body = $"Mã OTP của bạn là: {otp}. Vui lòng không chia sẻ mã này.",
+                    IsBodyHtml = false
+                };
 
                 smtp.Send(mail);
                 return true;
@@ -74,6 +75,7 @@ namespace CaroGame
             }
 
             string response = _client.GetEmail(username);
+
             var p = response.Split('|');
             if (p[0] != "OK")
             {
@@ -81,7 +83,7 @@ namespace CaroGame
                 return;
             }
 
-            string realEmail = p[1];   
+            string realEmail = p[1];
 
             _currentOtp = GenerateOtp(); 
 
