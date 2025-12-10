@@ -193,6 +193,41 @@ WHERE PlayerName = @playername;";
             }
         }
 
+        public static bool UpdatePassword(string playername, string newPassword)
+        {
+            if (string.IsNullOrWhiteSpace(playername) || string.IsNullOrWhiteSpace(newPassword))
+            {
+                Console.WriteLine($"[{Now()}] [ERROR] UpdatePassword failed: missing username or new password.");
+                return false;
+            }
+
+            const string sql = @"UPDATE Player SET Password = @password WHERE PlayerName = @playername;";
+
+            try
+            {
+                using var conn = CreateConn();
+                conn.Open();
+
+                using var cmd = new SQLiteCommand(sql, conn);
+                cmd.Parameters.Add("@password", DbType.String).Value = newPassword;
+                cmd.Parameters.Add("@playername", DbType.String).Value = playername;
+
+                var rows = cmd.ExecuteNonQuery();
+                var success = rows > 0;
+
+                Console.WriteLine(success
+                    ? $"[{Now()}] [INFO] Password updated for: {playername}"
+                    : $"[{Now()}] [WARN] Password update failed (user not found?): {playername}");
+
+                return success;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[{Now()}] [ERROR] Failed to update password: {ex.Message}");
+                return false;
+            }
+        }
+
         public static bool DeletePlayer(string playername)
         {
             const string sql = @"DELETE FROM Player WHERE PlayerName = @playername;";

@@ -14,26 +14,27 @@ namespace CaroGame_TCPServer
         private TcpListener Server;
         private int port;
         private bool isRunning;
-        private List<TcpClient> Clients; // Danh sách kết nối thô
+        private List<TcpClient> Clients;
         private int ConnectionCount;
 
         // --- CÁC DICTIONARY QUẢN LÝ TRẠNG THÁI ---
 
-        // 1. Danh sách người đang Online (Username -> Socket)
-        // Dùng để tìm socket của đối thủ khi cần gửi nước đi
+        // 1. Danh sách người đang Online
         private static Dictionary<string, TcpClient> OnlineUsers = new Dictionary<string, TcpClient>();
 
-        // 2. Hàng chờ tìm trận (Username -> Socket)
-        // Dùng để hàng đợi khi tìm trận
+        // 2. Hàng chờ tìm trận ngẫu nhiên (Quick Match)
         private static Dictionary<string, TcpClient> WaitingQueue = new Dictionary<string, TcpClient>();
 
-        // 3. Danh sách cặp đấu (Người chơi -> Đối thủ)
-        // Dùng để biết ai đang đánh với ai
+        // 3. [MỚI] Danh sách phòng Custom đang chờ (Key: RoomID, Value: HostClient)
+        private static Dictionary<string, TcpClient> CustomWaitingRooms = new Dictionary<string, TcpClient>();
+
+        // 4. Danh sách cặp đấu đang diễn ra
         private static Dictionary<string, string> ActiveMatches = new Dictionary<string, string>();
 
+        // 5. Lưu phe của người chơi trong trận (1=X, 2=O)
         private static Dictionary<string, int> PlayerSides = new Dictionary<string, int>();
 
-        private object lockObj = new object(); // Khóa để tránh lỗi đa luồng
+        private object lockObj = new object();
 
         public TCPServer(int serverPort)
         {
@@ -98,12 +99,12 @@ namespace CaroGame_TCPServer
         {
             NetworkStream stream = null;
             string clientIP = ((IPEndPoint)client.Client.RemoteEndPoint).Address.ToString();
-            string currentUsername = null; // Lưu username của client này sau khi Login
+            string currentUsername = null;
 
             try
             {
                 stream = client.GetStream();
-                byte[] buffer = new byte[4096]; // Tăng buffer lên chút
+                byte[] buffer = new byte[4096];
 
                 while (isRunning && client.Connected)
                 {
@@ -112,20 +113,16 @@ namespace CaroGame_TCPServer
 
                     string request = Encoding.UTF8.GetString(buffer, 0, bytesRead);
 
-                    // Log request (ẩn password)
                     string logRequest = HidePassword(request);
                     Console.WriteLine($"[RECV] {clientIP} ({currentUsername ?? "Guest"}): {logRequest}");
 
-                    // Xử lý Request
                     string response = ProcessRequest(request, client, ref currentUsername);
 
-                    // Nếu có phản hồi (response != null), gửi lại cho Client
-                    // Lưu ý: FIND_MATCH và MOVE sẽ trả về null vì chúng xử lý gửi riêng
                     if (!string.IsNullOrEmpty(response))
                     {
                         byte[] responseData = Encoding.UTF8.GetBytes(response);
                         stream.Write(responseData, 0, responseData.Length);
-                        stream.Flush(); // Đẩy dữ liệu đi ngay
+                        stream.Flush();
 
                         string logResponse = HidePassword(response);
                         Console.WriteLine($"[SEND] {clientIP}: {logResponse}");
@@ -138,34 +135,37 @@ namespace CaroGame_TCPServer
             }
             finally
             {
-                // Dọn dẹp khi Client ngắt kết nối
                 CleanupClient(client, currentUsername);
             }
         }
 
-        // --- HÀM DỌN DẸP KHI NGẮT KẾT NỐI ---
         private void CleanupClient(TcpClient client, string username)
         {
             lock (lockObj)
             {
                 if (!string.IsNullOrEmpty(username))
                 {
-                    // Xóa khỏi danh sách online
                     if (OnlineUsers.ContainsKey(username)) OnlineUsers.Remove(username);
-
-                    // Xóa khỏi hàng chờ nếu đang đợi
                     if (WaitingQueue.ContainsKey(username)) WaitingQueue.Remove(username);
 
-                    // Xử lý nếu đang trong trận đấu (báo đối thủ thắng)
+                    // [MỚI] Xóa khỏi phòng chờ Custom nếu đang tạo phòng mà thoát
+                    // Duyệt ngược dictionary để tìm và xóa
+                    foreach (var item in CustomWaitingRooms)
+                    {
+                        if (item.Value == client)
+                        {
+                            CustomWaitingRooms.Remove(item.Key);
+                            break;
+                        }
+                    }
+
                     if (ActiveMatches.ContainsKey(username))
                     {
                         string opponent = ActiveMatches[username];
                         ActiveMatches.Remove(username);
 
-                        // Báo cho đối thủ biết mình đã thoát
                         SendToPlayer(opponent, "OPPONENT_LEFT|Your opponent disconnected.");
 
-                        // Xóa đối thủ khỏi map trận đấu luôn (để họ quay về trạng thái rảnh)
                         if (ActiveMatches.ContainsKey(opponent)) ActiveMatches.Remove(opponent);
                     }
                 }
@@ -190,7 +190,6 @@ namespace CaroGame_TCPServer
                 {
                     case "SIGNIN":
                         string result = HandleSignIn(parts);
-                        // Nếu đăng nhập thành công, lưu vào danh sách Online
                         if (result.StartsWith("Success"))
                         {
                             currentUsername = parts[1];
@@ -201,30 +200,34 @@ namespace CaroGame_TCPServer
                         }
                         return result;
 
-                    case "SIGNUP":
-                        return HandleRegister(parts);
-
-                    case "GETPLAYER":
-                        return HandleGetPlayer(parts);
-
-                    case "GETEMAIL": // Thêm hỗ trợ lấy email cho ResetPassword
-                        return HandleGetEmail(parts);
-
-                    case "UPDATEPASS": // Thêm hỗ trợ đổi pass
-                        return HandleUpdatePassword(parts);
+                    case "SIGNUP": return HandleRegister(parts);
+                    case "GETPLAYER": return HandleGetPlayer(parts);
+                    case "GETEMAIL": return HandleGetEmail(parts);
+                    case "UPDATEPASS": return HandleUpdatePassword(parts);
 
                     // --- GAME LOGIC ---
                     case "FIND_MATCH":
                         HandleFindMatch(parts[1], client);
-                        return null; // Xử lý bất đồng bộ, không return ngay
+                        return null;
 
                     case "CANCEL_MATCH":
                         HandleCancelMatch(parts[1]);
                         return null;
 
+                    // [MỚI] TẠO PHÒNG
+                    case "CREATE_ROOM":
+                        HandleCreateRoom(parts[1], client);
+                        return null;
+
+                    // [MỚI] VÀO PHÒNG
+                    case "JOIN_ROOM":
+                        // JOIN_ROOM | Username | RoomID
+                        HandleJoinRoom(parts[1], parts[2], client);
+                        return null;
+
                     case "MOVE":
                         HandleMove(parts, currentUsername);
-                        return null; // Forward cho các bên, không return text
+                        return null;
 
                     case "CHAT":
                         HandleChat(parts, currentUsername);
@@ -232,6 +235,10 @@ namespace CaroGame_TCPServer
 
                     case "REQUEST_UNDO":
                         HandleUndoRequest(currentUsername);
+                        return null;
+
+                    case "SURRENDER":
+                        HandleSurrender(currentUsername);
                         return null;
 
                     case "SIGNOUT": return "Success|Signed out";
@@ -246,8 +253,88 @@ namespace CaroGame_TCPServer
             }
         }
 
-        // --- [NEW] HÀM GỬI TRỰC TIẾP QUA SOCKET (Bypass OnlineUsers) ---
-        // Giúp đảm bảo tin nhắn MATCH_FOUND được gửi đúng vào socket đang kết nối
+        // --- [MỚI] XỬ LÝ TẠO PHÒNG ---
+        private void HandleCreateRoom(string username, TcpClient client)
+        {
+            lock (lockObj)
+            {
+                // Tạo ID ngẫu nhiên 5 số
+                Random rnd = new Random();
+                string roomId = rnd.Next(10000, 99999).ToString();
+                while (CustomWaitingRooms.ContainsKey(roomId)) roomId = rnd.Next(10000, 99999).ToString();
+
+                CustomWaitingRooms.Add(roomId, client);
+
+                // Gửi lại ID cho người tạo
+                SendDirect(client, $"ROOM_CREATED|{roomId}");
+                Console.WriteLine($"[ROOM] {username} created room {roomId}");
+            }
+        }
+
+        // --- [MỚI] XỬ LÝ VÀO PHÒNG ---
+        private void HandleJoinRoom(string joinerName, string roomId, TcpClient joinerClient)
+        {
+            lock (lockObj)
+            {
+                if (CustomWaitingRooms.ContainsKey(roomId))
+                {
+                    TcpClient hostClient = CustomWaitingRooms[roomId];
+
+                    if (!hostClient.Connected)
+                    {
+                        CustomWaitingRooms.Remove(roomId);
+                        SendDirect(joinerClient, "JOIN_FAIL|Phòng này chủ phòng đã mất kết nối.");
+                        return;
+                    }
+
+                    // Tìm tên chủ phòng
+                    string hostName = GetUsernameBySocket(hostClient);
+                    if (hostName == null) { SendDirect(joinerClient, "JOIN_FAIL|Lỗi xác thực."); return; }
+                    if (hostName == joinerName) { SendDirect(joinerClient, "JOIN_FAIL|Không thể tự vào phòng mình."); return; }
+
+                    // Xóa phòng chờ
+                    CustomWaitingRooms.Remove(roomId);
+
+                    // Thiết lập trận đấu
+                    ActiveMatches[hostName] = joinerName;
+                    ActiveMatches[joinerName] = hostName;
+                    PlayerSides[hostName] = 1; // Chủ phòng là X
+                    PlayerSides[joinerName] = 2; // Khách là O
+
+                    Console.WriteLine($"[MATCH] Custom Room {roomId}: {hostName} vs {joinerName}");
+
+                    // Gửi lệnh vào game
+                    SendDirect(hostClient, $"MATCH_FOUND|{joinerName}|X");
+                    SendDirect(joinerClient, $"MATCH_FOUND|{hostName}|O");
+                }
+                else
+                {
+                    SendDirect(joinerClient, "JOIN_FAIL|Phòng không tồn tại.");
+                }
+            }
+        }
+
+        private string GetUsernameBySocket(TcpClient client)
+        {
+            foreach (var item in OnlineUsers) if (item.Value == client) return item.Key;
+            return null;
+        }
+
+        private void HandleSurrender(string sender)
+        {
+            lock (lockObj)
+            {
+                if (ActiveMatches.ContainsKey(sender))
+                {
+                    string opponent = ActiveMatches[sender];
+                    SendToPlayer(opponent, "OPPONENT_LEFT|Đối thủ đã đầu hàng. Bạn thắng!");
+                    ActiveMatches.Remove(sender);
+                    if (ActiveMatches.ContainsKey(opponent)) ActiveMatches.Remove(opponent);
+                    Console.WriteLine($"[GAME] {sender} surrendered against {opponent}");
+                }
+            }
+        }
+
         private void SendDirect(TcpClient client, string msg)
         {
             try
@@ -270,67 +357,48 @@ namespace CaroGame_TCPServer
         {
             lock (lockObj)
             {
-                // 1. Nếu đã có trong hàng chờ, cập nhật lại socket client mới nhất
                 if (WaitingQueue.ContainsKey(username))
                 {
                     WaitingQueue[username] = client;
                 }
 
-                // 2. Duyệt tìm đối thủ (người không phải là mình)
                 string opponentName = null;
-
                 foreach (var waiter in WaitingQueue)
                 {
-                    if (waiter.Key != username) // Tìm người khác mình
+                    if (waiter.Key != username)
                     {
                         opponentName = waiter.Key;
                         break;
                     }
                 }
 
-                // 3. Xử lý kết quả
                 if (opponentName != null)
                 {
-                    // --- TÌM THẤY ---
                     TcpClient opponentClient = WaitingQueue[opponentName];
 
-                    // Kiểm tra đối thủ còn sống không
                     if (!opponentClient.Connected)
                     {
-                        WaitingQueue.Remove(opponentName); // Xóa xác sống
-                        // Thêm mình vào hàng chờ vì đối thủ kia đã rớt
+                        WaitingQueue.Remove(opponentName);
                         if (!WaitingQueue.ContainsKey(username))
                             WaitingQueue.Add(username, client);
                         return;
                     }
 
-                    // Xóa đối thủ khỏi hàng chờ
                     WaitingQueue.Remove(opponentName);
-                    // Xóa mình khỏi hàng chờ (nếu có)
                     if (WaitingQueue.ContainsKey(username)) WaitingQueue.Remove(username);
 
-                    // Lưu cặp đấu
                     ActiveMatches[username] = opponentName;
                     ActiveMatches[opponentName] = username;
-
-                    PlayerSides[opponentName] = 1; // X
-                    PlayerSides[username] = 2;     // O
+                    PlayerSides[opponentName] = 1;
+                    PlayerSides[username] = 2;
 
                     Console.WriteLine($"[MATCH] Found: {opponentName} vs {username}");
 
-                    // --- [FIXED] GỬI TRỰC TIẾP VÀO SOCKET ĐANG CÓ ---
-                    // Thay vì dùng SendToPlayer (tra cứu OnlineUsers có thể bị cũ),
-                    // ta dùng biến client và opponentClient trực tiếp.
-
-                    // Gửi cho người vừa request (username) -> Đi sau (O)
                     SendDirect(client, $"MATCH_FOUND|{opponentName}|O");
-
-                    // Gửi cho người đang chờ (opponentName) -> Đi trước (X)
                     SendDirect(opponentClient, $"MATCH_FOUND|{username}|X");
                 }
                 else
                 {
-                    // --- KHÔNG TÌM THẤY -> THÊM VÀO HÀNG CHỜ ---
                     if (!WaitingQueue.ContainsKey(username))
                     {
                         WaitingQueue.Add(username, client);
@@ -352,10 +420,8 @@ namespace CaroGame_TCPServer
             }
         }
 
-        // --- LOGIC XỬ LÝ NƯỚC ĐI ---
         private void HandleMove(string[] parts, string sender)
         {
-            // Format: MOVE | x | y
             lock (lockObj)
             {
                 if (ActiveMatches.ContainsKey(sender))
@@ -363,14 +429,9 @@ namespace CaroGame_TCPServer
                     string opponent = ActiveMatches[sender];
                     string x = parts[1];
                     string y = parts[2];
-
-                    // Lấy phe của người gửi (để Client biết vẽ X hay O)
                     int side = PlayerSides.ContainsKey(sender) ? PlayerSides[sender] : -1;
 
-                    // 1. Gửi cho Đối thủ (để vẽ nước đi của địch)
                     SendToPlayer(opponent, $"MOVE|{x}|{y}|{side}");
-
-                    // 2. Gửi lại cho Người đánh (để xác nhận Server đã nhận -> Vẽ nước đi của mình)
                     SendToPlayer(sender, $"MOVE|{x}|{y}|{side}");
 
                     Console.WriteLine($"[GAME] {sender} ({x},{y}) -> {opponent}");
@@ -385,11 +446,8 @@ namespace CaroGame_TCPServer
                 if (ActiveMatches.ContainsKey(sender))
                 {
                     string opponent = ActiveMatches[sender];
-
-                    // Chấp nhận Undo luôn
                     SendToPlayer(sender, "UNDO_SUCCESS");
                     SendToPlayer(opponent, "UNDO_SUCCESS");
-
                     Console.WriteLine($"[GAME] Undo accepted for {sender}");
                 }
             }
@@ -422,7 +480,7 @@ namespace CaroGame_TCPServer
                         s.Flush();
                     }
                 }
-                catch { /* Client rớt mạng, để Cleanup lo */ }
+                catch { }
             }
         }
 
@@ -431,31 +489,20 @@ namespace CaroGame_TCPServer
             try
             {
                 isRunning = false;
-
-                // 1. Dừng lắng nghe kết nối mới
                 Server?.Stop();
-
-                // 2. Dọn dẹp các danh sách logic
                 lock (lockObj)
                 {
                     OnlineUsers.Clear();
                     WaitingQueue.Clear();
+                    CustomWaitingRooms.Clear();
                     ActiveMatches.Clear();
                 }
-
-                // 3. Đóng tất cả các kết nối Client hiện tại
                 lock (Clients)
                 {
-                    foreach (var client in Clients)
-                    {
-                        client.Close();
-                    }
+                    foreach (var client in Clients) client.Close();
                     Clients.Clear();
                 }
-
-                Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] [INFO] Server stopped manually.");
-                Console.ResetColor();
             }
             catch (Exception ex)
             {
@@ -463,7 +510,7 @@ namespace CaroGame_TCPServer
             }
         }
 
-        // --- CÁC HÀM XỬ LÝ DATABASE ---
+        // --- CÁC HÀM DB ---
         private string HandleSignIn(string[] parts)
         {
             if (parts.Length < 3) return "Error|Missing info";
@@ -471,7 +518,6 @@ namespace CaroGame_TCPServer
             if (player != null) return $"Success|{player.PlayerName}|{player.Email}|{player.Birthday}";
             return "Error|Invalid username or password";
         }
-
         private string HandleRegister(string[] parts)
         {
             if (parts.Length < 5) return "Error|Missing info";
@@ -479,7 +525,6 @@ namespace CaroGame_TCPServer
             if (PlayerADO.RegisterPlayer(newPlayer)) return "Success|Registered successfully.";
             return "Error|Username exists";
         }
-
         private string HandleGetPlayer(string[] parts)
         {
             if (parts.Length < 2) return "Error|Missing name";
@@ -487,8 +532,6 @@ namespace CaroGame_TCPServer
             if (p != null) return $"Success|{p.PlayerName}|{p.Email}|{p.Birthday}";
             return "Error|Not found";
         }
-
-        // Thêm hàm lấy Email (cho Reset Password)
         private string HandleGetEmail(string[] parts)
         {
             if (parts.Length < 2) return "Error|Missing username";
@@ -496,19 +539,16 @@ namespace CaroGame_TCPServer
             if (p != null && !string.IsNullOrEmpty(p.Email)) return $"Success|{p.Email}";
             return "Error|Email not found";
         }
-
-        // Thêm hàm đổi Pass
         private string HandleUpdatePassword(string[] parts)
         {
             if (parts.Length < 3) return "Error|Missing data";
-            // if (PlayerADO.UpdatePassword(parts[1], parts[2])) return "Success|Updated";
-            return "Success|Updated (Fake)"; // Sửa lại gọi ADO thật nhé
+            bool ok = PlayerADO.UpdatePassword(parts[1], parts[2]);
+            if (ok) return "Success|Updated";
+            return "Error|Update failed";
         }
-
         private string HidePassword(string text)
         {
-            if (text.Contains("SIGNIN") || text.Contains("SIGNUP"))
-                return text.Split('|')[0] + "|***HIDDEN***";
+            if (text.Contains("SIGNIN") || text.Contains("SIGNUP")) return text.Split('|')[0] + "|***HIDDEN***";
             return text;
         }
     }
