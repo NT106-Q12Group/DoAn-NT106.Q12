@@ -51,6 +51,7 @@
             // tb_username
             // 
             tb_username.BorderStyle = BorderStyle.FixedSingle;
+            tb_username.Enabled = false;
             tb_username.Font = new Font("Segoe UI", 10F);
             tb_username.Location = new Point(27, 247);
             tb_username.Margin = new Padding(3, 4, 3, 4);
@@ -62,6 +63,7 @@
             // tb_email
             // 
             tb_email.BorderStyle = BorderStyle.FixedSingle;
+            tb_email.Enabled = false;
             tb_email.Font = new Font("Segoe UI", 10F);
             tb_email.Location = new Point(27, 387);
             tb_email.Margin = new Padding(3, 4, 3, 4);
@@ -73,6 +75,7 @@
             // tb_birthdate
             // 
             tb_birthdate.BorderStyle = BorderStyle.FixedSingle;
+            tb_birthdate.Enabled = false;
             tb_birthdate.Font = new Font("Segoe UI", 10F);
             tb_birthdate.Location = new Point(27, 457);
             tb_birthdate.Margin = new Padding(3, 4, 3, 4);
@@ -147,6 +150,7 @@
             // tb_password
             // 
             tb_password.BorderStyle = BorderStyle.FixedSingle;
+            tb_password.Enabled = false;
             tb_password.Font = new Font("Segoe UI", 10F);
             tb_password.Location = new Point(27, 318);
             tb_password.Name = "tb_password";

@@ -29,6 +29,16 @@
         private void InitializeComponent()
         {
             pnlNaviBar = new Panel();
+            pnlPvPMenu = new Panel();
+            btnJoinRoom = new Button();
+            btnCreateRoom = new Button();
+            btnPlayInstant = new Button();
+            pnlDashBoard = new Panel();
+            btnBack = new Button();
+            label5 = new Label();
+            label6 = new Label();
+            tbRoomID = new TextBox();
+            btnJoin = new Button();
             btnPvE = new Button();
             btnLeaderboard = new Button();
             btnPvP = new Button();
@@ -37,20 +47,10 @@
             label4 = new Label();
             btnSettings = new Button();
             label3 = new Label();
-            pnlDashBoard = new Panel();
-            btnBack = new Button();
-            label5 = new Label();
-            label6 = new Label();
-            tbRoomID = new TextBox();
-            btnJoin = new Button();
-            pnlPvPMenu = new Panel();
-            btnJoinRoom = new Button();
-            btnCreateRoom = new Button();
-            btnPlayInstant = new Button();
             ptbAvaGame = new PictureBox();
             pnlNaviBar.SuspendLayout();
-            pnlDashBoard.SuspendLayout();
             pnlPvPMenu.SuspendLayout();
+            pnlDashBoard.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)ptbAvaGame).BeginInit();
             SuspendLayout();
             // 
@@ -71,6 +71,123 @@
             pnlNaviBar.Size = new Size(391, 241);
             pnlNaviBar.TabIndex = 3;
             pnlNaviBar.Paint += pnlNaviBar_Paint;
+            // 
+            // pnlPvPMenu
+            // 
+            pnlPvPMenu.BackColor = Color.White;
+            pnlPvPMenu.BorderStyle = BorderStyle.Fixed3D;
+            pnlPvPMenu.Controls.Add(btnJoinRoom);
+            pnlPvPMenu.Controls.Add(btnCreateRoom);
+            pnlPvPMenu.Controls.Add(btnPlayInstant);
+            pnlPvPMenu.Location = new Point(0, 115);
+            pnlPvPMenu.Name = "pnlPvPMenu";
+            pnlPvPMenu.Size = new Size(391, 126);
+            pnlPvPMenu.TabIndex = 9;
+            pnlPvPMenu.Visible = false;
+            // 
+            // btnJoinRoom
+            // 
+            btnJoinRoom.BackColor = SystemColors.Control;
+            btnJoinRoom.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
+            btnJoinRoom.Location = new Point(9, 13);
+            btnJoinRoom.Name = "btnJoinRoom";
+            btnJoinRoom.Size = new Size(152, 48);
+            btnJoinRoom.TabIndex = 2;
+            btnJoinRoom.Text = "Join Room";
+            btnJoinRoom.UseVisualStyleBackColor = false;
+            btnJoinRoom.Click += btnJoinRoom_Click;
+            // 
+            // btnCreateRoom
+            // 
+            btnCreateRoom.BackColor = SystemColors.Control;
+            btnCreateRoom.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
+            btnCreateRoom.Location = new Point(225, 13);
+            btnCreateRoom.Name = "btnCreateRoom";
+            btnCreateRoom.Size = new Size(152, 48);
+            btnCreateRoom.TabIndex = 1;
+            btnCreateRoom.Text = "Create Room";
+            btnCreateRoom.UseVisualStyleBackColor = false;
+            btnCreateRoom.Click += btnCreateRoom_Click;
+            // 
+            // btnPlayInstant
+            // 
+            btnPlayInstant.BackColor = SystemColors.Control;
+            btnPlayInstant.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
+            btnPlayInstant.Location = new Point(119, 67);
+            btnPlayInstant.Name = "btnPlayInstant";
+            btnPlayInstant.Size = new Size(152, 48);
+            btnPlayInstant.TabIndex = 0;
+            btnPlayInstant.Text = "Play Instant";
+            btnPlayInstant.UseVisualStyleBackColor = false;
+            btnPlayInstant.Click += btnPlayInstant_Click;
+            // 
+            // pnlDashBoard
+            // 
+            pnlDashBoard.BackColor = Color.White;
+            pnlDashBoard.BorderStyle = BorderStyle.Fixed3D;
+            pnlDashBoard.Controls.Add(btnBack);
+            pnlDashBoard.Controls.Add(label5);
+            pnlDashBoard.Controls.Add(label6);
+            pnlDashBoard.Controls.Add(tbRoomID);
+            pnlDashBoard.Controls.Add(btnJoin);
+            pnlDashBoard.Location = new Point(58, 25);
+            pnlDashBoard.Name = "pnlDashBoard";
+            pnlDashBoard.Size = new Size(275, 193);
+            pnlDashBoard.TabIndex = 10;
+            pnlDashBoard.Visible = false;
+            // 
+            // btnBack
+            // 
+            btnBack.BackColor = SystemColors.Control;
+            btnBack.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
+            btnBack.Location = new Point(162, 141);
+            btnBack.Name = "btnBack";
+            btnBack.Size = new Size(94, 41);
+            btnBack.TabIndex = 6;
+            btnBack.Text = "Back";
+            btnBack.UseVisualStyleBackColor = false;
+            btnBack.Click += btnBack_Click;
+            // 
+            // label5
+            // 
+            label5.AutoSize = true;
+            label5.Font = new Font("Segoe UI", 16F, FontStyle.Bold);
+            label5.Location = new Point(91, 14);
+            label5.Name = "label5";
+            label5.Size = new Size(93, 37);
+            label5.TabIndex = 5;
+            label5.Text = "Room";
+            // 
+            // label6
+            // 
+            label6.AutoSize = true;
+            label6.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
+            label6.Location = new Point(19, 60);
+            label6.Name = "label6";
+            label6.Size = new Size(32, 25);
+            label6.TabIndex = 4;
+            label6.Text = "ID";
+            // 
+            // tbRoomID
+            // 
+            tbRoomID.BackColor = SystemColors.Control;
+            tbRoomID.Font = new Font("Segoe UI", 12F);
+            tbRoomID.Location = new Point(19, 88);
+            tbRoomID.Name = "tbRoomID";
+            tbRoomID.Size = new Size(237, 34);
+            tbRoomID.TabIndex = 2;
+            // 
+            // btnJoin
+            // 
+            btnJoin.BackColor = SystemColors.Control;
+            btnJoin.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
+            btnJoin.Location = new Point(19, 141);
+            btnJoin.Name = "btnJoin";
+            btnJoin.Size = new Size(94, 41);
+            btnJoin.TabIndex = 2;
+            btnJoin.Text = "Join";
+            btnJoin.UseVisualStyleBackColor = false;
+            btnJoin.Click += btnJoin_Click;
             // 
             // btnPvE
             // 
@@ -179,117 +296,6 @@
             label3.TabIndex = 7;
             label3.Text = "Leaderboard";
             // 
-            // pnlDashBoard
-            // 
-            pnlDashBoard.BackColor = Color.White;
-            pnlDashBoard.BorderStyle = BorderStyle.Fixed3D;
-            pnlDashBoard.Controls.Add(btnBack);
-            pnlDashBoard.Controls.Add(label5);
-            pnlDashBoard.Controls.Add(label6);
-            pnlDashBoard.Controls.Add(tbRoomID);
-            pnlDashBoard.Controls.Add(btnJoin);
-            pnlDashBoard.Location = new Point(58, 25);
-            pnlDashBoard.Name = "pnlDashBoard";
-            pnlDashBoard.Size = new Size(275, 193);
-            pnlDashBoard.TabIndex = 10;
-            pnlDashBoard.Visible = false;
-            // 
-            // btnBack
-            // 
-            btnBack.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
-            btnBack.Location = new Point(162, 141);
-            btnBack.Name = "btnBack";
-            btnBack.Size = new Size(94, 41);
-            btnBack.TabIndex = 6;
-            btnBack.Text = "Back";
-            btnBack.UseVisualStyleBackColor = true;
-            btnBack.Click += btnBack_Click;
-            // 
-            // label5
-            // 
-            label5.AutoSize = true;
-            label5.Font = new Font("Segoe UI", 16F, FontStyle.Bold);
-            label5.Location = new Point(91, 14);
-            label5.Name = "label5";
-            label5.Size = new Size(93, 37);
-            label5.TabIndex = 5;
-            label5.Text = "Room";
-            // 
-            // label6
-            // 
-            label6.AutoSize = true;
-            label6.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
-            label6.Location = new Point(19, 60);
-            label6.Name = "label6";
-            label6.Size = new Size(32, 25);
-            label6.TabIndex = 4;
-            label6.Text = "ID";
-            // 
-            // tbRoomID
-            // 
-            tbRoomID.Font = new Font("Segoe UI", 12F);
-            tbRoomID.Location = new Point(19, 88);
-            tbRoomID.Name = "tbRoomID";
-            tbRoomID.Size = new Size(237, 34);
-            tbRoomID.TabIndex = 2;
-            // 
-            // btnJoin
-            // 
-            btnJoin.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
-            btnJoin.Location = new Point(19, 141);
-            btnJoin.Name = "btnJoin";
-            btnJoin.Size = new Size(94, 41);
-            btnJoin.TabIndex = 2;
-            btnJoin.Text = "Join";
-            btnJoin.UseVisualStyleBackColor = true;
-            btnJoin.Click += btnJoin_Click;
-            // 
-            // pnlPvPMenu
-            // 
-            pnlPvPMenu.BackColor = SystemColors.ButtonHighlight;
-            pnlPvPMenu.BorderStyle = BorderStyle.Fixed3D;
-            pnlPvPMenu.Controls.Add(btnJoinRoom);
-            pnlPvPMenu.Controls.Add(btnCreateRoom);
-            pnlPvPMenu.Controls.Add(btnPlayInstant);
-            pnlPvPMenu.Location = new Point(0, 115);
-            pnlPvPMenu.Name = "pnlPvPMenu";
-            pnlPvPMenu.Size = new Size(391, 126);
-            pnlPvPMenu.TabIndex = 9;
-            pnlPvPMenu.Visible = false;
-            // 
-            // btnJoinRoom
-            // 
-            btnJoinRoom.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
-            btnJoinRoom.Location = new Point(9, 13);
-            btnJoinRoom.Name = "btnJoinRoom";
-            btnJoinRoom.Size = new Size(152, 48);
-            btnJoinRoom.TabIndex = 2;
-            btnJoinRoom.Text = "Join Room";
-            btnJoinRoom.UseVisualStyleBackColor = true;
-            btnJoinRoom.Click += btnJoinRoom_Click;
-            // 
-            // btnCreateRoom
-            // 
-            btnCreateRoom.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
-            btnCreateRoom.Location = new Point(225, 13);
-            btnCreateRoom.Name = "btnCreateRoom";
-            btnCreateRoom.Size = new Size(152, 48);
-            btnCreateRoom.TabIndex = 1;
-            btnCreateRoom.Text = "Create Room";
-            btnCreateRoom.UseVisualStyleBackColor = true;
-            btnCreateRoom.Click += btnCreateRoom_Click;
-            // 
-            // btnPlayInstant
-            // 
-            btnPlayInstant.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
-            btnPlayInstant.Location = new Point(119, 67);
-            btnPlayInstant.Name = "btnPlayInstant";
-            btnPlayInstant.Size = new Size(152, 48);
-            btnPlayInstant.TabIndex = 0;
-            btnPlayInstant.Text = "Play Instant";
-            btnPlayInstant.UseVisualStyleBackColor = true;
-            btnPlayInstant.Click += btnPlayInstant_Click;
-            // 
             // ptbAvaGame
             // 
             ptbAvaGame.BackgroundImage = Properties.Resources.CaroPicGame;
@@ -317,9 +323,9 @@
             Text = "Dashboard";
             pnlNaviBar.ResumeLayout(false);
             pnlNaviBar.PerformLayout();
+            pnlPvPMenu.ResumeLayout(false);
             pnlDashBoard.ResumeLayout(false);
             pnlDashBoard.PerformLayout();
-            pnlPvPMenu.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)ptbAvaGame).EndInit();
             ResumeLayout(false);
         }

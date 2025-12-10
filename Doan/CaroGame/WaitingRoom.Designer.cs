@@ -59,6 +59,7 @@
             // 
             // pictureBox2
             // 
+            pictureBox2.BackColor = SystemColors.Control;
             pictureBox2.BorderStyle = BorderStyle.Fixed3D;
             pictureBox2.Location = new Point(400, 51);
             pictureBox2.Name = "pictureBox2";
@@ -68,6 +69,7 @@
             // 
             // pictureBox3
             // 
+            pictureBox3.BackColor = SystemColors.Control;
             pictureBox3.BorderStyle = BorderStyle.Fixed3D;
             pictureBox3.Location = new Point(46, 51);
             pictureBox3.Name = "pictureBox3";
@@ -133,7 +135,7 @@
             // 
             label6.AutoSize = true;
             label6.Font = new Font("Segoe UI", 16F, FontStyle.Bold);
-            label6.Location = new Point(384, 165);
+            label6.Location = new Point(383, 165);
             label6.Name = "label6";
             label6.Size = new Size(146, 37);
             label6.TabIndex = 8;
@@ -143,7 +145,7 @@
             // 
             label2.AutoSize = true;
             label2.Font = new Font("Segoe UI", 16F, FontStyle.Bold);
-            label2.Location = new Point(29, 165);
+            label2.Location = new Point(28, 165);
             label2.Name = "label2";
             label2.Size = new Size(146, 37);
             label2.TabIndex = 7;
