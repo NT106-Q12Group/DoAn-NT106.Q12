@@ -113,25 +113,25 @@ namespace CaroGame
 
             Room roomInfo = new Room();
             string p1, p2;
-            int myNumber;
+            int mySide; // 0 = X, 1 = O
 
-            // [FIX LOGIC]: Xử lý cả trường hợp Server gửi "1"/"2" hoặc "X"/"O"
-            // Nếu sideRaw là "1" hoặc "X" -> Mình là Player 1
+            // [FIX LOGIC]: Xử lý xác định phe dựa trên tin nhắn Server
+            // Nếu sideRaw là "1" hoặc "X" -> Mình là Player 1 (X) -> mySide = 0
             if (sideRaw == "1" || sideRaw.ToUpper() == "X")
             {
-                p1 = _username;
-                p2 = opponentName;
-                myNumber = 1; // Host / Đi trước
+                p1 = _username;      // Mình là X
+                p2 = opponentName;   // Đối thủ là O
+                mySide = 0;          // Phe 0 đi trước
             }
             else
             {
-                p1 = opponentName;
-                p2 = _username;
-                myNumber = 2; // Guest / Đi sau
+                p1 = opponentName;   // Đối thủ là X
+                p2 = _username;      // Mình là O
+                mySide = 1;          // Phe 1 đi sau
             }
 
-            // Mở bàn cờ
-            var gameForm = new PvP(roomInfo, myNumber, p1, p2, _client);
+            // Mở bàn cờ với Constructor mới (nhận mySide)
+            var gameForm = new PvP(roomInfo, mySide, p1, p2, _client);
 
             this.Hide();
 
