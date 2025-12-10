@@ -68,17 +68,10 @@ namespace CaroGame
             {
                 MessageBox.Show("Error while signing out: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-        }   
+        }
 
         protected override void OnFormClosing(FormClosingEventArgs e)
         {
-            try
-            {
-                if (!string.IsNullOrEmpty(_player.PlayerName) && _client.IsConnected())
-                    _client.Logout(_player.PlayerName);
-                _client.Disconnect();
-            }
-            catch { }
             base.OnFormClosing(e);
         }
 
