@@ -51,56 +51,50 @@
             // tb_username
             // 
             tb_username.Font = new Font("Segoe UI", 10F);
-            tb_username.Location = new Point(30, 214);
-            tb_username.Margin = new Padding(3, 4, 3, 4);
+            tb_username.Location = new Point(26, 160);
             tb_username.Name = "tb_username";
-            tb_username.Size = new Size(445, 30);
+            tb_username.Size = new Size(390, 25);
             tb_username.TabIndex = 1;
             // 
             // tb_cfpsw
             // 
             tb_cfpsw.Font = new Font("Segoe UI", 10F);
-            tb_cfpsw.Location = new Point(30, 352);
-            tb_cfpsw.Margin = new Padding(3, 4, 3, 4);
+            tb_cfpsw.Location = new Point(26, 264);
             tb_cfpsw.Name = "tb_cfpsw";
-            tb_cfpsw.Size = new Size(445, 30);
-            tb_cfpsw.TabIndex = 2;
+            tb_cfpsw.Size = new Size(390, 25);
+            tb_cfpsw.TabIndex = 3;
             // 
             // tb_birth
             // 
             tb_birth.Font = new Font("Segoe UI", 10F);
-            tb_birth.Location = new Point(30, 480);
-            tb_birth.Margin = new Padding(3, 4, 3, 4);
+            tb_birth.Location = new Point(26, 360);
             tb_birth.Name = "tb_birth";
-            tb_birth.Size = new Size(445, 30);
-            tb_birth.TabIndex = 3;
+            tb_birth.Size = new Size(390, 25);
+            tb_birth.TabIndex = 5;
             // 
             // tb_psw
             // 
             tb_psw.Font = new Font("Segoe UI", 10F);
-            tb_psw.Location = new Point(30, 284);
-            tb_psw.Margin = new Padding(3, 4, 3, 4);
+            tb_psw.Location = new Point(26, 213);
             tb_psw.Name = "tb_psw";
-            tb_psw.Size = new Size(445, 30);
-            tb_psw.TabIndex = 4;
+            tb_psw.Size = new Size(390, 25);
+            tb_psw.TabIndex = 2;
             // 
             // tb_email
             // 
             tb_email.Font = new Font("Segoe UI", 10F);
-            tb_email.Location = new Point(30, 414);
-            tb_email.Margin = new Padding(3, 4, 3, 4);
+            tb_email.Location = new Point(26, 310);
             tb_email.Name = "tb_email";
-            tb_email.Size = new Size(445, 30);
-            tb_email.TabIndex = 5;
+            tb_email.Size = new Size(390, 25);
+            tb_email.TabIndex = 4;
             // 
             // btn_signup
             // 
             btn_signup.Cursor = Cursors.Hand;
-            btn_signup.Location = new Point(207, 533);
-            btn_signup.Margin = new Padding(3, 4, 3, 4);
+            btn_signup.Location = new Point(181, 400);
             btn_signup.Name = "btn_signup";
-            btn_signup.Size = new Size(86, 31);
-            btn_signup.TabIndex = 6;
+            btn_signup.Size = new Size(75, 23);
+            btn_signup.TabIndex = 7;
             btn_signup.Text = "Sign Up";
             btn_signup.UseVisualStyleBackColor = true;
             btn_signup.Click += btn_signup_Click;
@@ -108,9 +102,9 @@
             // lb_signin
             // 
             lb_signin.AutoSize = true;
-            lb_signin.Location = new Point(130, 573);
+            lb_signin.Location = new Point(114, 430);
             lb_signin.Name = "lb_signin";
-            lb_signin.Size = new Size(178, 20);
+            lb_signin.Size = new Size(142, 15);
             lb_signin.TabIndex = 7;
             lb_signin.Text = "Already have an account?";
             // 
@@ -118,9 +112,9 @@
             // 
             linkedlb_signin.AutoSize = true;
             linkedlb_signin.Cursor = Cursors.Hand;
-            linkedlb_signin.Location = new Point(307, 573);
+            linkedlb_signin.Location = new Point(269, 430);
             linkedlb_signin.Name = "linkedlb_signin";
-            linkedlb_signin.Size = new Size(54, 20);
+            linkedlb_signin.Size = new Size(43, 15);
             linkedlb_signin.TabIndex = 8;
             linkedlb_signin.TabStop = true;
             linkedlb_signin.Text = "Sign In";
@@ -130,10 +124,9 @@
             // 
             cb_showpsw.AutoSize = true;
             cb_showpsw.Cursor = Cursors.Hand;
-            cb_showpsw.Location = new Point(341, 258);
-            cb_showpsw.Margin = new Padding(3, 4, 3, 4);
+            cb_showpsw.Location = new Point(298, 194);
             cb_showpsw.Name = "cb_showpsw";
-            cb_showpsw.Size = new Size(134, 24);
+            cb_showpsw.Size = new Size(108, 19);
             cb_showpsw.TabIndex = 9;
             cb_showpsw.Text = "Show password";
             cb_showpsw.UseVisualStyleBackColor = true;
@@ -143,10 +136,9 @@
             // 
             cb_showcfpsw.AutoSize = true;
             cb_showcfpsw.Cursor = Cursors.Hand;
-            cb_showcfpsw.Location = new Point(341, 326);
-            cb_showcfpsw.Margin = new Padding(3, 4, 3, 4);
+            cb_showcfpsw.Location = new Point(298, 244);
             cb_showcfpsw.Name = "cb_showcfpsw";
-            cb_showcfpsw.Size = new Size(134, 24);
+            cb_showcfpsw.Size = new Size(108, 19);
             cb_showcfpsw.TabIndex = 10;
             cb_showcfpsw.Text = "Show password";
             cb_showcfpsw.UseVisualStyleBackColor = true;
@@ -156,9 +148,9 @@
             // 
             lblSignUp.AutoSize = true;
             lblSignUp.Font = new Font("Segoe UI", 18F, FontStyle.Bold);
-            lblSignUp.Location = new Point(189, 135);
+            lblSignUp.Location = new Point(165, 101);
             lblSignUp.Name = "lblSignUp";
-            lblSignUp.Size = new Size(130, 41);
+            lblSignUp.Size = new Size(103, 32);
             lblSignUp.TabIndex = 11;
             lblSignUp.Text = "Sign Up";
             // 
@@ -166,9 +158,9 @@
             // 
             lblUsernameSU.AutoSize = true;
             lblUsernameSU.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
-            lblUsernameSU.Location = new Point(30, 187);
+            lblUsernameSU.Location = new Point(26, 140);
             lblUsernameSU.Name = "lblUsernameSU";
-            lblUsernameSU.Size = new Size(89, 23);
+            lblUsernameSU.Size = new Size(76, 19);
             lblUsernameSU.TabIndex = 12;
             lblUsernameSU.Text = "Username";
             // 
@@ -176,9 +168,9 @@
             // 
             lblPasswordSU.AutoSize = true;
             lblPasswordSU.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
-            lblPasswordSU.Location = new Point(30, 257);
+            lblPasswordSU.Location = new Point(26, 193);
             lblPasswordSU.Name = "lblPasswordSU";
-            lblPasswordSU.Size = new Size(85, 23);
+            lblPasswordSU.Size = new Size(73, 19);
             lblPasswordSU.TabIndex = 13;
             lblPasswordSU.Text = "Password";
             // 
@@ -186,9 +178,9 @@
             // 
             lblCFPassword.AutoSize = true;
             lblCFPassword.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
-            lblCFPassword.Location = new Point(30, 325);
+            lblCFPassword.Location = new Point(26, 244);
             lblCFPassword.Name = "lblCFPassword";
-            lblCFPassword.Size = new Size(156, 23);
+            lblCFPassword.Size = new Size(131, 19);
             lblCFPassword.TabIndex = 14;
             lblCFPassword.Text = "Confirm Password";
             // 
@@ -196,9 +188,9 @@
             // 
             lblEmail.AutoSize = true;
             lblEmail.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
-            lblEmail.Location = new Point(30, 387);
+            lblEmail.Location = new Point(26, 290);
             lblEmail.Name = "lblEmail";
-            lblEmail.Size = new Size(54, 23);
+            lblEmail.Size = new Size(45, 19);
             lblEmail.TabIndex = 15;
             lblEmail.Text = "Email";
             // 
@@ -206,9 +198,9 @@
             // 
             lblBirth.AutoSize = true;
             lblBirth.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
-            lblBirth.Location = new Point(30, 453);
+            lblBirth.Location = new Point(26, 340);
             lblBirth.Name = "lblBirth";
-            lblBirth.Size = new Size(50, 23);
+            lblBirth.Size = new Size(41, 19);
             lblBirth.TabIndex = 16;
             lblBirth.Text = "Birth";
             // 
@@ -217,18 +209,19 @@
             pictureBox1.BackgroundImage = Properties.Resources.CaroPicGame;
             pictureBox1.BackgroundImageLayout = ImageLayout.Stretch;
             pictureBox1.BorderStyle = BorderStyle.Fixed3D;
-            pictureBox1.Location = new Point(192, 12);
+            pictureBox1.Location = new Point(168, 9);
+            pictureBox1.Margin = new Padding(3, 2, 3, 2);
             pictureBox1.Name = "pictureBox1";
-            pictureBox1.Size = new Size(120, 120);
+            pictureBox1.Size = new Size(106, 91);
             pictureBox1.TabIndex = 17;
             pictureBox1.TabStop = false;
             // 
             // SignUp
             // 
-            AutoScaleDimensions = new SizeF(8F, 20F);
+            AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.LightBlue;
-            ClientSize = new Size(505, 598);
+            ClientSize = new Size(442, 448);
             Controls.Add(pictureBox1);
             Controls.Add(lblBirth);
             Controls.Add(lblEmail);
@@ -247,7 +240,6 @@
             Controls.Add(tb_cfpsw);
             Controls.Add(tb_username);
             FormBorderStyle = FormBorderStyle.FixedSingle;
-            Margin = new Padding(3, 4, 3, 4);
             MaximizeBox = false;
             Name = "SignUp";
             StartPosition = FormStartPosition.CenterScreen;
