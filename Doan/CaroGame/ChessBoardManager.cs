@@ -605,6 +605,12 @@ namespace CaroGame
 
         private void MakeMove(int r, int c)
         {
+            // Kiểm tra chặt chẽ biên của matrix trước khi truy cập
+            if (r < 0 || r >= matrix.Count || c < 0 || c >= matrix[0].Count)
+            {
+                return;
+            }
+
             matrix[r][c].BackgroundImage = Player[1].Mark;
             HighlightMove(matrix[r][c]);
             CurrentPlayer = 0;
@@ -641,7 +647,9 @@ namespace CaroGame
         {
             List<Point> moves = new List<Point>();
             HashSet<int> visited = new HashSet<int>();
-            int h = Cons.CHESS_BOARD_HEIGHT; int w = Cons.CHESS_BOARD_WIDTH;
+
+            int h = board.GetLength(0);
+            int w = board.GetLength(1);
 
             for (int i = 0; i < h; i++)
             {
@@ -649,8 +657,10 @@ namespace CaroGame
                 {
                     if (board[i, j] != EMPTY)
                     {
-                        int startR = Math.Max(0, i - 2); int endR = Math.Min(h - 1, i + 2);
-                        int startC = Math.Max(0, j - 2); int endC = Math.Min(w - 1, j + 2);
+                        int startR = Math.Max(0, i - 2);
+                        int endR = Math.Min(h - 1, i + 2); // Đảm bảo không vượt quá h-1
+                        int startC = Math.Max(0, j - 2);
+                        int endC = Math.Min(w - 1, j + 2); // Đảm bảo không vượt quá w-1
 
                         for (int r = startR; r <= endR; r++)
                         {
@@ -658,8 +668,12 @@ namespace CaroGame
                             {
                                 if (board[r, c] == EMPTY)
                                 {
-                                    int key = r * 1000 + c;
-                                    if (!visited.Contains(key)) { visited.Add(key); moves.Add(new Point(r, c)); }
+                                    int key = r * 10000 + c;
+                                    if (!visited.Contains(key))
+                                    {
+                                        visited.Add(key);
+                                        moves.Add(new Point(r, c));
+                                    }
                                 }
                             }
                         }
@@ -851,7 +865,10 @@ namespace CaroGame
             return score;
         }
 
-        bool InBounds(int r, int c) { return r >= 0 && r < Cons.CHESS_BOARD_HEIGHT && c >= 0 && c < Cons.CHESS_BOARD_WIDTH; }
+        bool InBounds(int r, int c)
+        {
+            return r >= 0 && r < Cons.CHESS_BOARD_HEIGHT && c >= 0 && c < Cons.CHESS_BOARD_WIDTH;
+        }
         #endregion
         #endregion
     }
