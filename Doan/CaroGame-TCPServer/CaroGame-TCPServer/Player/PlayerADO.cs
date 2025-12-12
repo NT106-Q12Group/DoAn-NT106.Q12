@@ -254,5 +254,63 @@ WHERE PlayerName = @playername;";
                 return false;
             }
         }
+
+        public static bool UpdateEmail(string playername, string newEmail)
+        {
+            if (string.IsNullOrWhiteSpace(playername) || string.IsNullOrWhiteSpace(newEmail))
+            {
+                Console.WriteLine($"[{Now()}] [ERROR] UpdateEmail failed: missing username.");
+                return false;
+            }
+            const string sql = @"UPDATE Player SET Email = @newemail WHERE PlayerName = @playername;";
+            try
+            {
+                using var conn = CreateConn();
+                conn.Open();
+                using var cmd = new SQLiteCommand(sql, conn);
+                cmd.Parameters.Add("@newemail", DbType.String).Value = newEmail ?? string.Empty;
+                cmd.Parameters.Add("@playername", DbType.String).Value = playername;
+                var rows = cmd.ExecuteNonQuery();
+                var success = rows > 0;
+                Console.WriteLine(success
+                    ? $"[{Now()}] [INFO] Email updated for: {playername}"
+                    : $"[{Now()}] [WARN] Email update failed (user not found?): {playername}");
+                return success;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[{Now()}] [ERROR] Failed to update email: {ex.Message}");
+                return false;
+            }
+        }
+
+        public static bool UpdateBirthday(string playername, string newBirthday)
+        {
+            if (string.IsNullOrWhiteSpace(playername) || string.IsNullOrWhiteSpace(newBirthday))
+            {
+                Console.WriteLine($"[{Now()}] [ERROR] UpdateBirthday failed: missing username.");
+                return false;
+            }
+            const string sql = @"UPDATE Player SET Birthday = @newbirthday WHERE PlayerName = @playername;";
+            try
+            {
+                using var conn = CreateConn();
+                conn.Open();
+                using var cmd = new SQLiteCommand(sql, conn);
+                cmd.Parameters.Add("@newbirthday", DbType.String).Value = newBirthday ?? string.Empty;
+                cmd.Parameters.Add("@playername", DbType.String).Value = playername;
+                var rows = cmd.ExecuteNonQuery();
+                var success = rows > 0;
+                Console.WriteLine(success
+                    ? $"[{Now()}] [INFO] Birthday updated for: {playername}"
+                    : $"[{Now()}] [WARN] Birthday update failed (user not found?): {playername}");
+                return success;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[{Now()}] [ERROR] Failed to update birthday: {ex.Message}");
+                return false;
+            }
+        }
     }
 }

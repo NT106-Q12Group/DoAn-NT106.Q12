@@ -551,5 +551,21 @@ namespace CaroGame_TCPServer
             if (text.Contains("SIGNIN") || text.Contains("SIGNUP")) return text.Split('|')[0] + "|***HIDDEN***";
             return text;
         }
+
+        private string HandleUpdateEmail(string[] parts)
+        {
+            if (parts.Length < 3) return "Error|Missing data";
+            bool ok = PlayerADO.UpdateEmail(parts[1], parts[2]);
+            if (ok) return "Success|Updated";
+            return "Error|Update failed";
+        }
+
+        private string HandleUpdateBirthday(string[] parts)
+        {
+            if (parts.Length < 3) return "Error|Missing data";
+            bool ok = PlayerADO.UpdateBirthday(parts[1], parts[2]);
+            if (ok) return "Success|Updated";
+            return "Error|Update failed";
+        }
     }
 }
