@@ -601,7 +601,7 @@ namespace CaroGame_TCPServer
                 string opponent = ActiveMatches[sender];
 
                 SendToPlayer(opponent, "OPPONENT_LEFT|Đối thủ đã thoát / đầu hàng. Bạn thắng!");
-
+                PlayerADO.UpdateScore(opponent, 1); // Thắng +1 điểm
                 ActiveMatches.Remove(sender);
                 PlayerSides.Remove(sender);
                 RematchWaiting.Remove(sender);
