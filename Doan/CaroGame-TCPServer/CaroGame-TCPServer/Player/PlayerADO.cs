@@ -48,8 +48,8 @@ namespace CaroGame_TCPServer.Player
                 }
 
                 const string sql = @"
-INSERT INTO Player (PlayerName, Password, Email, Birthday)
-VALUES (@playername, @psw, @email, @birth);";
+INSERT INTO Player (PlayerName, Password, Email, Birthday, Score)
+VALUES (@playername, @psw, @email, @birth, 0);";
 
                 using var conn = CreateConn();
                 conn.Open();
@@ -86,7 +86,7 @@ VALUES (@playername, @psw, @email, @birth);";
         public static Player? Authenticate(string playername, string hashedpsw)
         {
             const string sql = @"
-SELECT PlayerId, PlayerName, Password, Email, Birthday
+SELECT PlayerId, PlayerName, Password, Email, Birthday, Score
 FROM Player
 WHERE PlayerName = @playername AND Password = @hashedpsw
 LIMIT 1;";
@@ -112,7 +112,8 @@ LIMIT 1;";
                     PlayerName = reader.GetString(1),
                     Password = reader.GetString(2),
                     Email = reader.IsDBNull(3) ? string.Empty : reader.GetString(3),
-                    Birthday = reader.IsDBNull(4) ? string.Empty : reader.GetString(4)
+                    Birthday = reader.IsDBNull(4) ? string.Empty : reader.GetString(4),
+                    Score = reader.IsDBNull(5) ? 0 : reader.GetInt32(5)
                 };
 
                 Console.WriteLine($"[{Now()}] [INFO] Authentication succeeded for: {playername}");
@@ -128,7 +129,7 @@ LIMIT 1;";
         public static Player? GetPlayerByPlayerName(string playername)
         {
             const string sql = @"
-SELECT PlayerId, PlayerName, Password, Email, Birthday
+SELECT PlayerId, PlayerName, Password, Email, Birthday, Score
 FROM Player
 WHERE PlayerName = @playername
 LIMIT 1;";
@@ -150,13 +151,110 @@ LIMIT 1;";
                     PlayerName = reader.GetString(1),
                     Password = reader.GetString(2),
                     Email = reader.IsDBNull(3) ? string.Empty : reader.GetString(3),
-                    Birthday = reader.IsDBNull(4) ? string.Empty : reader.GetString(4)
+                    Birthday = reader.IsDBNull(4) ? string.Empty : reader.GetString(4),
+                    Score = reader.IsDBNull(5) ? 0 : reader.GetInt32(5)
                 };
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"[{Now()}] [ERROR] Failed to get player by name: {ex.Message}");
                 return null;
+            }
+        }
+
+        public static List<Player> GetTopPlayer(int limit = 10)
+        {
+            var list = new List<Player>();
+            const string sql = "SELECT PlayerName, Score FROM Player ORDER BY Score DESC LIMIT @limit;";
+            try
+            {
+                using var conn = CreateConn();
+                conn.Open();
+                using var cmd = new SQLiteCommand(sql, conn);
+                cmd.Parameters.Add("@limit", DbType.Int32).Value = limit;
+
+                using var reader = cmd.ExecuteReader();
+                while (reader.Read())
+                {
+                    var player = new Player
+                    {
+                        PlayerName = reader.GetString(0),
+                        Score = reader.GetInt32(1)
+                    };
+                    list.Add(player);
+                }
+                Console.WriteLine($"[{Now()}] [INFO] Retrieved top {list.Count} players.");
+                return list;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[{Now()}] [ERROR] Failed to get top players: {ex.Message}");
+                return list;
+            }
+        }
+
+        public static bool UpdateScore(string playername, int newScore)
+        {
+            if (string.IsNullOrWhiteSpace(playername)) return false;
+
+            const string sql = @"UPDATE Player SET Score = @score WHERE PlayerName = @playername;";
+
+            try
+            {
+                using var conn = CreateConn();
+                conn.Open();
+
+                using var cmd = new SQLiteCommand(sql, conn);
+                cmd.Parameters.Add("@score", DbType.Int32).Value = newScore;
+                cmd.Parameters.Add("@playername", DbType.String).Value = playername;
+
+                var rows = cmd.ExecuteNonQuery();
+                var success = rows > 0;
+
+                if (success)
+                    Console.WriteLine($"[{Now()}] [INFO] Score updated for {playername}: {newScore}");
+                else
+                    Console.WriteLine($"[{Now()}] [WARN] Score update failed for {playername}");
+
+                return success;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[{Now()}] [ERROR] Failed to update score: {ex.Message}");
+                return false;
+            }
+        }
+
+        public static bool AddScore(string playername, int pointsToAdd)
+        {
+            if (string.IsNullOrWhiteSpace(playername)) return false;
+
+            // Lệnh này lấy điểm CŨ cộng thêm điểm MỚI
+            const string sql = @"UPDATE Player SET Score = Score + @points WHERE PlayerName = @playername;";
+
+            try
+            {
+                using var conn = CreateConn();
+                conn.Open();
+
+                using var cmd = new SQLiteCommand(sql, conn);
+                cmd.Parameters.Add("@points", DbType.Int32).Value = pointsToAdd;
+                cmd.Parameters.Add("@playername", DbType.String).Value = playername;
+
+                var rows = cmd.ExecuteNonQuery();
+                var success = rows > 0;
+
+                if (success)
+                    Console.WriteLine($"[{Now()}] [INFO] Added {pointsToAdd} points for {playername}");
+                else
+                    Console.WriteLine($"[{Now()}] [WARN] Failed to add points for {playername}");
+
+                return success;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[{Now()}] [ERROR] Failed to add score: {ex.Message}");
+                return false;
             }
         }
 

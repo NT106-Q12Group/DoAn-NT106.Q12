@@ -9,6 +9,7 @@ namespace CaroGame_TCPServer.Player
         public string Password { get; set; } = string.Empty;
         public string? Email { get; set; }
         public string? Birthday { get; set; }
+        public int Score { get; set; } = 0;
 
         public Player() { }
 
@@ -18,6 +19,7 @@ namespace CaroGame_TCPServer.Player
             Password = psw ?? throw new ArgumentNullException(nameof(psw));
             Email = email;
             Birthday = birth;
+            Score = 0;
         }
 
         public Player(string name, string psw)
@@ -28,7 +30,7 @@ namespace CaroGame_TCPServer.Player
 
         public override string ToString()
         {
-            return $"PlayerID: {PlayerID}, Name: {PlayerName}, Email: {Email ?? "N/A"}, Birthday: {Birthday ?? "N/A"}";
+            return $"PlayerID: {PlayerID}, Name: {PlayerName}, Score: {Score} , Email: {Email ?? "N/A"}, Birthday: {Birthday ?? "N/A"}";
         }
     }
 }

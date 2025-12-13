@@ -239,6 +239,23 @@ namespace CaroGame_TCPServer
                     case "UPDATEEMAIL": return HandleUpdateEmail(parts);
                     case "UPDATEBIRTHDAY": return HandleUpdateBirthday(parts);
 
+                    case "GET_LEADERBOARD":
+                        {
+                            var topPlayers = PlayerADO.GetTopPlayer(10);
+                            Console.WriteLine($"[INFO] Retrieved top {topPlayers.Count} players.");
+
+                            StringBuilder sb = new StringBuilder();
+                            foreach (var p in topPlayers)
+                            {
+                                sb.Append($"|{p.PlayerName}:{p.Score}");
+                            }
+
+                            string response = "LEADERBOARD_DATA" + sb.ToString();
+                            SendToPlayer(currentUsername, response);
+                            return "";
+                        }
+
+                    // --- GAME LOGIC ---
                     // Quick Match
                     case "FIND_MATCH":
                         HandleFindMatch(parts[1], client);
