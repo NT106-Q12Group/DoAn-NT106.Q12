@@ -66,9 +66,10 @@
             pnlNaviBar.Controls.Add(label4);
             pnlNaviBar.Controls.Add(btnSettings);
             pnlNaviBar.Controls.Add(label3);
-            pnlNaviBar.Location = new Point(258, 12);
+            pnlNaviBar.Location = new Point(322, 15);
+            pnlNaviBar.Margin = new Padding(4, 4, 4, 4);
             pnlNaviBar.Name = "pnlNaviBar";
-            pnlNaviBar.Size = new Size(391, 241);
+            pnlNaviBar.Size = new Size(489, 301);
             pnlNaviBar.TabIndex = 3;
             pnlNaviBar.Paint += pnlNaviBar_Paint;
             // 
@@ -79,9 +80,10 @@
             pnlPvPMenu.Controls.Add(btnJoinRoom);
             pnlPvPMenu.Controls.Add(btnCreateRoom);
             pnlPvPMenu.Controls.Add(btnPlayInstant);
-            pnlPvPMenu.Location = new Point(0, 115);
+            pnlPvPMenu.Location = new Point(0, 144);
+            pnlPvPMenu.Margin = new Padding(4, 4, 4, 4);
             pnlPvPMenu.Name = "pnlPvPMenu";
-            pnlPvPMenu.Size = new Size(391, 126);
+            pnlPvPMenu.Size = new Size(488, 156);
             pnlPvPMenu.TabIndex = 9;
             pnlPvPMenu.Visible = false;
             // 
@@ -89,9 +91,10 @@
             // 
             btnJoinRoom.BackColor = SystemColors.Control;
             btnJoinRoom.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
-            btnJoinRoom.Location = new Point(9, 13);
+            btnJoinRoom.Location = new Point(11, 16);
+            btnJoinRoom.Margin = new Padding(4, 4, 4, 4);
             btnJoinRoom.Name = "btnJoinRoom";
-            btnJoinRoom.Size = new Size(152, 48);
+            btnJoinRoom.Size = new Size(190, 60);
             btnJoinRoom.TabIndex = 2;
             btnJoinRoom.Text = "Join Room";
             btnJoinRoom.UseVisualStyleBackColor = false;
@@ -101,9 +104,10 @@
             // 
             btnCreateRoom.BackColor = SystemColors.Control;
             btnCreateRoom.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
-            btnCreateRoom.Location = new Point(225, 13);
+            btnCreateRoom.Location = new Point(281, 16);
+            btnCreateRoom.Margin = new Padding(4, 4, 4, 4);
             btnCreateRoom.Name = "btnCreateRoom";
-            btnCreateRoom.Size = new Size(152, 48);
+            btnCreateRoom.Size = new Size(190, 60);
             btnCreateRoom.TabIndex = 1;
             btnCreateRoom.Text = "Create Room";
             btnCreateRoom.UseVisualStyleBackColor = false;
@@ -113,9 +117,10 @@
             // 
             btnPlayInstant.BackColor = SystemColors.Control;
             btnPlayInstant.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
-            btnPlayInstant.Location = new Point(119, 67);
+            btnPlayInstant.Location = new Point(149, 84);
+            btnPlayInstant.Margin = new Padding(4, 4, 4, 4);
             btnPlayInstant.Name = "btnPlayInstant";
-            btnPlayInstant.Size = new Size(152, 48);
+            btnPlayInstant.Size = new Size(190, 60);
             btnPlayInstant.TabIndex = 0;
             btnPlayInstant.Text = "Play Instant";
             btnPlayInstant.UseVisualStyleBackColor = false;
@@ -130,9 +135,10 @@
             pnlDashBoard.Controls.Add(label6);
             pnlDashBoard.Controls.Add(tbRoomID);
             pnlDashBoard.Controls.Add(btnJoin);
-            pnlDashBoard.Location = new Point(58, 25);
+            pnlDashBoard.Location = new Point(72, 31);
+            pnlDashBoard.Margin = new Padding(4, 4, 4, 4);
             pnlDashBoard.Name = "pnlDashBoard";
-            pnlDashBoard.Size = new Size(275, 193);
+            pnlDashBoard.Size = new Size(343, 240);
             pnlDashBoard.TabIndex = 10;
             pnlDashBoard.Visible = false;
             // 
@@ -140,9 +146,10 @@
             // 
             btnBack.BackColor = SystemColors.Control;
             btnBack.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
-            btnBack.Location = new Point(162, 141);
+            btnBack.Location = new Point(202, 176);
+            btnBack.Margin = new Padding(4, 4, 4, 4);
             btnBack.Name = "btnBack";
-            btnBack.Size = new Size(94, 41);
+            btnBack.Size = new Size(118, 51);
             btnBack.TabIndex = 6;
             btnBack.Text = "Back";
             btnBack.UseVisualStyleBackColor = false;
@@ -152,9 +159,10 @@
             // 
             label5.AutoSize = true;
             label5.Font = new Font("Segoe UI", 16F, FontStyle.Bold);
-            label5.Location = new Point(91, 14);
+            label5.Location = new Point(114, 18);
+            label5.Margin = new Padding(4, 0, 4, 0);
             label5.Name = "label5";
-            label5.Size = new Size(93, 37);
+            label5.Size = new Size(109, 45);
             label5.TabIndex = 5;
             label5.Text = "Room";
             // 
@@ -162,9 +170,10 @@
             // 
             label6.AutoSize = true;
             label6.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
-            label6.Location = new Point(19, 60);
+            label6.Location = new Point(24, 75);
+            label6.Margin = new Padding(4, 0, 4, 0);
             label6.Name = "label6";
-            label6.Size = new Size(32, 25);
+            label6.Size = new Size(36, 30);
             label6.TabIndex = 4;
             label6.Text = "ID";
             // 
@@ -172,18 +181,20 @@
             // 
             tbRoomID.BackColor = SystemColors.Control;
             tbRoomID.Font = new Font("Segoe UI", 12F);
-            tbRoomID.Location = new Point(19, 88);
+            tbRoomID.Location = new Point(24, 110);
+            tbRoomID.Margin = new Padding(4, 4, 4, 4);
             tbRoomID.Name = "tbRoomID";
-            tbRoomID.Size = new Size(237, 34);
+            tbRoomID.Size = new Size(295, 39);
             tbRoomID.TabIndex = 2;
             // 
             // btnJoin
             // 
             btnJoin.BackColor = SystemColors.Control;
             btnJoin.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
-            btnJoin.Location = new Point(19, 141);
+            btnJoin.Location = new Point(24, 176);
+            btnJoin.Margin = new Padding(4, 4, 4, 4);
             btnJoin.Name = "btnJoin";
-            btnJoin.Size = new Size(94, 41);
+            btnJoin.Size = new Size(118, 51);
             btnJoin.TabIndex = 2;
             btnJoin.Text = "Join";
             btnJoin.UseVisualStyleBackColor = false;
@@ -199,9 +210,10 @@
             btnPvE.FlatAppearance.MouseOverBackColor = Color.LightBlue;
             btnPvE.FlatStyle = FlatStyle.Flat;
             btnPvE.Font = new Font("Segoe UI", 18F, FontStyle.Bold);
-            btnPvE.Location = new Point(70, 16);
+            btnPvE.Location = new Point(88, 20);
+            btnPvE.Margin = new Padding(4, 4, 4, 4);
             btnPvE.Name = "btnPvE";
-            btnPvE.Size = new Size(67, 56);
+            btnPvE.Size = new Size(84, 70);
             btnPvE.TabIndex = 0;
             btnPvE.UseVisualStyleBackColor = false;
             btnPvE.Click += btnPvE_Click;
@@ -215,11 +227,13 @@
             btnLeaderboard.FlatAppearance.MouseDownBackColor = Color.LightBlue;
             btnLeaderboard.FlatAppearance.MouseOverBackColor = Color.LightBlue;
             btnLeaderboard.FlatStyle = FlatStyle.Flat;
-            btnLeaderboard.Location = new Point(70, 145);
+            btnLeaderboard.Location = new Point(88, 181);
+            btnLeaderboard.Margin = new Padding(4, 4, 4, 4);
             btnLeaderboard.Name = "btnLeaderboard";
-            btnLeaderboard.Size = new Size(67, 48);
+            btnLeaderboard.Size = new Size(84, 60);
             btnLeaderboard.TabIndex = 3;
             btnLeaderboard.UseVisualStyleBackColor = true;
+            btnLeaderboard.Click += btnLeaderboard_Click;
             // 
             // btnPvP
             // 
@@ -232,9 +246,10 @@
             btnPvP.FlatAppearance.MouseOverBackColor = Color.LightBlue;
             btnPvP.FlatStyle = FlatStyle.Flat;
             btnPvP.Font = new Font("Segoe UI", 18F, FontStyle.Bold);
-            btnPvP.Location = new Point(279, 16);
+            btnPvP.Location = new Point(349, 20);
+            btnPvP.Margin = new Padding(4, 4, 4, 4);
             btnPvP.Name = "btnPvP";
-            btnPvP.Size = new Size(67, 56);
+            btnPvP.Size = new Size(84, 70);
             btnPvP.TabIndex = 4;
             btnPvP.TextAlign = ContentAlignment.MiddleLeft;
             btnPvP.UseVisualStyleBackColor = false;
@@ -244,9 +259,10 @@
             // 
             label2.AutoSize = true;
             label2.Font = new Font("Segoe UI", 16F, FontStyle.Bold);
-            label2.Location = new Point(236, 75);
+            label2.Location = new Point(295, 94);
+            label2.Margin = new Padding(4, 0, 4, 0);
             label2.Name = "label2";
-            label2.Size = new Size(148, 37);
+            label2.Size = new Size(174, 45);
             label2.TabIndex = 6;
             label2.Text = "PvP Mode";
             // 
@@ -254,9 +270,10 @@
             // 
             label1.AutoSize = true;
             label1.Font = new Font("Segoe UI", 16F, FontStyle.Bold);
-            label1.Location = new Point(29, 75);
+            label1.Location = new Point(36, 94);
+            label1.Margin = new Padding(4, 0, 4, 0);
             label1.Name = "label1";
-            label1.Size = new Size(145, 37);
+            label1.Size = new Size(171, 45);
             label1.TabIndex = 5;
             label1.Text = "PvE Mode";
             // 
@@ -264,9 +281,10 @@
             // 
             label4.AutoSize = true;
             label4.Font = new Font("Segoe UI", 16F, FontStyle.Bold);
-            label4.Location = new Point(257, 196);
+            label4.Location = new Point(321, 245);
+            label4.Margin = new Padding(4, 0, 4, 0);
             label4.Name = "label4";
-            label4.Size = new Size(122, 37);
+            label4.Size = new Size(141, 45);
             label4.TabIndex = 8;
             label4.Text = "Settings";
             // 
@@ -279,9 +297,10 @@
             btnSettings.FlatAppearance.MouseDownBackColor = Color.LightBlue;
             btnSettings.FlatAppearance.MouseOverBackColor = Color.LightBlue;
             btnSettings.FlatStyle = FlatStyle.Flat;
-            btnSettings.Location = new Point(279, 145);
+            btnSettings.Location = new Point(349, 181);
+            btnSettings.Margin = new Padding(4, 4, 4, 4);
             btnSettings.Name = "btnSettings";
-            btnSettings.Size = new Size(67, 48);
+            btnSettings.Size = new Size(84, 60);
             btnSettings.TabIndex = 4;
             btnSettings.UseVisualStyleBackColor = true;
             btnSettings.Click += btnSettings_Click;
@@ -290,9 +309,10 @@
             // 
             label3.AutoSize = true;
             label3.Font = new Font("Segoe UI", 16F, FontStyle.Bold);
-            label3.Location = new Point(11, 196);
+            label3.Location = new Point(14, 245);
+            label3.Margin = new Padding(4, 0, 4, 0);
             label3.Name = "label3";
-            label3.Size = new Size(181, 37);
+            label3.Size = new Size(210, 45);
             label3.TabIndex = 7;
             label3.Text = "Leaderboard";
             // 
@@ -301,22 +321,24 @@
             ptbAvaGame.BackgroundImage = Properties.Resources.CaroPicGame;
             ptbAvaGame.BackgroundImageLayout = ImageLayout.Zoom;
             ptbAvaGame.BorderStyle = BorderStyle.Fixed3D;
-            ptbAvaGame.Location = new Point(12, 12);
+            ptbAvaGame.Location = new Point(15, 15);
+            ptbAvaGame.Margin = new Padding(4, 4, 4, 4);
             ptbAvaGame.Name = "ptbAvaGame";
-            ptbAvaGame.Size = new Size(240, 241);
+            ptbAvaGame.Size = new Size(299, 300);
             ptbAvaGame.TabIndex = 1;
             ptbAvaGame.TabStop = false;
             // 
             // Dashboard
             // 
-            AutoScaleDimensions = new SizeF(8F, 20F);
+            AutoScaleDimensions = new SizeF(10F, 25F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.LightBlue;
-            ClientSize = new Size(660, 261);
+            ClientSize = new Size(825, 326);
             Controls.Add(pnlNaviBar);
             Controls.Add(ptbAvaGame);
             Font = new Font("Segoe UI", 9F);
             FormBorderStyle = FormBorderStyle.FixedSingle;
+            Margin = new Padding(4, 4, 4, 4);
             MaximizeBox = false;
             Name = "Dashboard";
             StartPosition = FormStartPosition.CenterScreen;

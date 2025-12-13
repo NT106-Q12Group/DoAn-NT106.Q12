@@ -205,6 +205,22 @@ namespace CaroGame_TCPServer
                     case "GETEMAIL": return HandleGetEmail(parts);
                     case "UPDATEPASS": return HandleUpdatePassword(parts);
 
+                    case "GET_LEADERBOARD":
+                        {
+                            var topPlayers = PlayerADO.GetTopPlayer(10);
+                            Console.WriteLine($"[INFO] Retrieved top {topPlayers.Count} players.");
+
+                            StringBuilder sb = new StringBuilder();
+                            foreach (var p in topPlayers)
+                            {
+                                sb.Append($"|{p.PlayerName}:{p.Score}");
+                            }
+
+                            string response = "LEADERBOARD_DATA" + sb.ToString();
+                            SendToPlayer(currentUsername, response);
+                            return "";
+                        }
+
                     // --- GAME LOGIC ---
                     case "FIND_MATCH":
                         HandleFindMatch(parts[1], client);
@@ -328,6 +344,7 @@ namespace CaroGame_TCPServer
                 {
                     string opponent = ActiveMatches[sender];
                     SendToPlayer(opponent, "OPPONENT_LEFT|Đối thủ đã đầu hàng. Bạn thắng!");
+                    PlayerADO.UpdateScore(opponent, 1); // Thắng +1 điểm
                     ActiveMatches.Remove(sender);
                     if (ActiveMatches.ContainsKey(opponent)) ActiveMatches.Remove(opponent);
                     Console.WriteLine($"[GAME] {sender} surrendered against {opponent}");

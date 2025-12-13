@@ -89,6 +89,17 @@ namespace CaroGame
                             string reason = parts.Length > 1 ? parts[1] : "Lỗi không xác định";
                             MessageBox.Show(reason, "Lỗi vào phòng", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         }
+                        else if (command == "LEADERBOARD_DATA")
+                        {
+                            // data dạng: "LEADERBOARD_DATA|Hung:10|Nam:5"
+                            // substring sẽ lấy: "Hung:10|Nam:5"
+                            string content = data.Substring("LEADERBOARD_DATA|".Length);
+                            Leaderboard frm = Application.OpenForms["Leaderboard"] as Leaderboard;
+                            if (frm != null)
+                            {
+                                frm.UpdateLeaderboardUI(content);
+                            }
+                        }
                     }
                     catch (Exception ex) { }
                 });
@@ -206,6 +217,19 @@ namespace CaroGame
         private void btnBack_Click(object sender, EventArgs e)
         {
             if (pnlDashBoard != null) pnlDashBoard.Visible = !pnlDashBoard.Visible;
+        }
+
+        private void btnLeaderboard_Click(object sender, EventArgs e)
+        {
+            if (_client == null || !_client.IsConnected())
+            {
+                MessageBox.Show("Chưa kết nối Server!");
+                return;
+            }
+
+            Leaderboard frm = new Leaderboard();
+            frm.Show(); // Dùng Show() để không chặn Dashboard, hoặc ShowDialog() tùy bạn
+            _client.RequestLeaderboard();
         }
 
         private void LoadPlayer(string username, string email, string birthday)

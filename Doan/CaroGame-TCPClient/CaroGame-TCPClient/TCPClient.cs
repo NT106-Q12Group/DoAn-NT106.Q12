@@ -12,6 +12,7 @@ namespace CaroGame_TCPClient
         private TcpClient? client;
         private bool isConnected;
         private NetworkStream? stream;
+        public static TCPClient? Instance { get; private set; }
 
         // Sự kiện bắn tin nhắn từ Server ra ngoài Form
         public event Action<string>? OnMessageReceived;
@@ -25,6 +26,7 @@ namespace CaroGame_TCPClient
             client = null;
             stream = null;
             isConnected = false;
+            Instance = this; 
         }
 
         public bool Connect()
@@ -59,6 +61,12 @@ namespace CaroGame_TCPClient
 
             stream = null;
             client = null;
+        }
+
+        // Trong class TCPClient
+        public void RequestLeaderboard()
+        {
+            Send("GET_LEADERBOARD");
         }
 
         // --- HÀM 1: Gửi Request và Chờ Phản Hồi (Sync) ---
