@@ -141,24 +141,34 @@ namespace CaroGame
         public DifficultyLevel Difficulty { get; set; } = DifficultyLevel.Easy;
         public void DrawChessBoard()
         {
+            chessBoard.SuspendLayout();
+
+            chessBoard.Controls.Clear(); // <- quan trọng: xóa bàn cũ
             matrix = new List<List<Button>>();
 
-            Button oldButton = new Button()
-            {
-                Width = 0,
-                Location = new Point(0, 0),
-            };
+            // reset history 1 lần thôi
+            moveHistory.Clear();
+            playerHistory.Clear();
+            undoAlready = false;
+            undoUsedInBot = false;
+            lastMoveBtn = null;
+
+            // Resize panel cho đúng 20x20 ô
+            chessBoard.AutoScroll = false; // hoặc true nếu panel bị nhỏ
+            chessBoard.Width = Cons.CHESS_BOARD_WIDTH * Cons.CHESS_WIDTH;
+            chessBoard.Height = Cons.CHESS_BOARD_HEIGHT * Cons.CHESS_HEIGHT;
 
             for (int i = 0; i < Cons.CHESS_BOARD_HEIGHT; i++)
             {
                 matrix.Add(new List<Button>());
+
                 for (int j = 0; j < Cons.CHESS_BOARD_WIDTH; j++)
                 {
                     Button btn = new Button()
                     {
                         Width = Cons.CHESS_WIDTH,
                         Height = Cons.CHESS_HEIGHT,
-                        Location = new Point(oldButton.Location.X + oldButton.Width, oldButton.Location.Y),
+                        Location = new Point(j * Cons.CHESS_WIDTH, i * Cons.CHESS_HEIGHT), // đơn giản + đúng
                         BackgroundImageLayout = ImageLayout.Stretch,
                         Tag = i.ToString(),
                         BackColor = defaultColor,
@@ -168,19 +178,13 @@ namespace CaroGame
                     btn.FlatAppearance.BorderColor = Color.Silver;
                     btn.FlatAppearance.BorderSize = 1;
                     btn.Click += Btn_Click;
+
                     chessBoard.Controls.Add(btn);
                     matrix[i].Add(btn);
-                    oldButton = btn;
                 }
-                oldButton.Location = new Point(0, oldButton.Location.Y + Cons.CHESS_HEIGHT);
-                oldButton.Width = 0;
-                oldButton.Height = 0;
-
-                moveHistory = new Stack<Button>();
-                playerHistory = new Stack<int>();
-                undoAlready = false;
-                undoUsedInBot = false;
             }
+
+            chessBoard.ResumeLayout();
         }
 
         private void HighlightMove(Button btn)
@@ -437,18 +441,26 @@ namespace CaroGame
             Point point = getChessPoint(btn);
             List<Button> cells = new List<Button>();
 
-            for (int i = 0; i <= point.X; i++)
+            // lên-trái
+            for (int i = 0; ; i++)
             {
-                if (point.X - i < 0 || point.Y - i < 0) break;
-                if (matrix[point.Y - i][point.X - i].BackgroundImage == btn.BackgroundImage) cells.Insert(0, matrix[point.Y - i][point.X - i]);
+                int x = point.X - i;
+                int y = point.Y - i;
+                if (x < 0 || y < 0) break;
+                if (matrix[y][x].BackgroundImage == btn.BackgroundImage) cells.Insert(0, matrix[y][x]);
                 else break;
             }
-            for (int i = 1; i <= Cons.CHESS_WIDTH - point.X; i++)
+
+            // xuống-phải
+            for (int i = 1; ; i++)
             {
-                if (point.Y + i >= Cons.CHESS_BOARD_HEIGHT || point.X + i >= Cons.CHESS_BOARD_WIDTH) break;
-                if (matrix[point.Y + i][point.X + i].BackgroundImage == btn.BackgroundImage) cells.Add(matrix[point.Y + i][point.X + i]);
+                int x = point.X + i;
+                int y = point.Y + i;
+                if (y >= Cons.CHESS_BOARD_HEIGHT || x >= Cons.CHESS_BOARD_WIDTH) break;
+                if (matrix[y][x].BackgroundImage == btn.BackgroundImage) cells.Add(matrix[y][x]);
                 else break;
             }
+
             if (cells.Count < 5) return null;
             return cells.GetRange(0, 5);
         }
@@ -458,18 +470,26 @@ namespace CaroGame
             Point point = getChessPoint(btn);
             List<Button> cells = new List<Button>();
 
-            for (int i = 0; i <= point.X; i++)
+            // lên-phải
+            for (int i = 0; ; i++)
             {
-                if (point.X + i >= Cons.CHESS_BOARD_WIDTH || point.Y - i < 0) break;
-                if (matrix[point.Y - i][point.X + i].BackgroundImage == btn.BackgroundImage) cells.Insert(0, matrix[point.Y - i][point.X + i]);
+                int x = point.X + i;
+                int y = point.Y - i;
+                if (x >= Cons.CHESS_BOARD_WIDTH || y < 0) break;
+                if (matrix[y][x].BackgroundImage == btn.BackgroundImage) cells.Insert(0, matrix[y][x]);
                 else break;
             }
-            for (int i = 1; i <= Cons.CHESS_WIDTH - point.X; i++)
+
+            // xuống-trái
+            for (int i = 1; ; i++)
             {
-                if (point.Y + i >= Cons.CHESS_BOARD_HEIGHT || point.X - i < 0) break;
-                if (matrix[point.Y + i][point.X - i].BackgroundImage == btn.BackgroundImage) cells.Add(matrix[point.Y + i][point.X - i]);
+                int x = point.X - i;
+                int y = point.Y + i;
+                if (y >= Cons.CHESS_BOARD_HEIGHT || x < 0) break;
+                if (matrix[y][x].BackgroundImage == btn.BackgroundImage) cells.Add(matrix[y][x]);
                 else break;
             }
+
             if (cells.Count < 5) return null;
             return cells.GetRange(0, 5);
         }
@@ -494,11 +514,16 @@ namespace CaroGame
 
         private async Task BotPlay()
         {
-            int[,] board = GetIntBoard();
-            // Nếu bàn cờ trống, đánh vào giữa cho nhanh
-            if (IsBoardEmpty(board)) { MakeMove(Cons.CHESS_BOARD_HEIGHT / 2, Cons.CHESS_BOARD_WIDTH / 2); return; }
+            int[,] board = GetIntBoard(); // size = matrix size thật
 
-            // Cấu hình độ khó
+            if (IsBoardEmpty(board))
+            {
+                int midR = board.GetLength(0) / 2;
+                int midC = board.GetLength(1) / 2;
+                MakeMove(midR, midC);
+                return;
+            }
+
             int targetDepth = 1;
             if (Difficulty == DifficultyLevel.ExtremelyHard) { timeLimitMillis = 25000; targetDepth = 12; }
             else if (Difficulty == DifficultyLevel.Hard) { timeLimitMillis = 12000; targetDepth = 6; }
@@ -507,22 +532,18 @@ namespace CaroGame
             botTimer.Restart();
             isTimeOut = false;
 
-            // Chạy thuật toán trong Task để không treo UI
             Point bestMove = await Task.Run(() =>
             {
-                // 1. Lọc bớt các nước đi vô nghĩa (chỉ xét các ô xung quanh quân đã đánh)
                 List<Point> possibleMoves = GetPossibleMoves(board);
-
-                // 2. Sắp xếp nước đi để cắt tỉa Alpha-Beta tốt hơn
                 var orderedMoves = SortMoves(possibleMoves, board);
 
-                // Check thắng/thua ngay lập tức (1-ply search) để phản ứng nhanh
                 foreach (var move in orderedMoves)
                 {
                     board[move.X, move.Y] = BOT;
                     if (CheckWin(move.X, move.Y, board, BOT)) return move;
                     board[move.X, move.Y] = EMPTY;
                 }
+
                 foreach (var move in orderedMoves)
                 {
                     board[move.X, move.Y] = HUMAN;
@@ -530,9 +551,8 @@ namespace CaroGame
                     board[move.X, move.Y] = EMPTY;
                 }
 
-                Point currentFinalMove = orderedMoves[0];
+                Point currentFinalMove = orderedMoves.Count > 0 ? orderedMoves[0] : new Point(-1, -1);
 
-                // Iterative Deepening: Tìm kiếm độ sâu tăng dần (1, 2, ... targetDepth)
                 for (int currentDepth = 1; currentDepth <= targetDepth; currentDepth++)
                 {
                     long maxScore = long.MinValue;
@@ -542,23 +562,32 @@ namespace CaroGame
                     for (int i = 0; i < Math.Min(orderedMoves.Count, movesToScan); i++)
                     {
                         if (botTimer.ElapsedMilliseconds > timeLimitMillis) { isTimeOut = true; break; }
-                        Point move = orderedMoves[i];
-                        board[move.X, move.Y] = BOT;
 
-                        // Gọi đệ quy Minimax
+                        Point move = orderedMoves[i];
+
+                        // chặn biên tuyệt đối
+                        if (!InBounds(move.X, move.Y, board)) continue;
+
+                        board[move.X, move.Y] = BOT;
                         long score = Minimax(board, currentDepth - 1, long.MinValue, long.MaxValue, false);
                         board[move.X, move.Y] = EMPTY;
 
                         if (score > maxScore) { maxScore = score; currentBestMove = move; }
                     }
+
                     if (isTimeOut) break;
                     if (currentBestMove.X != -1) currentFinalMove = currentBestMove;
-                    if (maxScore > 5000000) break; // Đã tìm thấy nước thắng chắc chắn
-                    if (currentDepth == targetDepth) break;
+                    if (maxScore > 5000000) break;
                 }
+
                 return currentFinalMove;
             });
-            MakeMove(bestMove.X, bestMove.Y);
+
+            // chặn lần cuối
+            if (bestMove.X != -1 && bestMove.Y != -1 && InBounds(bestMove.X, bestMove.Y, board))
+            {
+                MakeMove(bestMove.X, bestMove.Y);
+            }
         }
 
         // Kiểm tra nhanh xem có đủ 5 quân liên tiếp không
@@ -574,18 +603,26 @@ namespace CaroGame
         private int CountConsecutive(int r, int c, int dr, int dc, int[,] board, int player)
         {
             int count = 1;
+
             for (int i = 1; i < 5; i++)
             {
-                int nr = r + dr * i; int nc = c + dc * i;
-                if (InBounds(nr, nc) && board[nr, nc] == player) count++; else break;
+                int nr = r + dr * i;
+                int nc = c + dc * i;
+                if (InBounds(nr, nc, board) && board[nr, nc] == player) count++;
+                else break;
             }
+
             for (int i = 1; i < 5; i++)
             {
-                int nr = r - dr * i; int nc = c - dc * i;
-                if (InBounds(nr, nc) && board[nr, nc] == player) count++; else break;
+                int nr = r - dr * i;
+                int nc = c - dc * i;
+                if (InBounds(nr, nc, board) && board[nr, nc] == player) count++;
+                else break;
             }
+
             return count;
         }
+
 
         // Sắp xếp nước đi dựa trên điểm heuristic sơ bộ
         private List<Point> SortMoves(List<Point> moves, int[,] board)
@@ -605,28 +642,33 @@ namespace CaroGame
 
         private void MakeMove(int r, int c)
         {
-            // Kiểm tra chặt chẽ biên của matrix trước khi truy cập
-            if (r < 0 || r >= matrix.Count || c < 0 || c >= matrix[0].Count)
-            {
-                return;
-            }
+            if (r < 0 || r >= matrix.Count || c < 0 || c >= matrix[0].Count) return;
 
-            matrix[r][c].BackgroundImage = Player[1].Mark;
-            HighlightMove(matrix[r][c]);
+            var btn = matrix[r][c];
+            if (btn.BackgroundImage != null) return;
+
+            btn.BackgroundImage = Player[1].Mark;
+            HighlightMove(btn);
+
             CurrentPlayer = 0;
-            moveHistory.Push(matrix[r][c]);
+            moveHistory.Push(btn);
             playerHistory.Push(1);
 
-            var winCells = getWinningCells(matrix[r][c]);
+            var winCells = getWinningCells(btn);
             if (winCells != null) { HighlightWinningCells(winCells); EndGame(Player[1].Name); }
         }
 
+
         private int[,] GetIntBoard()
         {
-            int[,] board = new int[Cons.CHESS_BOARD_HEIGHT, Cons.CHESS_BOARD_WIDTH];
-            for (int i = 0; i < Cons.CHESS_BOARD_HEIGHT; i++)
+            int rows = matrix.Count;
+            int cols = matrix[0].Count;
+
+            int[,] board = new int[rows, cols];
+
+            for (int i = 0; i < rows; i++)
             {
-                for (int j = 0; j < Cons.CHESS_BOARD_WIDTH; j++)
+                for (int j = 0; j < cols; j++)
                 {
                     if (matrix[i][j].BackgroundImage == Player[0].Mark) board[i, j] = HUMAN;
                     else if (matrix[i][j].BackgroundImage == Player[1].Mark) board[i, j] = BOT;
@@ -635,6 +677,7 @@ namespace CaroGame
             }
             return board;
         }
+
 
         private bool IsBoardEmpty(int[,] board)
         {
@@ -741,9 +784,15 @@ namespace CaroGame
         private long EvaluateBoard(int[,] board)
         {
             long score = 0;
-            for (int i = 0; i < Cons.CHESS_BOARD_HEIGHT; i++)
+
+            // SỬA: Lấy kích thước thực tế từ mảng board đang xét
+            int rows = board.GetLength(0);
+            int cols = board.GetLength(1);
+
+            // Chạy vòng lặp theo rows/cols vừa lấy, KHÔNG dùng Cons
+            for (int i = 0; i < rows; i++)
             {
-                for (int j = 0; j < Cons.CHESS_BOARD_WIDTH; j++)
+                for (int j = 0; j < cols; j++)
                 {
                     if (board[i, j] == BOT) score += DiemTanCong(i, j, board);
                     else if (board[i, j] == HUMAN) score -= DiemTanCongCuaDich(i, j, board);
@@ -765,29 +814,39 @@ namespace CaroGame
         // Tính điểm tấn công của Human (mối đe dọa với Bot)
         long CheckAtkOfHuman(int r, int c, int dr, int dc, int[,] board)
         {
-            int ta = 0; int blocks = 0;
+            int ta = 0;
+            int blocks = 0;
+
             for (int i = 1; i < 6; i++)
             {
-                int nr = r + dr * i; int nc = c + dc * i;
-                if (!InBounds(nr, nc)) { blocks++; break; }
+                int nr = r + dr * i;
+                int nc = c + dc * i;
+
+                if (!InBounds(nr, nc, board)) { blocks++; break; }
                 if (board[nr, nc] == HUMAN) ta++;
                 else if (board[nr, nc] == BOT) { blocks++; break; }
                 else break;
             }
+
             for (int i = 1; i < 6; i++)
             {
-                int nr = r - dr * i; int nc = c - dc * i;
-                if (!InBounds(nr, nc)) { blocks++; break; }
+                int nr = r - dr * i;
+                int nc = c - dc * i;
+
+                if (!InBounds(nr, nc, board)) { blocks++; break; }
                 if (board[nr, nc] == HUMAN) ta++;
                 else if (board[nr, nc] == BOT) { blocks++; break; }
                 else break;
             }
-            if (blocks == 2 && ta < 5) return 0; // Bị chặn 2 đầu
+
+            if (blocks == 2 && ta < 5) return 0;
+
             long score = AttackScore[Math.Min(ta, 5)];
             if (blocks == 1) score /= 2;
-            if (ta == 3 && blocks == 0) score *= 2; // Ưu tiên nước 3 không bị chặn
+            if (ta == 3 && blocks == 0) score *= 2;
             if (ta == 4 && blocks == 0) score *= 2;
             if (ta >= 5) score = AttackScore[5];
+
             return score;
         }
 
@@ -813,62 +872,84 @@ namespace CaroGame
 
         long CheckAtk(int r, int c, int dr, int dc, int[,] board)
         {
-            int ta = 0; int blocks = 0;
+            int ta = 0;
+            int blocks = 0;
+
             for (int i = 1; i < 6; i++)
             {
-                int nr = r + dr * i; int nc = c + dc * i;
-                if (!InBounds(nr, nc)) { blocks++; break; }
+                int nr = r + dr * i;
+                int nc = c + dc * i;
+
+                if (!InBounds(nr, nc, board)) { blocks++; break; }
                 if (board[nr, nc] == BOT) ta++;
                 else if (board[nr, nc] == HUMAN) { blocks++; break; }
                 else break;
             }
+
             for (int i = 1; i < 6; i++)
             {
-                int nr = r - dr * i; int nc = c - dc * i;
-                if (!InBounds(nr, nc)) { blocks++; break; }
+                int nr = r - dr * i;
+                int nc = c - dc * i;
+
+                if (!InBounds(nr, nc, board)) { blocks++; break; }
                 if (board[nr, nc] == BOT) ta++;
                 else if (board[nr, nc] == HUMAN) { blocks++; break; }
                 else break;
             }
+
             if (blocks == 2 && ta < 5) return 0;
+
             long score = AttackScore[Math.Min(ta, 5)];
             if (blocks == 1) score /= 2;
             if (ta == 3 && blocks == 0) score *= 2;
             if (ta == 4 && blocks == 0) score *= 2;
             if (ta >= 5) score = AttackScore[5];
+
             return score;
         }
 
         long CheckDef(int r, int c, int dr, int dc, int[,] board)
         {
-            int dich = 0; int blocks = 0;
+            int dich = 0;
+            int blocks = 0;
+
             for (int i = 1; i < 6; i++)
             {
-                int nr = r + dr * i; int nc = c + dc * i;
-                if (!InBounds(nr, nc)) { blocks++; break; }
+                int nr = r + dr * i;
+                int nc = c + dc * i;
+
+                if (!InBounds(nr, nc, board)) { blocks++; break; }
                 if (board[nr, nc] == HUMAN) dich++;
                 else if (board[nr, nc] == BOT) { blocks++; break; }
                 else break;
             }
+
             for (int i = 1; i < 6; i++)
             {
-                int nr = r - dr * i; int nc = c - dc * i;
-                if (!InBounds(nr, nc)) { blocks++; break; }
+                int nr = r - dr * i;
+                int nc = c - dc * i;
+
+                if (!InBounds(nr, nc, board)) { blocks++; break; }
                 if (board[nr, nc] == HUMAN) dich++;
                 else if (board[nr, nc] == BOT) { blocks++; break; }
                 else break;
             }
+
             if (blocks == 2 && dich < 5) return 0;
+
             long score = DefendScore[Math.Min(dich, 5)];
             if (dich == 3 && blocks == 0) score *= 3;
             if (dich == 4) score *= 5;
+
             return score;
         }
 
-        bool InBounds(int r, int c)
+        bool InBounds(int r, int c, int[,] board)
         {
-            return r >= 0 && r < Cons.CHESS_BOARD_HEIGHT && c >= 0 && c < Cons.CHESS_BOARD_WIDTH;
+            return r >= 0 && r < board.GetLength(0) &&
+                   c >= 0 && c < board.GetLength(1);
         }
+
         #endregion
         #endregion
     }
