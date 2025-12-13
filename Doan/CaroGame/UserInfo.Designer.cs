@@ -40,7 +40,6 @@
             tb_password = new TextBox();
             lblPasswordUinfo = new Label();
             cb_showcfpswUInfo = new CheckBox();
-            btnEditUsername = new Button();
             btnEditPassword = new Button();
             btnEditEmail = new Button();
             btnEditBirth = new Button();
@@ -178,21 +177,6 @@
             cb_showcfpswUInfo.Text = "Show password";
             cb_showcfpswUInfo.UseVisualStyleBackColor = true;
             // 
-            // btnEditUsername
-            // 
-            btnEditUsername.BackgroundImage = Properties.Resources.edit;
-            btnEditUsername.BackgroundImageLayout = ImageLayout.Stretch;
-            btnEditUsername.Cursor = Cursors.Hand;
-            btnEditUsername.FlatAppearance.BorderSize = 0;
-            btnEditUsername.FlatAppearance.MouseDownBackColor = Color.LightBlue;
-            btnEditUsername.FlatAppearance.MouseOverBackColor = Color.LightBlue;
-            btnEditUsername.FlatStyle = FlatStyle.Flat;
-            btnEditUsername.Location = new Point(418, 245);
-            btnEditUsername.Name = "btnEditUsername";
-            btnEditUsername.Size = new Size(30, 29);
-            btnEditUsername.TabIndex = 15;
-            btnEditUsername.UseVisualStyleBackColor = true;
-            // 
             // btnEditPassword
             // 
             btnEditPassword.BackgroundImage = Properties.Resources.edit;
@@ -207,6 +191,7 @@
             btnEditPassword.Size = new Size(30, 29);
             btnEditPassword.TabIndex = 16;
             btnEditPassword.UseVisualStyleBackColor = true;
+            btnEditPassword.Click += btnEditPassword_Click;
             // 
             // btnEditEmail
             // 
@@ -260,7 +245,6 @@
             Controls.Add(btnEditBirth);
             Controls.Add(btnEditEmail);
             Controls.Add(btnEditPassword);
-            Controls.Add(btnEditUsername);
             Controls.Add(cb_showcfpswUInfo);
             Controls.Add(lblPasswordUinfo);
             Controls.Add(tb_password);
@@ -299,7 +283,6 @@
         private TextBox tb_password;
         private Label lblPasswordUinfo;
         private CheckBox cb_showcfpswUInfo;
-        private Button btnEditUsername;
         private Button btnEditPassword;
         private Button btnEditEmail;
         private Button btnEditBirth;

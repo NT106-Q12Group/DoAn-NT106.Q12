@@ -129,19 +129,26 @@ namespace CaroGame
                         Birthday = birthday
                     };
 
-                    // Kích hoạt luồng lắng nghe trước khi vào Dashboard
                     _client.StartListening();
 
-                    var Dash = new Dashboard(uname, _client);
-                    Dash.SetPlayer(pv);
+                    var dash = new Dashboard(uname, _client);
+                    dash.SetPlayer(pv);
 
-                    // Khi Dashboard đóng -> Đóng luôn form SignIn (kết thúc app)
-                    Dash.FormClosed += (s, _) => this.Close();
+                    // ✅ QUAN TRỌNG: Dashboard đóng thì quay lại SignIn (KHÔNG Close SignIn)
+                    dash.FormClosed += (s, _) =>
+                    {
+                        this.Show();
+                        this.Activate();
+                    };
 
-                    this.Hide(); // Ẩn form SignIn đi
-                    Dash.Show();
+                    this.Hide();
+                    dash.Show();
 
-                    MessageBox.Show("Signed in successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    // show messagebox đính vào SignIn (khỏi bị chìm)
+                    this.BeginInvoke((Action)(() =>
+                    {
+                        MessageBox.Show(this, "Signed in successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }));
                 }
                 else
                 {
@@ -172,7 +179,6 @@ namespace CaroGame
         {
             try
             {
-                // Chỉ disconnect khi form thực sự đóng (không phải Hide)
                 if (_client.IsConnected())
                 {
                     if (!string.IsNullOrEmpty(_currentUser))
@@ -182,6 +188,7 @@ namespace CaroGame
                 }
             }
             catch { }
+
             base.OnFormClosing(e);
         }
 

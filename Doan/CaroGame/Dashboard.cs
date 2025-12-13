@@ -174,20 +174,24 @@ namespace CaroGame
             waitingRoom.Show();
         }
 
+        private bool _loggingOut = false;
+        public void BeginLogout() => _loggingOut = true;
+
         private void btnSettings_Click(object sender, EventArgs e)
         {
-            if (_client != null) _client.OnMessageReceived -= Dashboard_OnMessageReceived;
-
-            var userInfoForm = new UserInfo(pv, _client);
-            this.Hide();
-
-            userInfoForm.FormClosed += (s, args) =>
+            using (var ui = new UserInfo(pv, _client))
             {
-                this.Show();
-                RegisterServerListener();
-            };
+                this.Hide();
 
-            userInfoForm.Show();
+                ui.ShowDialog(this); // this = Owner
+
+                // ✅ nếu đang logout thì KHÔNG show lại dashboard nữa
+                if (!_loggingOut && !this.IsDisposed)
+                {
+                    this.Show();
+                    this.Activate();
+                }
+            }
         }
 
         public void SetPlayer(PlayerView player)
