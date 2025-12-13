@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Drawing;
-using CaroGame_TCPClient;
+using System.Linq;
 using System.Windows.Forms;
+using CaroGame_TCPClient;
 
 namespace CaroGame
 {
@@ -9,6 +10,8 @@ namespace CaroGame
     {
         private readonly PlayerView _player;
         private readonly TCPClient _client;
+
+        private bool _allowShowPasswordTick = false;
 
         public UserInfo(PlayerView player, TCPClient client)
         {
@@ -32,6 +35,91 @@ namespace CaroGame
             tb_username.ReadOnly = true;
             tb_email.ReadOnly = true;
             tb_birthdate.ReadOnly = true;
+
+            if (tb_password != null)
+            {
+                tb_password.ReadOnly = true;
+                tb_password.Text = _player.SessionPassword ?? "";
+                tb_password.UseSystemPasswordChar = true;
+            }
+
+            cb_showcfpswUInfo.CheckedChanged -= cb_showcfpswUInfo_CheckedChanged;
+            cb_showcfpswUInfo.Checked = false;
+            cb_showcfpswUInfo.CheckedChanged += cb_showcfpswUInfo_CheckedChanged;
+        }
+
+        private void cb_showcfpswUInfo_CheckedChanged(object sender, EventArgs e)
+        {
+            if (cb_showcfpswUInfo.Checked)
+            {
+                if (!_allowShowPasswordTick)
+                {
+                    cb_showcfpswUInfo.CheckedChanged -= cb_showcfpswUInfo_CheckedChanged;
+                    cb_showcfpswUInfo.Checked = false; // tick chỉ xuất hiện sau khi confirm OK
+                    cb_showcfpswUInfo.CheckedChanged += cb_showcfpswUInfo_CheckedChanged;
+
+                    using (var dlg = new ConfirmPasswordDialog())
+                    {
+                        dlg.StartPosition = FormStartPosition.CenterParent;
+                        var dr = dlg.ShowDialog(this);
+
+                        if (dr != DialogResult.OK) return;
+
+                        if (!VerifyCurrentPassword(dlg.Password))
+                        {
+                            MessageBox.Show(this, "Mật khẩu không đúng.", "Xác nhận thất bại",
+                                MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            return;
+                        }
+
+                        _allowShowPasswordTick = true;
+
+                        cb_showcfpswUInfo.CheckedChanged -= cb_showcfpswUInfo_CheckedChanged;
+                        cb_showcfpswUInfo.Checked = true;
+                        cb_showcfpswUInfo.CheckedChanged += cb_showcfpswUInfo_CheckedChanged;
+
+                        cb_showcfpswUInfo_CheckedChanged(cb_showcfpswUInfo, EventArgs.Empty);
+                    }
+
+                    return;
+                }
+
+                _allowShowPasswordTick = false;
+                RevealPassword();
+                return;
+            }
+
+            _allowShowPasswordTick = false;
+            MaskPassword();
+        }
+
+        private bool VerifyCurrentPassword(string currentPassword)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(_player.PlayerName)) return false;
+                if (_client == null || !_client.IsConnected()) return false;
+
+                string resp = _client.Login(_player.PlayerName.Trim(), currentPassword);
+                var parts = (resp ?? "").Split('|');
+                return (parts.Length > 0 && parts[0].Equals("SUCCESS", StringComparison.OrdinalIgnoreCase));
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private void RevealPassword()
+        {
+            if (tb_password == null) return;
+            tb_password.UseSystemPasswordChar = false;
+        }
+
+        private void MaskPassword()
+        {
+            if (tb_password == null) return;
+            tb_password.UseSystemPasswordChar = true;
         }
 
         private void btn_signout_Click(object? sender, EventArgs e)
@@ -55,18 +143,13 @@ namespace CaroGame
 
                 try { _client.Disconnect(); } catch { }
 
-                // ✅ LẤY SIGNIN CŨ (MainForm) - KHÔNG TẠO MỚI
                 var signin = Application.OpenForms.OfType<SignIn>().FirstOrDefault();
 
-                // Đóng UserInfo trước
                 this.Close();
 
-                // Đóng Dashboard (Owner) để quay về SignIn
                 if (this.Owner != null && !this.Owner.IsDisposed)
                     this.Owner.Close();
 
-                // Sau khi đóng dashboard, event dash.FormClosed sẽ Show() SignIn cũ rồi.
-                // Nếu muốn chắc chắn: show + messagebox
                 if (signin != null && !signin.IsDisposed)
                 {
                     signin.BeginInvoke((Action)(() =>
@@ -84,27 +167,16 @@ namespace CaroGame
             }
         }
 
-        protected override void OnFormClosing(FormClosingEventArgs e)
-        {
-            base.OnFormClosing(e);
-        }
-
-        private void btnBack_Click(object sender, EventArgs e)
-        {
-            this.Close();
-        }
+        private void btnBack_Click(object sender, EventArgs e) => this.Close();
 
         private void btnEditPassword_Click(object sender, EventArgs e)
         {
             using (var resetPsw = new ResetPassword(_client))
             {
                 this.Hide();
-
-                // mở modal, khóa các form khác (không lòi Dashboard)
                 resetPsw.StartPosition = FormStartPosition.CenterParent;
                 resetPsw.ShowDialog(this);
 
-                // chỉ show lại nếu UserInfo vẫn còn sống
                 if (!this.IsDisposed)
                 {
                     this.Show();
@@ -113,5 +185,74 @@ namespace CaroGame
             }
         }
 
+        private class ConfirmPasswordDialog : Form
+        {
+            private TextBox tb;
+            public string Password => tb.Text;
+
+            public ConfirmPasswordDialog()
+            {
+                Text = "Xác nhận";
+                FormBorderStyle = FormBorderStyle.FixedDialog;
+                MaximizeBox = false;
+                MinimizeBox = false;
+                ShowInTaskbar = false;
+                Width = 430;
+                Height = 190;
+
+                var lbl = new Label
+                {
+                    Text = "Nhập mật khẩu hiện tại để hiện password",
+                    AutoSize = false,
+                    Width = 400,
+                    Height = 30,
+                    Left = 10,
+                    Top = 15,
+                    TextAlign = ContentAlignment.MiddleCenter
+                };
+
+                tb = new TextBox
+                {
+                    Width = 320,
+                    Left = 50,
+                    Top = 55,
+                    UseSystemPasswordChar = true
+                };
+
+                int btnW = 140, btnH = 38, gap = 16;
+                int totalW = btnW * 2 + gap;
+
+                int startX = (ClientSize.Width - totalW) / 2;
+                int topY = 105;
+
+                var btnOk = new Button
+                {
+                    Text = "Xác nhận",
+                    Width = btnW,
+                    Height = btnH,
+                    Left = startX,
+                    Top = topY,
+                    DialogResult = DialogResult.OK
+                };
+
+                var btnCancel = new Button
+                {
+                    Text = "Huỷ",
+                    Width = btnW,
+                    Height = btnH,
+                    Left = startX + btnW + gap,
+                    Top = topY,
+                    DialogResult = DialogResult.Cancel
+                };
+
+                AcceptButton = btnOk;
+                CancelButton = btnCancel;
+
+                Controls.Add(lbl);
+                Controls.Add(tb);
+                Controls.Add(btnOk);
+                Controls.Add(btnCancel);
+            }
+        }
     }
 }
