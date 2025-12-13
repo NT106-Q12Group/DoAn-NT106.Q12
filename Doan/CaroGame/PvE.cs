@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Drawing;
 using System.Windows.Forms;
+using CaroGame_TCPClient;
 
 namespace CaroGame
 {
@@ -12,13 +13,16 @@ namespace CaroGame
         private string _playerName;
         private Menu menuForm;
         private bool undoCount = false;
+
+        private TCPClient tcpClient; // NEW
         #endregion
 
-        // Constructor nhận tham số difficulty
-        public PvE(string difficulty, string playerName)
+        // NEW: nhận thêm TCPClient để report lên server
+        public PvE(string difficulty, string playerName, TCPClient client = null)
         {
             InitializeComponent();
             _playerName = playerName;
+            tcpClient = client;
 
             if (label1 != null) label1.Text = _playerName;
 
@@ -43,33 +47,49 @@ namespace CaroGame
             }
         }
 
+        private void ReportPvEResultToServer(bool isWin)
+        {
+            try
+            {
+                if (tcpClient != null && tcpClient.IsConnected())
+                {
+                    string result = isWin ? "WIN" : "LOSE";
+                    tcpClient.Send($"PVE_RESULT|{_playerName}|{result}|{botDifficulty}");
+                }
+            }
+            catch { }
+        }
+
         private void OnGameEnded(string winner)
         {
             bool isWin = (ChessBoard.Player != null && ChessBoard.Player.Count > 0 && winner == ChessBoard.Player[0].Name);
-            Form result = isWin ? new WinMatch() : new LoseMatch();
 
-            if (result is WinMatch win)
+            // NEW: báo kết quả lên server
+            ReportPvEResultToServer(isWin);
+
+            Form resultForm = isWin ? new WinMatch() : new LoseMatch();
+
+            if (resultForm is WinMatch win)
             {
-                win.winRematch += () => { result.Close(); resetChess(); };
-                win.winExit += () => { result.Close(); this.Close(); };
+                win.winRematch += () => { resultForm.Close(); resetChess(); };
+                win.winExit += () => { resultForm.Close(); this.Close(); };
             }
-            else if (result is LoseMatch lose)
+            else if (resultForm is LoseMatch lose)
             {
-                lose.loseRematch += () => { result.Close(); resetChess(); };
-                lose.loseExit += () => { result.Close(); this.Close(); };
+                lose.loseRematch += () => { resultForm.Close(); resetChess(); };
+                lose.loseExit += () => { resultForm.Close(); this.Close(); };
             }
-            result.Show();
+
+            resultForm.Show();
         }
 
         private void resetChess()
         {
             ChessBoard.resetGame();
             undoCount = false;
-            ptbOne.Visible = true;
-            ptbZero.Visible = false;
+            if (ptbOne != null) ptbOne.Visible = true;
+            if (ptbZero != null) ptbZero.Visible = false;
         }
-
-        // --- CÁC HÀM UI ---
 
         private void btnMenu_Click(object sender, EventArgs e)
         {
@@ -83,10 +103,8 @@ namespace CaroGame
             else { menuForm.Close(); menuForm = null; }
         }
 
-        // --- [FIXED] NÚT THOÁT PVE ---
         private void btnExit_Click(object sender, EventArgs e)
         {
-            // 1. Hiện bảng xác nhận thoát
             DialogResult result = MessageBox.Show(
                 "Bạn có chắc chắn muốn thoát trận đấu với Bot không?",
                 "Xác nhận thoát",
@@ -94,12 +112,8 @@ namespace CaroGame
                 MessageBoxIcon.Question
             );
 
-            // 2. Nếu chọn Yes -> Đóng form -> Dashboard cũ tự hiện lại
             if (result == DialogResult.Yes)
-            {
                 this.Close();
-                // Không cần new Dashboard() nữa
-            }
         }
 
         private void btnChat_Click(object sender, EventArgs e)
@@ -115,7 +129,6 @@ namespace CaroGame
             AppendMessage("You", text, Color.Blue);
             txtMessage.Clear();
 
-            // Giả lập Bot trả lời
             System.Windows.Forms.Timer t = new System.Windows.Forms.Timer();
             t.Interval = 1000;
             t.Tick += (s, ev) =>
@@ -146,8 +159,8 @@ namespace CaroGame
             bool undoSuccess = ChessBoard.undoTurnPvE();
             if (undoSuccess && !undoCount)
             {
-                ptbOne.Visible = false;
-                ptbZero.Visible = true;
+                if (ptbOne != null) ptbOne.Visible = false;
+                if (ptbZero != null) ptbZero.Visible = true;
                 undoCount = true;
             }
         }

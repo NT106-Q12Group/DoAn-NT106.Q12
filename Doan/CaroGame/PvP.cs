@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Drawing;
-using System.IO;
-using System.Threading;
 using System.Windows.Forms;
 using CaroGame_TCPClient;
 
@@ -10,7 +8,7 @@ namespace CaroGame
     public partial class PvP : Form
     {
         #region Properties
-        ChessBoardManager ChessBoard;
+        private ChessBoardManager ChessBoard;
         #endregion
 
         public Room room;
@@ -51,8 +49,9 @@ namespace CaroGame
         private void InitGame()
         {
             CheckForIllegalCrossThreadCalls = false;
+
             SetupEmojiPickerPanel();
-            pnlChessBoard.BringToFront();
+            if (pnlChessBoard != null) pnlChessBoard.BringToFront();
 
             SetupPlayerInfo();
 
@@ -84,19 +83,17 @@ namespace CaroGame
             if (label1 != null) label1.Text = player1Name;
             if (label2 != null) label2.Text = player2Name;
 
-            // Highlight tên của người chơi (In đậm + Đổi màu)
-            if (MySide == 0) // Mình là P1
+            if (MySide == 0)
             {
                 if (label1 != null) { label1.ForeColor = Color.Red; label1.Font = new Font(label1.Font, FontStyle.Bold); }
                 if (label2 != null) { label2.ForeColor = Color.Black; label2.Font = new Font(label2.Font, FontStyle.Regular); }
             }
-            else // Mình là P2
+            else
             {
                 if (label1 != null) { label1.ForeColor = Color.Black; label1.Font = new Font(label1.Font, FontStyle.Regular); }
                 if (label2 != null) { label2.ForeColor = Color.Blue; label2.Font = new Font(label2.Font, FontStyle.Bold); }
             }
 
-            // Avatar placeholder (Tạm thời để trống do chưa có hệ thống Avatar)
             try
             {
                 if (ptbAvaP1 != null) { ptbAvaP1.Image = null; ptbAvaP1.BackColor = Color.LightGray; }
@@ -107,20 +104,25 @@ namespace CaroGame
 
         private void ChessBoard_GameEnded(string winnerName)
         {
-            MessageBox.Show($"Trận đấu kết thúc!\nNgười chiến thắng: {winnerName}", "Kết quả", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show(
+                $"Trận đấu kết thúc!\nNgười chiến thắng: {winnerName}",
+                "Kết quả",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information
+            );
         }
 
         private void ChessBoard_PlayerClickedNode(Point point)
         {
             if (tcpClient != null && tcpClient.IsConnected())
-            {
                 tcpClient.SendPacket(new Packet("MOVE", point));
-            }
         }
 
         private void HandleServerMessage(string data)
         {
-            this.Invoke((MethodInvoker)delegate
+            if (IsDisposed || !IsHandleCreated) return;
+
+            BeginInvoke((MethodInvoker)delegate
             {
                 try
                 {
@@ -134,7 +136,6 @@ namespace CaroGame
                         int y = int.Parse(parts[2]);
                         int side = int.Parse(parts[3]);
 
-                        // Fallback nếu server gửi sai side
                         if (side == -1) side = ChessBoard.MoveCount % 2;
                         ChessBoard.ProcessMove(x, y, side);
                     }
@@ -156,13 +157,16 @@ namespace CaroGame
                     }
                     else if (command == "OPPONENT_LEFT")
                     {
-                        MessageBox.Show("Đối thủ đã thoát trận! Bạn thắng.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                        this.Close(); // Đóng form -> Dashboard tự hiện lại
+                        MessageBox.Show("Đối thủ đã thoát trận! Bạn thắng.", "Thông báo",
+                            MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        Close();
                     }
                 }
-                catch (Exception ex) { }
+                catch { }
             });
         }
+
+        // ================== ORIGINAL HANDLERS (không dấu _) ==================
 
         private void btnUndo_Click(object sender, EventArgs e)
         {
@@ -176,10 +180,14 @@ namespace CaroGame
 
         private void btnSend_Click(object sender, EventArgs e)
         {
-            string text = txtMessage.Text.Trim();
+            string text = txtMessage?.Text.Trim();
             if (string.IsNullOrWhiteSpace(text)) return;
+
             AppendMessage("You", text, Color.Blue);
-            if (tcpClient != null) tcpClient.SendPacket(new Packet("CHAT", text));
+
+            if (tcpClient != null)
+                tcpClient.SendPacket(new Packet("CHAT", text));
+
             txtMessage.Clear();
         }
 
@@ -196,30 +204,13 @@ namespace CaroGame
             {
                 if (tcpClient != null)
                 {
-                    // Hủy nhận tin nhắn để tránh lỗi ObjectDisposed khi đóng form
                     tcpClient.OnMessageReceived -= HandleServerMessage;
                     tcpClient.Send("SURRENDER");
                 }
-
-                // Chỉ cần đóng form này, Dashboard sẽ tự hiện lại nhờ sự kiện FormClosed
-                this.Close();
+                Close();
             }
         }
 
-        private void AppendMessage(string sender, string message, Color color)
-        {
-            if (rtbChat == null) return;
-            rtbChat.SelectionStart = rtbChat.TextLength;
-            rtbChat.SelectionColor = color;
-            rtbChat.SelectionFont = new Font("Segoe UI", 10, FontStyle.Bold);
-            rtbChat.AppendText($"{sender}: ");
-            rtbChat.SelectionFont = new Font("Segoe UI", 10, FontStyle.Regular);
-            rtbChat.SelectionColor = Color.Black;
-            rtbChat.AppendText(message + Environment.NewLine + Environment.NewLine);
-            rtbChat.ScrollToCaret();
-        }
-
-        private Menu menuForm;
         private void btnMenu_Click(object sender, EventArgs e)
         {
             if (menuForm == null || menuForm.IsDisposed)
@@ -229,28 +220,66 @@ namespace CaroGame
                 menuForm.Location = new Point(this.Left + 22, this.Top + 50);
                 menuForm.Show(this);
             }
-            else { menuForm.Close(); menuForm = null; }
+            else
+            {
+                menuForm.Close();
+                menuForm = null;
+            }
         }
 
-        // Emoji logic
+        private void btnChat_Click(object sender, EventArgs e)
+        {
+            if (panelChat != null) panelChat.Visible = !panelChat.Visible;
+        }
+
+        // ================== ALIAS HANDLERS (có dấu _) để KHỚP DESIGNER ==================
+        // Nếu Designer đang gọi btn_Undo_Click / btn_Send_Click / btn_Chat_Click... thì sẽ không lỗi nữa.
+
+        private void btn_Undo_Click(object sender, EventArgs e) => btnUndo_Click(sender, e);
+        private void btn_Send_Click(object sender, EventArgs e) => btnSend_Click(sender, e);
+        private void btn_Exit_Click(object sender, EventArgs e) => btnExit_Click(sender, e);
+        private void btn_Menu_Click(object sender, EventArgs e) => btnMenu_Click(sender, e);
+        private void btn_Chat_Click(object sender, EventArgs e) => btnChat_Click(sender, e);
+
+        // ================== CHAT UI ==================
+
+        private void AppendMessage(string sender, string message, Color color)
+        {
+            if (rtbChat == null) return;
+
+            rtbChat.SelectionStart = rtbChat.TextLength;
+            rtbChat.SelectionColor = color;
+            rtbChat.SelectionFont = new Font("Segoe UI", 10, FontStyle.Bold);
+            rtbChat.AppendText($"{sender}: ");
+
+            rtbChat.SelectionFont = new Font("Segoe UI", 10, FontStyle.Regular);
+            rtbChat.SelectionColor = Color.Black;
+            rtbChat.AppendText(message + Environment.NewLine + Environment.NewLine);
+            rtbChat.ScrollToCaret();
+        }
+
+        private Menu menuForm;
+
+        // ================== EMOJI ==================
+
         private readonly string[] _emoticons = new string[] {
-            "😀", "😃", "😄", "😁", "😆", "😅", "😂", "🤣", "🥲", "☺️", "😊", "😇",
-            "🙂", "🙃", "😉", "😌", "😍", "🥰", "😘", "😗", "😋", "😛", "😝", "😜",
-            "🤪", "🤨", "🧐", "🤓", "😎", "🥸", "🤩", "🥳", "😏", "😒", "😞", "😔",
-            "😟", "😕", "🙁", "☹️", "😣", "😖", "😫", "😩", "🥺", "😢", "😭", "😤",
-            "😠", "😡", "🤬", "🤯", "😳", "🥵", "🥶", "😱", "😨", "😰", "😥", "😓",
-            "🤗", "🤔", "🤭", "🤫", "🤥", "😶", "😐", "😑", "😬", "🙄", "😯", "😦",
-            "😧", "😮", "😲", "🥱", "😴", "🤤", "😪", "😵", "🤐", "🥴", "🤢", "🤮",
-            "🤧", "😷", "🤒", "🤕", "🤑", "🤠", "😈", "👿", "👹", "👺", "🤡", "💩",
-            "👻", "💀", "☠️", "👽", "👾", "🤖", "🎃",
-            "😺", "😸", "😹", "😻", "😼", "😽", "🙀", "😿", "😾",
-            "👋", "🤚", "🖐", "✋", "🖖", "👌", "🤌", "🤏", "✌️", "🤞", "🤟", "🤘",
-            "🤙", "👈", "👉", "👆", "👇", "☝️", "👍", "👎", "✊", "👊", "🤛", "🤜",
-            "👏", "🙌", "👐", "🤲", "🤝", "🙏", "💪", "💅", "🤳",
-            "❤️", "🧡", "💛", "💚", "💙", "💜", "🖤", "🤍", "🤎", "💔", "❣️", "💕",
-            "💞", "💓", "💗", "💖", "💘", "💝", "💋", "💌",
-            "👀", "👁", "🧠", "🔥", "✨", "🌟", "💫", "💥", "💢", "💦", "💤", "🎵",
-            "🎶", "✅", "❌", "💯", "⚠️", "⛔️", "🎉", "🎈", "🎁"
+            "😀","😃","😄","😁","😆","😅","😂","🤣","🥲","☺️","😊","😇",
+            "🙂","🙃","😉","😌","😍","🥰","😘","😗","😋","😛","😝","😜",
+            "🤪","🤨","🧐","🤓","😎","🥸","🤩","🥳","😏","😒","😞","😔",
+            "😟","😕","🙁","☹️","😣","😖","😫","😩","🥺","😢","😭","😤",
+            "😠","😡","🤬","🤯","😳","🥵","🥶","😱","😨","😰","😥","😓",
+            "🤗","🤔","🤭","🤫","🤥","😶","😐","😑","😬","🙄","😯","😦",
+            "😧","😮","😲","🥱","😴","🤤","😪","😵","🤐","🥴","🤢","🤮",
+            "🤧","😷","🤒","🤕","🤑","🤠","😈","👿","👹","👺","🤡","💩",
+            "👻","💀","☠️","👽","👾","🤖","🎃",
+            "😺","😸","😹","😻","😼","😽","🙀","😿","😾",
+            "👋","🤚","🖐","✋","🖖","👌","🤌","🤏","✌️","🤞","🤟","🤘",
+            "🤙","👈","👉","👆","👇","☝️","👍","👎","✊","👊","🤛","🤜",
+            "👏","🙌","👐","🤲","🤝","🙏","💪","💅","🤳",
+            "❤️","🧡","💛","💚","💙","💜","🖤","🤍","🤎","💔","❣️","💕",
+            "💞","💓","💗","💖","💘","💝","💋","💌",
+            "👀","👁","🧠","🔥","✨","🌟","💫","💥","💢","💦","💤","🎵",
+            "🎶","✅","❌","💯","⚠️","⛔️","🎉","🎈","🎁"
         };
 
         private void SetupEmojiPickerPanel()
@@ -260,34 +289,61 @@ namespace CaroGame
             pnlEmojiPicker.Controls.Clear();
             pnlEmojiPicker.AutoScroll = true;
         }
+
         private void ShowEmojiPicker()
         {
-            if (pnlEmojiPicker == null) return;
-            if (pnlEmojiPicker.Visible && pnlEmojiPicker.Controls.Count > 0) { pnlEmojiPicker.Visible = false; return; }
+            if (pnlEmojiPicker == null || txtMessage == null) return;
+
+            if (pnlEmojiPicker.Visible && pnlEmojiPicker.Controls.Count > 0)
+            {
+                pnlEmojiPicker.Visible = false;
+                return;
+            }
+
             pnlEmojiPicker.Visible = true;
             pnlEmojiPicker.BringToFront();
             pnlEmojiPicker.Controls.Clear();
-            int btnSize = 32; int cols = 8; int spacing = 4;
+
+            int btnSize = 32;
+            int cols = 8;
+            int spacing = 4;
+
             for (int i = 0; i < _emoticons.Length; i++)
             {
                 var btn = new Button();
                 btn.Font = new Font("Segoe UI Emoji", 16F, FontStyle.Regular);
                 btn.Text = _emoticons[i];
                 btn.Width = btn.Height = btnSize;
-                int col = i % cols; int row = i / cols;
-                btn.Left = col * (btnSize + spacing); btn.Top = row * (btnSize + spacing);
-                btn.Click += (s, e) => { txtMessage.Text += ((Button)s).Text; txtMessage.SelectionStart = txtMessage.Text.Length; txtMessage.Focus(); };
+
+                int col = i % cols;
+                int row = i / cols;
+                btn.Left = col * (btnSize + spacing);
+                btn.Top = row * (btnSize + spacing);
+
+                btn.Click += (s, e) =>
+                {
+                    txtMessage.Text += ((Button)s).Text;
+                    txtMessage.SelectionStart = txtMessage.Text.Length;
+                    txtMessage.Focus();
+                };
+
                 pnlEmojiPicker.Controls.Add(btn);
             }
         }
-        private void btn_emoji_Click(object sender, EventArgs e) { ShowEmojiPicker(); }
-        private void btnChat_Click(object sender, EventArgs e) { if (panelChat != null) panelChat.Visible = !panelChat.Visible; }
-        private void Btn_Click(object? sender, EventArgs e) { }
+
+        // emoji của bạn vốn đã có dấu "_" đúng rồi, giữ nguyên
+        private void btn_emoji_Click(object sender, EventArgs e) => ShowEmojiPicker();
+
+        // ================== FORM CLOSING ==================
 
         protected override void OnFormClosing(FormClosingEventArgs e)
         {
-            if (tcpClient != null) tcpClient.OnMessageReceived -= HandleServerMessage;
+            if (tcpClient != null)
+                tcpClient.OnMessageReceived -= HandleServerMessage;
+
             base.OnFormClosing(e);
         }
+
+        private void Btn_Click(object? sender, EventArgs e) { }
     }
 }
