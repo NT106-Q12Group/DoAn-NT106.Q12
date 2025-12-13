@@ -1,7 +1,6 @@
 ﻿using CaroGame_TCPServer.Player;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -17,22 +16,27 @@ namespace CaroGame_TCPServer
         private List<TcpClient> Clients;
         private int ConnectionCount;
 
-        // --- CÁC DICTIONARY QUẢN LÝ TRẠNG THÁI ---
-
-        // 1. Danh sách người đang Online
         private static Dictionary<string, TcpClient> OnlineUsers = new Dictionary<string, TcpClient>();
-
-        // 2. Hàng chờ tìm trận ngẫu nhiên (Quick Match)
-        private static Dictionary<string, TcpClient> WaitingQueue = new Dictionary<string, TcpClient>();
-
-        // 3. [MỚI] Danh sách phòng Custom đang chờ (Key: RoomID, Value: HostClient)
-        private static Dictionary<string, TcpClient> CustomWaitingRooms = new Dictionary<string, TcpClient>();
-
-        // 4. Danh sách cặp đấu đang diễn ra
+        private static Dictionary<string, TcpClient> WaitingQueue = new Dictionary<string, TcpClient>(); // Quick Match
         private static Dictionary<string, string> ActiveMatches = new Dictionary<string, string>();
+        private static Dictionary<string, int> PlayerSides = new Dictionary<string, int>(); // 1=X, 2=O
 
-        // 5. Lưu phe của người chơi trong trận (1=X, 2=O)
-        private static Dictionary<string, int> PlayerSides = new Dictionary<string, int>();
+        private static HashSet<string> RematchWaiting = new HashSet<string>();
+
+        // ===== Custom Room State =====
+        private class CustomRoomState
+        {
+            public string RoomId;
+            public string HostName;
+            public string GuestName;
+            public TcpClient HostClient;
+            public TcpClient GuestClient;
+            public bool HostReady;
+            public bool GuestReady;
+            public bool IsStarting;
+        }
+
+        private static Dictionary<string, CustomRoomState> CustomRooms = new Dictionary<string, CustomRoomState>();
 
         private object lockObj = new object();
 
@@ -145,38 +149,67 @@ namespace CaroGame_TCPServer
             {
                 if (!string.IsNullOrEmpty(username))
                 {
-                    if (OnlineUsers.ContainsKey(username)) OnlineUsers.Remove(username);
-                    if (WaitingQueue.ContainsKey(username)) WaitingQueue.Remove(username);
+                    OnlineUsers.Remove(username);
+                    WaitingQueue.Remove(username);
+                    RematchWaiting.Remove(username);
 
-                    // [MỚI] Xóa khỏi phòng chờ Custom nếu đang tạo phòng mà thoát
-                    // Duyệt ngược dictionary để tìm và xóa
-                    foreach (var item in CustomWaitingRooms)
+                    // Remove khỏi custom rooms nếu là host/guest
+                    string removeRoomId = null;
+                    foreach (var kv in CustomRooms)
                     {
-                        if (item.Value == client)
+                        var r = kv.Value;
+                        if (r.HostClient == client || r.GuestClient == client)
                         {
-                            CustomWaitingRooms.Remove(item.Key);
+                            removeRoomId = kv.Key;
                             break;
                         }
                     }
+                    if (removeRoomId != null)
+                    {
+                        var r = CustomRooms[removeRoomId];
+                        string other = null;
+                        TcpClient otherClient = null;
 
+                        if (r.HostClient == client)
+                        {
+                            other = r.GuestName;
+                            otherClient = r.GuestClient;
+                        }
+                        else
+                        {
+                            other = r.HostName;
+                            otherClient = r.HostClient;
+                        }
+
+                        CustomRooms.Remove(removeRoomId);
+
+                        if (!string.IsNullOrEmpty(other) && otherClient != null && otherClient.Connected)
+                            SendDirect(otherClient, "JOIN_FAIL|Phòng đã bị đóng (đối thủ thoát).");
+                    }
+
+                    // Nếu đang trong trận
                     if (ActiveMatches.ContainsKey(username))
                     {
                         string opponent = ActiveMatches[username];
+
                         ActiveMatches.Remove(username);
+                        PlayerSides.Remove(username);
+                        RematchWaiting.Remove(opponent);
 
                         SendToPlayer(opponent, "OPPONENT_LEFT|Your opponent disconnected.");
 
                         if (ActiveMatches.ContainsKey(opponent)) ActiveMatches.Remove(opponent);
+                        if (PlayerSides.ContainsKey(opponent)) PlayerSides.Remove(opponent);
                     }
                 }
 
                 lock (Clients) Clients.Remove(client);
                 try { client.Close(); } catch { }
             }
+
             Console.WriteLine($"[INFO] Client {username ?? "Unknown"} disconnected.");
         }
 
-        // --- XỬ LÝ REQUEST (ĐIỀU HƯỚNG) ---
         private string ProcessRequest(string request, TcpClient client, ref string currentUsername)
         {
             try
@@ -189,23 +222,24 @@ namespace CaroGame_TCPServer
                 switch (cmd)
                 {
                     case "SIGNIN":
-                        string result = HandleSignIn(parts);
-                        if (result.StartsWith("Success"))
                         {
-                            currentUsername = parts[1];
-                            lock (lockObj)
+                            string result = HandleSignIn(parts);
+                            if (result.StartsWith("Success"))
                             {
-                                OnlineUsers[currentUsername] = client;
+                                currentUsername = parts[1];
+                                lock (lockObj) { OnlineUsers[currentUsername] = client; }
                             }
+                            return result;
                         }
-                        return result;
 
                     case "SIGNUP": return HandleRegister(parts);
                     case "GETPLAYER": return HandleGetPlayer(parts);
                     case "GETEMAIL": return HandleGetEmail(parts);
                     case "UPDATEPASS": return HandleUpdatePassword(parts);
+                    case "UPDATEEMAIL": return HandleUpdateEmail(parts);
+                    case "UPDATEBIRTHDAY": return HandleUpdateBirthday(parts);
 
-                    // --- GAME LOGIC ---
+                    // Quick Match
                     case "FIND_MATCH":
                         HandleFindMatch(parts[1], client);
                         return null;
@@ -214,17 +248,21 @@ namespace CaroGame_TCPServer
                         HandleCancelMatch(parts[1]);
                         return null;
 
-                    // [MỚI] TẠO PHÒNG
+                    // Custom Room
                     case "CREATE_ROOM":
                         HandleCreateRoom(parts[1], client);
                         return null;
 
-                    // [MỚI] VÀO PHÒNG
                     case "JOIN_ROOM":
-                        // JOIN_ROOM | Username | RoomID
                         HandleJoinRoom(parts[1], parts[2], client);
                         return null;
 
+                    case "READY":
+                        // READY|username|roomId|1/0
+                        HandleReady(parts[1], parts[2], parts[3]);
+                        return null;
+
+                    // Game
                     case "MOVE":
                         HandleMove(parts, currentUsername);
                         return null;
@@ -241,7 +279,27 @@ namespace CaroGame_TCPServer
                         HandleSurrender(currentUsername);
                         return null;
 
-                    case "SIGNOUT": return "Success|Signed out";
+                    // Rematch
+                    case "REMATCH_REQUEST":
+                        HandleRematchRequest(currentUsername);
+                        return null;
+
+                    case "REMATCH_ACCEPT":
+                        HandleRematchAccept(currentUsername);
+                        return null;
+
+                    case "REMATCH_DECLINE":
+                        HandleRematchDecline(currentUsername);
+                        return null;
+
+                    // Leaderboard result (PvP/PvE đều có thể dùng)
+                    case "GAME_RESULT":
+                        // GAME_RESULT|WIN or LOSE  (username lấy theo currentUsername)
+                        HandleGameResult(currentUsername, parts.Length > 1 ? parts[1] : "");
+                        return null;
+
+                    case "SIGNOUT":
+                        return "Success|Signed out";
 
                     default:
                         return "Error|Unknown command";
@@ -253,114 +311,160 @@ namespace CaroGame_TCPServer
             }
         }
 
-        // --- [MỚI] XỬ LÝ TẠO PHÒNG ---
+        // ===================== CUSTOM ROOM =====================
+
         private void HandleCreateRoom(string username, TcpClient client)
         {
             lock (lockObj)
             {
-                // Tạo ID ngẫu nhiên 5 số
                 Random rnd = new Random();
-                string roomId = rnd.Next(10000, 99999).ToString();
-                while (CustomWaitingRooms.ContainsKey(roomId)) roomId = rnd.Next(10000, 99999).ToString();
+                string roomId = rnd.Next(0, 999999).ToString("D6");
+                while (CustomRooms.ContainsKey(roomId))
+                    roomId = rnd.Next(0, 999999).ToString("D6");
 
-                CustomWaitingRooms.Add(roomId, client);
+                CustomRooms[roomId] = new CustomRoomState
+                {
+                    RoomId = roomId,
+                    HostName = username,
+                    HostClient = client,
+                    GuestClient = null,
+                    HostReady = false,
+                    GuestReady = false,
+                    IsStarting = false
+                };
 
-                // Gửi lại ID cho người tạo
-                SendDirect(client, $"ROOM_CREATED|{roomId}");
+                SendDirect(client, $"ROOM_CREATED|{roomId}|{username}");
                 Console.WriteLine($"[ROOM] {username} created room {roomId}");
             }
         }
 
-        // --- [MỚI] XỬ LÝ VÀO PHÒNG ---
         private void HandleJoinRoom(string joinerName, string roomId, TcpClient joinerClient)
         {
             lock (lockObj)
             {
-                if (CustomWaitingRooms.ContainsKey(roomId))
-                {
-                    TcpClient hostClient = CustomWaitingRooms[roomId];
-
-                    if (!hostClient.Connected)
-                    {
-                        CustomWaitingRooms.Remove(roomId);
-                        SendDirect(joinerClient, "JOIN_FAIL|Phòng này chủ phòng đã mất kết nối.");
-                        return;
-                    }
-
-                    // Tìm tên chủ phòng
-                    string hostName = GetUsernameBySocket(hostClient);
-                    if (hostName == null) { SendDirect(joinerClient, "JOIN_FAIL|Lỗi xác thực."); return; }
-                    if (hostName == joinerName) { SendDirect(joinerClient, "JOIN_FAIL|Không thể tự vào phòng mình."); return; }
-
-                    // Xóa phòng chờ
-                    CustomWaitingRooms.Remove(roomId);
-
-                    // Thiết lập trận đấu
-                    ActiveMatches[hostName] = joinerName;
-                    ActiveMatches[joinerName] = hostName;
-                    PlayerSides[hostName] = 1; // Chủ phòng là X
-                    PlayerSides[joinerName] = 2; // Khách là O
-
-                    Console.WriteLine($"[MATCH] Custom Room {roomId}: {hostName} vs {joinerName}");
-
-                    // Gửi lệnh vào game
-                    SendDirect(hostClient, $"MATCH_FOUND|{joinerName}|X");
-                    SendDirect(joinerClient, $"MATCH_FOUND|{hostName}|O");
-                }
-                else
+                if (!CustomRooms.ContainsKey(roomId))
                 {
                     SendDirect(joinerClient, "JOIN_FAIL|Phòng không tồn tại.");
+                    return;
                 }
+
+                var room = CustomRooms[roomId];
+
+                if (room.HostClient == null || !room.HostClient.Connected)
+                {
+                    CustomRooms.Remove(roomId);
+                    SendDirect(joinerClient, "JOIN_FAIL|Chủ phòng đã mất kết nối.");
+                    return;
+                }
+
+                if (room.HostName == joinerName)
+                {
+                    SendDirect(joinerClient, "JOIN_FAIL|Không thể tự vào phòng mình.");
+                    return;
+                }
+
+                if (room.GuestClient != null && room.GuestClient.Connected)
+                {
+                    SendDirect(joinerClient, "JOIN_FAIL|Phòng đã đủ 2 người.");
+                    return;
+                }
+
+                room.GuestName = joinerName;
+                room.GuestClient = joinerClient;
+                room.HostReady = false;
+                room.GuestReady = false;
+                room.IsStarting = false;
+
+                SendDirect(room.HostClient, $"ROOM_JOINED|{roomId}|{room.HostName}|{room.GuestName}");
+                SendDirect(room.GuestClient, $"ROOM_JOINED|{roomId}|{room.HostName}|{room.GuestName}");
+
+                BroadcastReadyUpdate(room);
+
+                Console.WriteLine($"[ROOM] {roomId} joined: {room.HostName} vs {room.GuestName}");
             }
         }
 
-        private string GetUsernameBySocket(TcpClient client)
-        {
-            foreach (var item in OnlineUsers) if (item.Value == client) return item.Key;
-            return null;
-        }
-
-        private void HandleSurrender(string sender)
+        private void HandleReady(string username, string roomId, string readyRaw)
         {
             lock (lockObj)
             {
-                if (ActiveMatches.ContainsKey(sender))
+                if (!CustomRooms.ContainsKey(roomId)) return;
+
+                var room = CustomRooms[roomId];
+                bool ready = (readyRaw == "1");
+
+                if (username == room.HostName) room.HostReady = ready;
+                else if (username == room.GuestName) room.GuestReady = ready;
+                else return;
+
+                BroadcastReadyUpdate(room);
+
+                if (room.HostClient == null || room.GuestClient == null) { room.IsStarting = false; return; }
+                if (!room.HostClient.Connected || !room.GuestClient.Connected) { room.IsStarting = false; return; }
+
+                if (room.HostReady && room.GuestReady && !room.IsStarting)
                 {
-                    string opponent = ActiveMatches[sender];
-                    SendToPlayer(opponent, "OPPONENT_LEFT|Đối thủ đã đầu hàng. Bạn thắng!");
-                    ActiveMatches.Remove(sender);
-                    if (ActiveMatches.ContainsKey(opponent)) ActiveMatches.Remove(opponent);
-                    Console.WriteLine($"[GAME] {sender} surrendered against {opponent}");
+                    room.IsStarting = true;
+
+                    SendDirect(room.HostClient, "GAME_STARTING|3");
+                    SendDirect(room.GuestClient, "GAME_STARTING|3");
+
+                    new Thread(() =>
+                    {
+                        Thread.Sleep(3000);
+
+                        lock (lockObj)
+                        {
+                            if (!CustomRooms.ContainsKey(roomId)) return;
+                            var r = CustomRooms[roomId];
+
+                            if (r.HostClient == null || r.GuestClient == null) return;
+                            if (!r.HostClient.Connected || !r.GuestClient.Connected) return;
+
+                            // Nếu trong lúc đếm mà ai đó unready
+                            if (!r.HostReady || !r.GuestReady) { r.IsStarting = false; return; }
+
+                            ActiveMatches[r.HostName] = r.GuestName;
+                            ActiveMatches[r.GuestName] = r.HostName;
+
+                            PlayerSides[r.HostName] = 1;   // host X
+                            PlayerSides[r.GuestName] = 2; // guest O
+
+                            RematchWaiting.Remove(r.HostName);
+                            RematchWaiting.Remove(r.GuestName);
+
+                            SendDirect(r.HostClient, $"MATCH_FOUND|{r.GuestName}|X");
+                            SendDirect(r.GuestClient, $"MATCH_FOUND|{r.HostName}|O");
+
+                            Console.WriteLine($"[MATCH] Custom start: {r.HostName}(X) vs {r.GuestName}(O)");
+
+                            // Optional: xóa phòng để không join lại
+                            // CustomRooms.Remove(roomId);
+                        }
+                    })
+                    { IsBackground = true }.Start();
+                }
+                else
+                {
+                    room.IsStarting = false;
                 }
             }
         }
 
-        private void SendDirect(TcpClient client, string msg)
+        private void BroadcastReadyUpdate(CustomRoomState room)
         {
-            try
-            {
-                if (client != null && client.Connected)
-                {
-                    NetworkStream s = client.GetStream();
-                    byte[] data = Encoding.UTF8.GetBytes(msg);
-                    s.Write(data, 0, data.Length);
-                    s.Flush();
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[ERROR] SendDirect: {ex.Message}");
-            }
+            string msg = $"READY_UPDATE|{room.RoomId}|{(room.HostReady ? 1 : 0)}|{(room.GuestReady ? 1 : 0)}";
+            SendDirect(room.HostClient, msg);
+            if (room.GuestClient != null) SendDirect(room.GuestClient, msg);
         }
+
+        // ===================== QUICK MATCH =====================
 
         private void HandleFindMatch(string username, TcpClient client)
         {
             lock (lockObj)
             {
-                if (WaitingQueue.ContainsKey(username))
-                {
-                    WaitingQueue[username] = client;
-                }
+                WaitingQueue[username] = client;
 
                 string opponentName = null;
                 foreach (var waiter in WaitingQueue)
@@ -372,39 +476,35 @@ namespace CaroGame_TCPServer
                     }
                 }
 
-                if (opponentName != null)
+                if (opponentName == null)
                 {
-                    TcpClient opponentClient = WaitingQueue[opponentName];
+                    Console.WriteLine($"[MATCH] {username} added to queue.");
+                    return;
+                }
 
-                    if (!opponentClient.Connected)
-                    {
-                        WaitingQueue.Remove(opponentName);
-                        if (!WaitingQueue.ContainsKey(username))
-                            WaitingQueue.Add(username, client);
-                        return;
-                    }
-
+                TcpClient opponentClient = WaitingQueue[opponentName];
+                if (opponentClient == null || !opponentClient.Connected)
+                {
                     WaitingQueue.Remove(opponentName);
-                    if (WaitingQueue.ContainsKey(username)) WaitingQueue.Remove(username);
-
-                    ActiveMatches[username] = opponentName;
-                    ActiveMatches[opponentName] = username;
-                    PlayerSides[opponentName] = 1;
-                    PlayerSides[username] = 2;
-
-                    Console.WriteLine($"[MATCH] Found: {opponentName} vs {username}");
-
-                    SendDirect(client, $"MATCH_FOUND|{opponentName}|O");
-                    SendDirect(opponentClient, $"MATCH_FOUND|{username}|X");
+                    return;
                 }
-                else
-                {
-                    if (!WaitingQueue.ContainsKey(username))
-                    {
-                        WaitingQueue.Add(username, client);
-                        Console.WriteLine($"[MATCH] {username} added to queue.");
-                    }
-                }
+
+                WaitingQueue.Remove(opponentName);
+                WaitingQueue.Remove(username);
+
+                ActiveMatches[username] = opponentName;
+                ActiveMatches[opponentName] = username;
+
+                PlayerSides[opponentName] = 1; // opponent X
+                PlayerSides[username] = 2;     // me O
+
+                RematchWaiting.Remove(username);
+                RematchWaiting.Remove(opponentName);
+
+                Console.WriteLine($"[MATCH] Found: {opponentName} vs {username}");
+
+                SendDirect(client, $"MATCH_FOUND|{opponentName}|O");
+                SendDirect(opponentClient, $"MATCH_FOUND|{username}|X");
             }
         }
 
@@ -420,22 +520,24 @@ namespace CaroGame_TCPServer
             }
         }
 
+        // ===================== GAME =====================
+
         private void HandleMove(string[] parts, string sender)
         {
             lock (lockObj)
             {
-                if (ActiveMatches.ContainsKey(sender))
-                {
-                    string opponent = ActiveMatches[sender];
-                    string x = parts[1];
-                    string y = parts[2];
-                    int side = PlayerSides.ContainsKey(sender) ? PlayerSides[sender] : -1;
+                if (string.IsNullOrEmpty(sender)) return;
+                if (!ActiveMatches.ContainsKey(sender)) return;
+                if (parts.Length < 3) return;
 
-                    SendToPlayer(opponent, $"MOVE|{x}|{y}|{side}");
-                    SendToPlayer(sender, $"MOVE|{x}|{y}|{side}");
+                string opponent = ActiveMatches[sender];
+                string x = parts[1];
+                string y = parts[2];
 
-                    Console.WriteLine($"[GAME] {sender} ({x},{y}) -> {opponent}");
-                }
+                int side = PlayerSides.ContainsKey(sender) ? PlayerSides[sender] : -1;
+
+                SendToPlayer(opponent, $"MOVE|{x}|{y}|{side}");
+                SendToPlayer(sender, $"MOVE|{x}|{y}|{side}");
             }
         }
 
@@ -443,13 +545,13 @@ namespace CaroGame_TCPServer
         {
             lock (lockObj)
             {
-                if (ActiveMatches.ContainsKey(sender))
-                {
-                    string opponent = ActiveMatches[sender];
-                    SendToPlayer(sender, "UNDO_SUCCESS");
-                    SendToPlayer(opponent, "UNDO_SUCCESS");
-                    Console.WriteLine($"[GAME] Undo accepted for {sender}");
-                }
+                if (string.IsNullOrEmpty(sender)) return;
+                if (!ActiveMatches.ContainsKey(sender)) return;
+
+                string opponent = ActiveMatches[sender];
+
+                SendToPlayer(sender, "UNDO_SUCCESS");
+                SendToPlayer(opponent, "UNDO_SUCCESS");
             }
         }
 
@@ -457,31 +559,145 @@ namespace CaroGame_TCPServer
         {
             lock (lockObj)
             {
-                if (ActiveMatches.ContainsKey(sender))
+                if (string.IsNullOrEmpty(sender)) return;
+                if (!ActiveMatches.ContainsKey(sender)) return;
+                if (parts.Length < 2) return;
+
+                string opponent = ActiveMatches[sender];
+                SendToPlayer(opponent, $"CHAT|{parts[1]}");
+            }
+        }
+
+        private void HandleSurrender(string sender)
+        {
+            lock (lockObj)
+            {
+                if (string.IsNullOrEmpty(sender)) return;
+                if (!ActiveMatches.ContainsKey(sender)) return;
+
+                string opponent = ActiveMatches[sender];
+
+                SendToPlayer(opponent, "OPPONENT_LEFT|Đối thủ đã thoát / đầu hàng. Bạn thắng!");
+
+                ActiveMatches.Remove(sender);
+                PlayerSides.Remove(sender);
+                RematchWaiting.Remove(sender);
+
+                if (ActiveMatches.ContainsKey(opponent)) ActiveMatches.Remove(opponent);
+                if (PlayerSides.ContainsKey(opponent)) PlayerSides.Remove(opponent);
+                RematchWaiting.Remove(opponent);
+            }
+        }
+
+        // ===================== REMATCH =====================
+
+        private void HandleRematchRequest(string sender)
+        {
+            lock (lockObj)
+            {
+                if (string.IsNullOrEmpty(sender)) return;
+                if (!ActiveMatches.ContainsKey(sender)) return;
+
+                string opponent = ActiveMatches[sender];
+
+                RematchWaiting.Add(sender);
+                SendToPlayer(opponent, $"REMATCH_OFFER|{sender}");
+                SendToPlayer(sender, "REMATCH_SENT");
+            }
+        }
+
+        private void HandleRematchAccept(string sender)
+        {
+            lock (lockObj)
+            {
+                if (string.IsNullOrEmpty(sender)) return;
+                if (!ActiveMatches.ContainsKey(sender)) return;
+
+                string opponent = ActiveMatches[sender];
+
+                if (!RematchWaiting.Contains(opponent))
                 {
-                    string opponent = ActiveMatches[sender];
-                    SendToPlayer(opponent, $"CHAT|{parts[1]}");
+                    RematchWaiting.Add(sender);
+                    SendToPlayer(opponent, $"REMATCH_OFFER|{sender}");
+                    return;
+                }
+
+                RematchWaiting.Remove(opponent);
+                RematchWaiting.Remove(sender);
+
+                if (PlayerSides.ContainsKey(sender)) PlayerSides[sender] = (PlayerSides[sender] == 1) ? 2 : 1;
+                if (PlayerSides.ContainsKey(opponent)) PlayerSides[opponent] = (PlayerSides[opponent] == 1) ? 2 : 1;
+
+                string senderSide = PlayerSides.ContainsKey(sender) ? (PlayerSides[sender] == 1 ? "X" : "O") : "O";
+                string oppSide = PlayerSides.ContainsKey(opponent) ? (PlayerSides[opponent] == 1 ? "X" : "O") : "X";
+
+                SendToPlayer(sender, $"REMATCH_START|{senderSide}");
+                SendToPlayer(opponent, $"REMATCH_START|{oppSide}");
+            }
+        }
+
+        private void HandleRematchDecline(string sender)
+        {
+            lock (lockObj)
+            {
+                if (string.IsNullOrEmpty(sender)) return;
+                if (!ActiveMatches.ContainsKey(sender)) return;
+
+                string opponent = ActiveMatches[sender];
+
+                RematchWaiting.Remove(sender);
+                RematchWaiting.Remove(opponent);
+
+                SendToPlayer(sender, $"REMATCH_DECLINED|{sender}");
+                SendToPlayer(opponent, $"REMATCH_DECLINED|{sender}");
+            }
+        }
+
+        // ===================== LEADERBOARD (stub) =====================
+
+        private void HandleGameResult(string username, string resultRaw)
+        {
+            // TODO: update DB leaderboard theo username + WIN/LOSE
+            // resultRaw: "WIN" / "LOSE"
+            if (string.IsNullOrEmpty(username)) return;
+
+            string r = (resultRaw ?? "").Trim().ToUpperInvariant();
+            Console.WriteLine($"[RESULT] {username}: {r}");
+
+            // Ví dụ:
+            // if (r == "WIN") PlayerADO.AddWin(username);
+            // else if (r == "LOSE") PlayerADO.AddLose(username);
+        }
+
+        // ===================== SEND HELPERS =====================
+
+        private void SendDirect(TcpClient client, string msg)
+        {
+            try
+            {
+                if (client != null && client.Connected)
+                {
+                    NetworkStream s = client.GetStream();
+                    byte[] data = Encoding.UTF8.GetBytes(msg);
+                    s.Write(data, 0, data.Length);
+                    s.Flush();
                 }
             }
+            catch { }
         }
 
         private void SendToPlayer(string username, string msg)
         {
-            if (OnlineUsers.ContainsKey(username))
+            TcpClient c = null;
+
+            lock (lockObj)
             {
-                try
-                {
-                    TcpClient c = OnlineUsers[username];
-                    if (c != null && c.Connected)
-                    {
-                        NetworkStream s = c.GetStream();
-                        byte[] data = Encoding.UTF8.GetBytes(msg);
-                        s.Write(data, 0, data.Length);
-                        s.Flush();
-                    }
-                }
-                catch { }
+                if (string.IsNullOrEmpty(username)) return;
+                if (!OnlineUsers.ContainsKey(username)) return;
+                c = OnlineUsers[username];
             }
+
+            SendDirect(c, msg);
         }
 
         public void Stop()
@@ -490,18 +706,26 @@ namespace CaroGame_TCPServer
             {
                 isRunning = false;
                 Server?.Stop();
+
                 lock (lockObj)
                 {
                     OnlineUsers.Clear();
                     WaitingQueue.Clear();
-                    CustomWaitingRooms.Clear();
                     ActiveMatches.Clear();
+                    PlayerSides.Clear();
+                    RematchWaiting.Clear();
+                    CustomRooms.Clear();
                 }
+
                 lock (Clients)
                 {
-                    foreach (var client in Clients) client.Close();
+                    foreach (var client in Clients)
+                    {
+                        try { client.Close(); } catch { }
+                    }
                     Clients.Clear();
                 }
+
                 Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] [INFO] Server stopped manually.");
             }
             catch (Exception ex)
@@ -510,7 +734,8 @@ namespace CaroGame_TCPServer
             }
         }
 
-        // --- CÁC HÀM DB ---
+        // ===================== DB / ACCOUNT =====================
+
         private string HandleSignIn(string[] parts)
         {
             if (parts.Length < 3) return "Error|Missing info";
@@ -518,6 +743,7 @@ namespace CaroGame_TCPServer
             if (player != null) return $"Success|{player.PlayerName}|{player.Email}|{player.Birthday}";
             return "Error|Invalid username or password";
         }
+
         private string HandleRegister(string[] parts)
         {
             if (parts.Length < 5) return "Error|Missing info";
@@ -525,6 +751,7 @@ namespace CaroGame_TCPServer
             if (PlayerADO.RegisterPlayer(newPlayer)) return "Success|Registered successfully.";
             return "Error|Username exists";
         }
+
         private string HandleGetPlayer(string[] parts)
         {
             if (parts.Length < 2) return "Error|Missing name";
@@ -532,6 +759,7 @@ namespace CaroGame_TCPServer
             if (p != null) return $"Success|{p.PlayerName}|{p.Email}|{p.Birthday}";
             return "Error|Not found";
         }
+
         private string HandleGetEmail(string[] parts)
         {
             if (parts.Length < 2) return "Error|Missing username";
@@ -539,17 +767,13 @@ namespace CaroGame_TCPServer
             if (p != null && !string.IsNullOrEmpty(p.Email)) return $"Success|{p.Email}";
             return "Error|Email not found";
         }
+
         private string HandleUpdatePassword(string[] parts)
         {
             if (parts.Length < 3) return "Error|Missing data";
             bool ok = PlayerADO.UpdatePassword(parts[1], parts[2]);
             if (ok) return "Success|Updated";
             return "Error|Update failed";
-        }
-        private string HidePassword(string text)
-        {
-            if (text.Contains("SIGNIN") || text.Contains("SIGNUP")) return text.Split('|')[0] + "|***HIDDEN***";
-            return text;
         }
 
         private string HandleUpdateEmail(string[] parts)
@@ -566,6 +790,13 @@ namespace CaroGame_TCPServer
             bool ok = PlayerADO.UpdateBirthday(parts[1], parts[2]);
             if (ok) return "Success|Updated";
             return "Error|Update failed";
+        }
+
+        private string HidePassword(string text)
+        {
+            if (text.Contains("SIGNIN") || text.Contains("SIGNUP"))
+                return text.Split('|')[0] + "|***HIDDEN***";
+            return text;
         }
     }
 }
