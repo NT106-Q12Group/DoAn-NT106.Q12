@@ -356,20 +356,14 @@ namespace CaroGame
             }
         }
 
-        public void ExecuteUndoPvP()
+        public void ExecuteUndoPvP(bool isRequester)
         {
-            if (moveHistory.Count == 0) return;
-
-            if (moveHistory.Count == 1)
-            {
-                undoLastMove();
-                IsMyTurn = (MySide == 0);
-                return;
-            }
+            if (moveHistory.Count < 2) return;
 
             undoLastMove();
             undoLastMove();
-            IsMyTurn = true;
+
+            IsMyTurn = isRequester;
         }
 
         public bool undoTurnPvE()
