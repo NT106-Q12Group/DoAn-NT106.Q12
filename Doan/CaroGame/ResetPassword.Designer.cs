@@ -119,11 +119,11 @@
             // 
             label1.AutoSize = true;
             label1.Font = new Font("Segoe UI", 15F, FontStyle.Bold);
-            label1.Location = new Point(81, 144);
+            label1.Location = new Point(92, 136);
             label1.Name = "label1";
-            label1.Size = new Size(259, 35);
+            label1.Size = new Size(231, 35);
             label1.TabIndex = 8;
-            label1.Text = "FORGOT PASSWORD";
+            label1.Text = "RESET PASSWORD";
             // 
             // label2
             // 

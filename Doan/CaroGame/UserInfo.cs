@@ -185,18 +185,12 @@ namespace CaroGame
 
         private void btnEditBirth_Click(object sender, EventArgs e)
         {
-            using (var dlg = new InputDialog("Cập nhật Birthday", "Nhập ngày sinh (dd-MM-yyyy)", _birthday))
+            using (var dlg = new DatePickerDialog("Cập nhật Birthday", "Chọn ngày sinh", _birthday))
             {
                 dlg.StartPosition = FormStartPosition.CenterParent;
                 if (dlg.ShowDialog(this) != DialogResult.OK) return;
 
-                string newBirth = (dlg.Value ?? "").Trim();
-                if (!IsValidBirthday(newBirth))
-                {
-                    MessageBox.Show(this, "Birthday không hợp lệ. Ví dụ: 03-12-2006", "Lỗi",
-                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    return;
-                }
+                string newBirth = dlg.SelectedDate.ToString("dd-MM-yyyy");
 
                 if (_client == null || !_client.IsConnected())
                 {
@@ -207,7 +201,6 @@ namespace CaroGame
 
                 try
                 {
-                    // ✅ gọi server
                     string resp = _client.UpdateBirthday(_player.PlayerName, newBirth);
                     var p = (resp ?? "").Split('|');
 
@@ -322,7 +315,9 @@ namespace CaroGame
 
         private class ConfirmPasswordDialog : Form
         {
-            private TextBox tb;
+            private readonly TextBox tb;
+            private readonly CheckBox cbShow;
+
             public string Password => tb.Text;
 
             public ConfirmPasswordDialog()
@@ -332,8 +327,9 @@ namespace CaroGame
                 MaximizeBox = false;
                 MinimizeBox = false;
                 ShowInTaskbar = false;
+                StartPosition = FormStartPosition.CenterParent;
                 Width = 430;
-                Height = 190;
+                Height = 210;
 
                 var lbl = new Label
                 {
@@ -354,11 +350,27 @@ namespace CaroGame
                     UseSystemPasswordChar = true
                 };
 
+                cbShow = new CheckBox
+                {
+                    Text = "Hiện",
+                    AutoSize = true,
+                    Left = tb.Left,
+                    Top = tb.Top + tb.Height + 8
+                };
+
+                cbShow.CheckedChanged += (s, e) =>
+                {
+                    tb.UseSystemPasswordChar = !cbShow.Checked;
+
+                    // giữ caret/selection để khỏi khó chịu
+                    tb.Focus();
+                    tb.SelectionStart = tb.TextLength;
+                };
+
                 int btnW = 140, btnH = 38, gap = 16;
                 int totalW = btnW * 2 + gap;
-
                 int startX = (ClientSize.Width - totalW) / 2;
-                int topY = 95;
+                int topY = cbShow.Top + cbShow.Height + 12;
 
                 var btnOk = new Button
                 {
@@ -385,6 +397,7 @@ namespace CaroGame
 
                 Controls.Add(lbl);
                 Controls.Add(tb);
+                Controls.Add(cbShow);
                 Controls.Add(btnOk);
                 Controls.Add(btnCancel);
             }
@@ -459,5 +472,88 @@ namespace CaroGame
                 Controls.Add(btnCancel);
             }
         }
+
+        private class DatePickerDialog : Form
+        {
+            private readonly DateTimePicker dtp;
+            public DateTime SelectedDate => dtp.Value.Date;
+
+            public DatePickerDialog(string title, string label, string initial)
+            {
+                Text = title;
+                FormBorderStyle = FormBorderStyle.FixedDialog;
+                MaximizeBox = false;
+                MinimizeBox = false;
+                ShowInTaskbar = false;
+                Width = 460;
+                Height = 230;
+
+                var lbl = new Label
+                {
+                    Text = label,
+                    AutoSize = false,
+                    Width = 430,
+                    Height = 30,
+                    Left = 10,
+                    Top = 15,
+                    TextAlign = ContentAlignment.MiddleCenter
+                };
+
+                dtp = new DateTimePicker
+                {
+                    Width = 200,
+                    Left = (ClientSize.Width - 200) / 2,
+                    Top = 60,
+                    Format = DateTimePickerFormat.Custom,
+                    CustomFormat = "dd-MM-yyyy",
+                    MaxDate = DateTime.Today
+                };
+
+                if (DateTime.TryParseExact(
+                        initial ?? "",
+                        "dd-MM-yyyy",
+                        System.Globalization.CultureInfo.InvariantCulture,
+                        System.Globalization.DateTimeStyles.None,
+                        out var d))
+                {
+                    dtp.Value = d;
+                }
+
+                int btnW = 150, btnH = 40, gap = 16;
+                int totalW = btnW * 2 + gap;
+
+                int startX = (ClientSize.Width - totalW) / 2;
+                int topY = 120;
+
+                var btnOk = new Button
+                {
+                    Text = "Lưu",
+                    Width = btnW,
+                    Height = btnH,
+                    Left = startX,
+                    Top = topY,
+                    DialogResult = DialogResult.OK
+                };
+
+                var btnCancel = new Button
+                {
+                    Text = "Huỷ",
+                    Width = btnW,
+                    Height = btnH,
+                    Left = startX + btnW + gap,
+                    Top = topY,
+                    DialogResult = DialogResult.Cancel
+                };
+
+                AcceptButton = btnOk;
+                CancelButton = btnCancel;
+
+                Controls.Add(lbl);
+                Controls.Add(dtp);
+                Controls.Add(btnOk);
+                Controls.Add(btnCancel);
+            }
+        }
+
     }
 }
