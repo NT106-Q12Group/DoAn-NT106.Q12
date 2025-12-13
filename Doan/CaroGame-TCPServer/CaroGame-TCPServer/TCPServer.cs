@@ -279,7 +279,6 @@ namespace CaroGame_TCPServer
                         HandleSurrender(currentUsername);
                         return null;
 
-                    // Rematch
                     case "REMATCH_REQUEST":
                         HandleRematchRequest(currentUsername);
                         return null;
@@ -302,6 +301,8 @@ namespace CaroGame_TCPServer
                             parts.Length > 2 ? parts[2] : "");
                         return null;
 
+                    case "VERIFY_PASSWORD":
+                        return HandleVerifyPassword(parts);
 
                     case "SIGNOUT":
                         return "Success|Signed out";
@@ -658,6 +659,17 @@ namespace CaroGame_TCPServer
             }
         }
 
+        private string HandleVerifyPassword(string[] parts)
+        {
+            if (parts.Length < 3) return "Error|Missing info";
+
+            // chỉ verify đúng/sai, không trả thông tin user
+            var player = PlayerADO.Authenticate(parts[1], parts[2]);
+            if (player != null) return "Success|OK";
+            return "Error|Invalid password";
+        }
+
+
         // ===================== LEADERBOARD (stub) =====================
 
         private void HandleGameResult(string username, string resultRaw)
@@ -826,7 +838,7 @@ namespace CaroGame_TCPServer
 
         private string HidePassword(string text)
         {
-            if (text.Contains("SIGNIN") || text.Contains("SIGNUP"))
+            if (text.Contains("SIGNIN") || text.Contains("SIGNUP") || text.Contains("VERIFY_PASSWORD"))
                 return text.Split('|')[0] + "|***HIDDEN***";
             return text;
         }

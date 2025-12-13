@@ -12,6 +12,8 @@ namespace CaroGame_TCPClient
         public string PlayerName { get; init; } = "";
         public string Email { get; init; } = "";
         public string Birthday { get; init; } = "";
+        public string SessionPassword { get; init; } = "";
     }
 }
+
 

@@ -159,8 +159,10 @@ namespace CaroGame
                         PlayerID = 0,
                         PlayerName = uname,
                         Email = email,
-                        Birthday = birthday
+                        Birthday = birthday,
+                        SessionPassword = (tb_psw.Text == PH_PASSWORD) ? "" : tb_psw.Text
                     };
+
 
                     _client.StartListening();
 

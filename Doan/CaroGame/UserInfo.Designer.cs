@@ -176,6 +176,7 @@
             cb_showcfpswUInfo.TabIndex = 13;
             cb_showcfpswUInfo.Text = "Show password";
             cb_showcfpswUInfo.UseVisualStyleBackColor = true;
+            cb_showcfpswUInfo.CheckedChanged += cb_showcfpswUInfo_CheckedChanged;
             // 
             // btnEditPassword
             // 
