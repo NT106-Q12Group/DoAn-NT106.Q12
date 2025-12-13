@@ -166,7 +166,7 @@ namespace CaroGame
                     {
                         _email = newEmail;
                         if (tb_email != null) tb_email.Text = _email;
-                        MessageBox.Show(this, "Cập nhật email thành công!", "OK",
+                        MessageBox.Show(this, "Cập nhật email thành công!", "Thành công!",
                             MessageBoxButtons.OK, MessageBoxIcon.Information);
                     }
                     else
@@ -208,7 +208,7 @@ namespace CaroGame
                     {
                         _birthday = newBirth;
                         if (tb_birthdate != null) tb_birthdate.Text = _birthday;
-                        MessageBox.Show(this, "Cập nhật birthday thành công!", "OK",
+                        MessageBox.Show(this, "Cập nhật birthday thành công!", "Thành công!",
                             MessageBoxButtons.OK, MessageBoxIcon.Information);
                     }
                     else
