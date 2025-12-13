@@ -208,6 +208,7 @@
             btnEditEmail.Size = new Size(30, 29);
             btnEditEmail.TabIndex = 17;
             btnEditEmail.UseVisualStyleBackColor = true;
+            btnEditEmail.Click += btnEditEmail_Click;
             // 
             // btnEditBirth
             // 
@@ -223,6 +224,7 @@
             btnEditBirth.Size = new Size(30, 29);
             btnEditBirth.TabIndex = 18;
             btnEditBirth.UseVisualStyleBackColor = true;
+            btnEditBirth.Click += btnEditBirth_Click;
             // 
             // btnBack
             // 

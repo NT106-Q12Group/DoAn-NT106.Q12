@@ -179,6 +179,23 @@ namespace CaroGame_TCPClient
             return SendRequest($"UPDATEPASS|{username}|{hashedPassword}");
         }
 
+        public string UpdateEmail(string username, string newEmail)
+        {
+            return SendRequest($"UPDATEEMAIL|{username}|{newEmail}");
+        }
+
+        public string UpdateBirthday(string username, string newBirthday)
+        {
+            return SendRequest($"UPDATEBIRTHDAY|{username}|{newBirthday}");
+        }
+
+        public string VerifyPassword(string username, string currentPassword)
+        {
+            string hashedPassword = HashUtil.Sha256(currentPassword);
+            return SendRequest($"VERIFY_PASSWORD|{username}|{hashedPassword}");
+        }
+
+
         public string GetUser(string username) => SendRequest($"GETPLAYER|{username}");
         public string GetFullName(string username) => SendRequest($"GETNAME|{username}");
         public string GetEmail(string username) => SendRequest($"GETEMAIL|{username}");
