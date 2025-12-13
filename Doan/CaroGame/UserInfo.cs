@@ -36,12 +36,12 @@ namespace CaroGame
 
         private void btn_signout_Click(object? sender, EventArgs e)
         {
+            string message = "Signed out successfully!";
+            string caption = "Logout";
+            MessageBoxIcon icon = MessageBoxIcon.Information;
+
             try
             {
-                string message = "Signed out successfully!";
-                string caption = "Logout";
-                MessageBoxIcon icon = MessageBoxIcon.Information;
-
                 if (!string.IsNullOrEmpty(_player.PlayerName) && _client.IsConnected())
                 {
                     var resp = _client.Logout(_player.PlayerName);
@@ -55,18 +55,32 @@ namespace CaroGame
 
                 try { _client.Disconnect(); } catch { }
 
-                Hide();
-                var signin = new SignIn(_client);
-                signin.Show();
+                // ✅ LẤY SIGNIN CŨ (MainForm) - KHÔNG TẠO MỚI
+                var signin = Application.OpenForms.OfType<SignIn>().FirstOrDefault();
 
-                BeginInvoke((Action)(() =>
+                // Đóng UserInfo trước
+                this.Close();
+
+                // Đóng Dashboard (Owner) để quay về SignIn
+                if (this.Owner != null && !this.Owner.IsDisposed)
+                    this.Owner.Close();
+
+                // Sau khi đóng dashboard, event dash.FormClosed sẽ Show() SignIn cũ rồi.
+                // Nếu muốn chắc chắn: show + messagebox
+                if (signin != null && !signin.IsDisposed)
                 {
-                    MessageBox.Show(message, caption, MessageBoxButtons.OK, icon);
-                }));
+                    signin.BeginInvoke((Action)(() =>
+                    {
+                        signin.Show();
+                        signin.Activate();
+                        MessageBox.Show(signin, message, caption, MessageBoxButtons.OK, icon);
+                    }));
+                }
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error while signing out: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Error while signing out: " + ex.Message, "Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -79,5 +93,25 @@ namespace CaroGame
         {
             this.Close();
         }
+
+        private void btnEditPassword_Click(object sender, EventArgs e)
+        {
+            using (var resetPsw = new ResetPassword(_client))
+            {
+                this.Hide();
+
+                // mở modal, khóa các form khác (không lòi Dashboard)
+                resetPsw.StartPosition = FormStartPosition.CenterParent;
+                resetPsw.ShowDialog(this);
+
+                // chỉ show lại nếu UserInfo vẫn còn sống
+                if (!this.IsDisposed)
+                {
+                    this.Show();
+                    this.Activate();
+                }
+            }
+        }
+
     }
 }

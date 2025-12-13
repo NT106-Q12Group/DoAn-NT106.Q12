@@ -203,5 +203,10 @@ namespace CaroGame
             if (confirmPassword_tb.Text == PH_CONFIRM) { confirmPassword_tb.UseSystemPasswordChar = false; return; }
             confirmPassword_tb.UseSystemPasswordChar = !checkBox2.Checked;
         }
+
+        private void btnExit_Click(object sender, EventArgs e)
+        {
+            this.Close();
+        }
     }
 }
