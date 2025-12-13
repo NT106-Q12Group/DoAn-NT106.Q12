@@ -292,11 +292,16 @@ namespace CaroGame_TCPServer
                         HandleRematchDecline(currentUsername);
                         return null;
 
-                    // Leaderboard result (PvP/PvE đều có thể dùng)
                     case "GAME_RESULT":
-                        // GAME_RESULT|WIN or LOSE  (username lấy theo currentUsername)
                         HandleGameResult(currentUsername, parts.Length > 1 ? parts[1] : "");
                         return null;
+                    
+                    case "PVE_RESULT":
+                        HandlePvEResult(currentUsername,
+                            parts.Length > 1 ? parts[1] : "",
+                            parts.Length > 2 ? parts[2] : "");
+                        return null;
+
 
                     case "SIGNOUT":
                         return "Success|Signed out";
@@ -783,6 +788,33 @@ namespace CaroGame_TCPServer
             if (ok) return "Success|Updated";
             return "Error|Update failed";
         }
+
+        private void HandlePvEResult(string username, string resultRaw, string difficultyRaw)
+        {
+            if (string.IsNullOrEmpty(username)) return;
+
+            string r = (resultRaw ?? "").Trim().ToUpperInvariant();      // WIN / LOSE
+            string diff = (difficultyRaw ?? "").Trim();                  // Easy/Medium/Hard/Extremely Hard
+
+            Console.WriteLine($"[PVE_RESULT] {username}: {r} | Diff={diff}");
+
+            // TODO: update leaderboard PvE
+            // Gợi ý:
+            // - Win mới tính điểm, Lose không tính (tùy bạn)
+            // - Difficulty càng cao điểm càng nhiều
+            //
+            // Ví dụ pseudo:
+            // int score = 0;
+            // if (r == "WIN")
+            // {
+            //     score = diff == "Easy" ? 1 :
+            //             diff == "Medium" ? 2 :
+            //             diff == "Hard" ? 3 :
+            //             diff == "Extremely Hard" ? 5 : 1;
+            //     PlayerADO.AddPvEScore(username, score); // bạn tự implement
+            // }
+        }
+
 
         private string HandleUpdateBirthday(string[] parts)
         {

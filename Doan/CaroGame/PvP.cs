@@ -24,7 +24,9 @@ namespace CaroGame
         private bool _waitingRematch = false;
         private bool _resultSent = false;
 
-        private string MyName => (MySide == 0) ? player1Name : player2Name;
+        // ✅ nếu đối thủ đã gửi rematch offer thì mình chỉ Accept/Decline
+        private bool _hasIncomingRematchOffer = false;
+        private string _incomingOfferFrom = "";
 
         public PvP(Room room, int mySide, string p1, string p2, TCPClient client)
         {
@@ -38,7 +40,7 @@ namespace CaroGame
             InitGame();
         }
 
-        // Constructor Offline/Fallback
+        // Offline/Fallback
         public PvP(Room room, int playerNumber)
         {
             InitializeComponent();
@@ -61,7 +63,6 @@ namespace CaroGame
             ChessBoard = new ChessBoardManager(pnlChessBoard, GameMode.PvP);
             ChessBoard.MySide = this.MySide;
 
-            // Quy tắc: X (side 0) đi trước
             ChessBoard.IsMyTurn = (this.MySide == 0);
 
             this.Text = $"PvP - Bạn là {(this.MySide == 0 ? "X (Đi trước)" : "O (Đi sau)")}";
@@ -108,16 +109,13 @@ namespace CaroGame
 
         // ================= GAME END + RESULT =================
 
-        private void ChessBoard_GameEnded(string winnerName)
+        private void ChessBoard_GameEnded(string winnerRaw)
         {
             if (_gameEnded) return;
             _gameEnded = true;
 
-            bool iWon = string.Equals(
-                winnerName,
-                (MySide == 0 ? player1Name : player2Name),
-                StringComparison.OrdinalIgnoreCase
-            );
+            // ✅ winnerRaw có thể là "X"/"O" hoặc tên người
+            bool iWon = ComputeWinByWinnerRaw(winnerRaw);
 
             SendGameResultOnce(iWon);
 
@@ -129,9 +127,30 @@ namespace CaroGame
             );
 
             if (result == DialogResult.Retry)
-                RequestRematch();
+                RematchFlow();
             else
                 ExitMatch(sendSurrenderIfNeeded: false);
+        }
+
+        // ✅ Tính thắng thua chắc chắn (không còn “cả 2 thua”)
+        private bool ComputeWinByWinnerRaw(string winnerRaw)
+        {
+            string w = (winnerRaw ?? "").Trim();
+
+            // Case 1: ChessBoard gửi "X"/"O"
+            if (string.Equals(w, "X", StringComparison.OrdinalIgnoreCase))
+                return MySide == 0;
+            if (string.Equals(w, "O", StringComparison.OrdinalIgnoreCase))
+                return MySide == 1;
+
+            // Case 2: ChessBoard gửi tên
+            if (!string.IsNullOrEmpty(player1Name) && string.Equals(w, player1Name, StringComparison.OrdinalIgnoreCase))
+                return MySide == 0;
+            if (!string.IsNullOrEmpty(player2Name) && string.Equals(w, player2Name, StringComparison.OrdinalIgnoreCase))
+                return MySide == 1;
+
+            // Fallback: nếu không chắc -> coi như thua (để tránh “2 thằng đều thắng”)
+            return false;
         }
 
         private void SendGameResultOnce(bool iWon)
@@ -139,9 +158,40 @@ namespace CaroGame
             if (_resultSent) return;
             _resultSent = true;
 
-            // ✅ Đây là lệnh bạn hỏi: GAME_RESULT
+            // ✅ ĐÚNG FORMAT SERVER của bạn: GAME_RESULT|WIN/LOSE (username lấy theo currentUsername)
             if (tcpClient != null && tcpClient.IsConnected())
-                tcpClient.Send($"GAME_RESULT|{MyName}|{(iWon ? "WIN" : "LOSE")}");
+                tcpClient.Send($"GAME_RESULT|{(iWon ? "WIN" : "LOSE")}");
+        }
+
+        // ================= REMATCH FLOW =================
+        // ✅ Nếu đối thủ đã gửi offer -> mình chỉ ACCEPT / DECLINE (không cần gửi REQUEST nữa)
+
+        private void RematchFlow()
+        {
+            if (tcpClient == null) return;
+
+            if (_hasIncomingRematchOffer)
+            {
+                // đã có offer từ đối thủ => chỉ Accept/Decline
+                DialogResult res = MessageBox.Show(
+                    $"{_incomingOfferFrom} muốn Rematch.\nBạn có đồng ý không?",
+                    "Rematch",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Question
+                );
+
+                if (res == DialogResult.Yes)
+                    tcpClient.Send("REMATCH_ACCEPT");
+                else
+                    tcpClient.Send("REMATCH_DECLINE");
+
+                _hasIncomingRematchOffer = false;
+                _incomingOfferFrom = "";
+                return;
+            }
+
+            // chưa có offer => mình là người gửi request
+            RequestRematch();
         }
 
         private void RequestRematch()
@@ -155,16 +205,23 @@ namespace CaroGame
                 tcpClient.Send("REMATCH_REQUEST");
         }
 
-        private void ExitMatch(bool sendSurrenderIfNeeded)
+        private void StartRematch(string sideRaw)
         {
-            if (tcpClient != null)
-            {
-                tcpClient.OnMessageReceived -= HandleServerMessage;
+            _gameEnded = false;
+            _waitingRematch = false;
+            _resultSent = false;
 
-                if (sendSurrenderIfNeeded && !_gameEnded)
-                    tcpClient.Send("SURRENDER");
-            }
-            Close();
+            _hasIncomingRematchOffer = false;
+            _incomingOfferFrom = "";
+
+            MySide = (sideRaw.ToUpper() == "X") ? 0 : 1;
+
+            ChessBoard.resetGame();
+            ChessBoard.MySide = MySide;
+            ChessBoard.IsMyTurn = (MySide == 0);
+
+            SetupPlayerInfo();
+            this.Text = $"PvP - Rematch ({(MySide == 0 ? "X" : "O")})";
         }
 
         // ================= NETWORK =================
@@ -219,15 +276,13 @@ namespace CaroGame
                             ExitMatch(sendSurrenderIfNeeded: false);
                             break;
 
-                        // Server báo trực tiếp win/lose (nếu bạn implement)
-                        case "WIN":
-                        case "LOSE":
-                            HandleWinLose(cmd);
-                            break;
-
-                        // ===== Rematch messages =====
                         case "REMATCH_OFFER":
-                            if (parts.Length >= 2) HandleRematchOffer(parts[1]);
+                            // ✅ chỉ set flag, để khi mình bấm Rematch thì accept/decline
+                            _hasIncomingRematchOffer = true;
+                            _incomingOfferFrom = (parts.Length >= 2) ? parts[1] : "Opponent";
+
+                            // Nếu bạn muốn: pop-up ngay lập tức thay vì đợi bấm Rematch:
+                            // RematchFlow();
                             break;
 
                         case "REMATCH_START":
@@ -235,15 +290,14 @@ namespace CaroGame
                             break;
 
                         case "REMATCH_DECLINED":
-                        case "REMATCH_DECLINED|":
-                        case "REMATCH_DECLINED ":
-                        case "REMATCH_DECLINED\t":
                             MessageBox.Show("Đối thủ từ chối Rematch.", "Rematch");
                             _waitingRematch = false;
+                            _hasIncomingRematchOffer = false;
+                            _incomingOfferFrom = "";
                             break;
 
                         case "REMATCH_SENT":
-                            // optional: server confirm đã gửi
+                            // server confirm đã gửi
                             break;
                     }
                 }
@@ -251,63 +305,19 @@ namespace CaroGame
             });
         }
 
-        private void HandleWinLose(string cmd)
+        private void ExitMatch(bool sendSurrenderIfNeeded)
         {
-            if (_gameEnded) return;
-            _gameEnded = true;
+            if (tcpClient != null)
+            {
+                tcpClient.OnMessageReceived -= HandleServerMessage;
 
-            bool iWon = (cmd == "WIN");
-            SendGameResultOnce(iWon);
-
-            DialogResult result = MessageBox.Show(
-                $"Kết quả: {(iWon ? "Bạn thắng 🎉" : "Bạn thua 😢")}\n\nRematch hay Exit?",
-                "Kết thúc trận",
-                MessageBoxButtons.RetryCancel,
-                MessageBoxIcon.Information
-            );
-
-            if (result == DialogResult.Retry)
-                RequestRematch();
-            else
-                ExitMatch(sendSurrenderIfNeeded: false);
+                if (sendSurrenderIfNeeded && !_gameEnded)
+                    tcpClient.Send("SURRENDER");
+            }
+            Close();
         }
 
-        // ================= REMATCH =================
-
-        private void HandleRematchOffer(string opponent)
-        {
-            DialogResult res = MessageBox.Show(
-                $"{opponent} muốn Rematch.\nBạn có đồng ý?",
-                "Rematch",
-                MessageBoxButtons.YesNo,
-                MessageBoxIcon.Question
-            );
-
-            if (tcpClient == null) return;
-
-            if (res == DialogResult.Yes)
-                tcpClient.Send("REMATCH_ACCEPT");
-            else
-                tcpClient.Send("REMATCH_DECLINE");
-        }
-
-        private void StartRematch(string sideRaw)
-        {
-            _gameEnded = false;
-            _waitingRematch = false;
-            _resultSent = false;
-
-            MySide = (sideRaw.ToUpper() == "X") ? 0 : 1;
-
-            ChessBoard.resetGame();
-            ChessBoard.MySide = MySide;
-            ChessBoard.IsMyTurn = (MySide == 0);
-
-            SetupPlayerInfo();
-            this.Text = $"PvP - Rematch ({(MySide == 0 ? "X" : "O")})";
-        }
-
-        // ================= UI HANDLERS (giữ đúng tên bạn đang dùng) =================
+        // ================= UI HANDLERS (GIỮ ĐÚNG TÊN CONTROL CỦA BẠN) =================
 
         private void btnUndo_Click(object sender, EventArgs e)
         {
@@ -366,14 +376,12 @@ namespace CaroGame
             else { menuForm.Close(); menuForm = null; }
         }
 
-        // ================== ALIAS HANDLERS (nếu Designer gọi dạng btn_...) ==================
+        // alias handlers nếu Designer gọi dạng btn_...
         private void btn_Undo_Click(object sender, EventArgs e) => btnUndo_Click(sender, e);
         private void btn_Send_Click(object sender, EventArgs e) => btnSend_Click(sender, e);
         private void btn_Exit_Click(object sender, EventArgs e) => btnExit_Click(sender, e);
         private void btn_Menu_Click(object sender, EventArgs e) => btnMenu_Click(sender, e);
         private void btn_Chat_Click(object sender, EventArgs e) => btnChat_Click(sender, e);
-
-        // ================= CHAT UI =================
 
         private void AppendMessage(string sender, string message, Color color)
         {
@@ -391,7 +399,6 @@ namespace CaroGame
         }
 
         // ================= EMOJI =================
-
         private readonly string[] _emoticons = new string[] {
             "😀","😃","😄","😁","😆","😅","😂","🤣","🥲","☺️","😊","😇",
             "🙂","🙃","😉","😌","😍","🥰","😘","😗","😋","😛","😝","😜",
@@ -434,9 +441,7 @@ namespace CaroGame
             pnlEmojiPicker.BringToFront();
             pnlEmojiPicker.Controls.Clear();
 
-            int btnSize = 32;
-            int cols = 8;
-            int spacing = 4;
+            int btnSize = 32, cols = 8, spacing = 4;
 
             for (int i = 0; i < _emoticons.Length; i++)
             {
@@ -462,8 +467,6 @@ namespace CaroGame
         }
 
         private void btn_emoji_Click(object sender, EventArgs e) => ShowEmojiPicker();
-
-        // ================= FORM CLOSING =================
 
         protected override void OnFormClosing(FormClosingEventArgs e)
         {
