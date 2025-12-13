@@ -63,6 +63,14 @@ namespace CaroGame
             ChessBoard = new ChessBoardManager(pnlChessBoard, GameMode.PvP);
             ChessBoard.MySide = this.MySide;
 
+            // ✅ FIX BUG: đồng bộ tên Player trong ChessBoardManager với tên thật từ server
+            // (để GameEnded bắn đúng winnerRaw = player1Name/player2Name)
+            if (ChessBoard.Player != null && ChessBoard.Player.Count >= 2)
+            {
+                ChessBoard.Player[0].Name = player1Name; // X
+                ChessBoard.Player[1].Name = player2Name; // O
+            }
+
             ChessBoard.IsMyTurn = (this.MySide == 0);
 
             this.Text = $"PvP - Bạn là {(this.MySide == 0 ? "X (Đi trước)" : "O (Đi sau)")}";
