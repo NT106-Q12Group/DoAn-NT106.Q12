@@ -13,6 +13,9 @@ namespace CaroGame
         private const string PH_PASSWORD = "Password";
         private const string PH_CONFIRM = "Confirm password";
 
+        private bool _pswPlaceholderActive = true;
+        private bool _cfPlaceholderActive = true;
+
         private readonly TCPClient _client;
 
         public SignUp(TCPClient client)
@@ -20,28 +23,47 @@ namespace CaroGame
             InitializeComponent();
             _client = client;
 
-            // Placeholder for textboxes
             SetPlaceholder(tb_email, PH_EMAIL);
             SetPlaceholder(tb_username, PH_USERNAME);
-            SetPswPlaceholder(tb_psw, PH_PASSWORD);
-            SetPswPlaceholder(tb_cfpsw, PH_CONFIRM);
 
-            // Block whitespace in password
+            SetPswPlaceholder(tb_psw, PH_PASSWORD);
+            SetCfPswPlaceholder(tb_cfpsw, PH_CONFIRM);
+
             tb_psw.KeyPress += BlockWhitespace_KeyPress;
             tb_cfpsw.KeyPress += BlockWhitespace_KeyPress;
 
-            // Show/hide password
+            // Nếu Designer đã gắn event CheckedChanged thì không cần += ở đây nữa.
+            // (nhưng có cũng không sao, miễn 2 hàm handler tồn tại)
             cb_showpsw.CheckedChanged += cb_showpsw_CheckedChanged;
             cb_showcfpsw.CheckedChanged += cb_showcfpsw_CheckedChanged;
 
-            // DateTimePicker settings (Birthdate)
             if (dateTimePicker1 != null)
             {
                 dateTimePicker1.Format = DateTimePickerFormat.Custom;
                 dateTimePicker1.CustomFormat = "yyyy-MM-dd";
-                dateTimePicker1.MaxDate = DateTime.Today;              // no future dates
-                dateTimePicker1.Value = DateTime.Today.AddYears(-18);  // default 18 years old (optional)
+                dateTimePicker1.MaxDate = DateTime.Today;
+                dateTimePicker1.Value = DateTime.Today.AddYears(-18);
             }
+        }
+
+        private void UpdatePasswordMasking()
+        {
+            // password
+            tb_psw.UseSystemPasswordChar = (!_pswPlaceholderActive && !cb_showpsw.Checked);
+            // confirm password
+            tb_cfpsw.UseSystemPasswordChar = (!_cfPlaceholderActive && !cb_showcfpsw.Checked);
+        }
+
+        // ✅ GIỮ ĐÚNG TÊN để khớp với Designer
+        private void cb_showpsw_CheckedChanged(object? sender, EventArgs e)
+        {
+            UpdatePasswordMasking();
+        }
+
+        // ✅ GIỮ ĐÚNG TÊN để khớp với Designer
+        private void cb_showcfpsw_CheckedChanged(object? sender, EventArgs e)
+        {
+            UpdatePasswordMasking();
         }
 
         private void SetPlaceholder(TextBox tb, string text)
@@ -70,17 +92,21 @@ namespace CaroGame
 
         private void SetPswPlaceholder(TextBox tb, string text)
         {
+            _pswPlaceholderActive = true;
             tb.Text = text;
             tb.ForeColor = Color.Gray;
             tb.UseSystemPasswordChar = false;
 
+            UpdatePasswordMasking();
+
             tb.Enter += (s, e) =>
             {
-                if (tb.Text == text)
+                if (_pswPlaceholderActive)
                 {
-                    tb.UseSystemPasswordChar = true;
                     tb.Text = "";
                     tb.ForeColor = Color.Black;
+                    _pswPlaceholderActive = false;
+                    UpdatePasswordMasking();
                 }
             };
 
@@ -88,10 +114,57 @@ namespace CaroGame
             {
                 if (string.IsNullOrEmpty(tb.Text))
                 {
-                    tb.UseSystemPasswordChar = false;
+                    _pswPlaceholderActive = true;
                     tb.Text = text;
                     tb.ForeColor = Color.Gray;
+                    tb.UseSystemPasswordChar = false; // placeholder hiện chữ
                 }
+                UpdatePasswordMasking();
+            };
+
+            tb.TextChanged += (s, e) =>
+            {
+                if (_pswPlaceholderActive) return;
+                UpdatePasswordMasking();
+            };
+        }
+
+        private void SetCfPswPlaceholder(TextBox tb, string text)
+        {
+            _cfPlaceholderActive = true;
+            tb.Text = text;
+            tb.ForeColor = Color.Gray;
+            tb.UseSystemPasswordChar = false;
+
+            UpdatePasswordMasking();
+
+            tb.Enter += (s, e) =>
+            {
+                if (_cfPlaceholderActive)
+                {
+                    tb.Text = "";
+                    tb.ForeColor = Color.Black;
+                    _cfPlaceholderActive = false;
+                    UpdatePasswordMasking();
+                }
+            };
+
+            tb.Leave += (s, e) =>
+            {
+                if (string.IsNullOrEmpty(tb.Text))
+                {
+                    _cfPlaceholderActive = true;
+                    tb.Text = text;
+                    tb.ForeColor = Color.Gray;
+                    tb.UseSystemPasswordChar = false; // placeholder hiện chữ
+                }
+                UpdatePasswordMasking();
+            };
+
+            tb.TextChanged += (s, e) =>
+            {
+                if (_cfPlaceholderActive) return;
+                UpdatePasswordMasking();
             };
         }
 
@@ -105,32 +178,40 @@ namespace CaroGame
             }
         }
 
-        private void cb_showpsw_CheckedChanged(object? sender, EventArgs e)
+        // 2 linklabel của bạn: cho cả 2 gọi chung để khỏi rối
+        private void GoBackToSignIn()
         {
-            if (tb_psw.Text == PH_PASSWORD)
+            if (this.Owner is SignIn si && !si.IsDisposed)
             {
-                tb_psw.UseSystemPasswordChar = false;
+                si.Show();
+                si.Activate();
+                this.Close();
                 return;
             }
-            tb_psw.UseSystemPasswordChar = !cb_showpsw.Checked;
-        }
 
-        private void cb_showcfpsw_CheckedChanged(object? sender, EventArgs e)
-        {
-            if (tb_cfpsw.Text == PH_CONFIRM)
+            var si2 = Application.OpenForms.OfType<SignIn>().FirstOrDefault();
+            if (si2 != null && !si2.IsDisposed)
             {
-                tb_cfpsw.UseSystemPasswordChar = false;
+                si2.Show();
+                si2.Activate();
+                this.Close();
                 return;
             }
-            tb_cfpsw.UseSystemPasswordChar = !cb_showcfpsw.Checked;
+
+            var signin = new SignIn(_client);
+            signin.FormClosed += (s, _) => Application.Exit();
+            signin.Show();
+            this.Close();
         }
 
         private void linklb_signin_LinkClicked(object? sender, LinkLabelLinkClickedEventArgs e)
         {
-            var signIn = new SignIn(_client);
-            Hide();
-            signIn.FormClosed += (s, _) => Show();
-            signIn.Show();
+            GoBackToSignIn();
+        }
+
+        private void linkedlb_signin_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            GoBackToSignIn();
         }
 
         private void btn_signup_Click(object? sender, EventArgs e)
@@ -139,16 +220,15 @@ namespace CaroGame
 
             string email = tb_email.Text.Trim();
             string username = tb_username.Text.Trim();
-            string password = tb_psw.Text;
-            string confirm = tb_cfpsw.Text;
 
-            // Birth from DateTimePicker
+            string password = _pswPlaceholderActive ? "" : tb_psw.Text;
+            string confirm = _cfPlaceholderActive ? "" : tb_cfpsw.Text;
+
             DateTime birthDate = dateTimePicker1.Value.Date;
             string birth = birthDate.ToString("yyyy-MM-dd");
 
             bool ok = true;
 
-            // Email
             if (email == PH_EMAIL || !email.Contains('@') || !email.Contains('.'))
             {
                 ep.SetError(tb_email, "Invalid email address!");
@@ -156,7 +236,6 @@ namespace CaroGame
             }
             else ep.SetError(tb_email, "");
 
-            // Username
             if (username == PH_USERNAME || username.Length < 4 || username.Length > 20)
             {
                 ep.SetError(tb_username, "Username must be 4–20 characters!");
@@ -169,11 +248,6 @@ namespace CaroGame
             }
             else ep.SetError(tb_username, "");
 
-            // Password placeholders
-            if (password == PH_PASSWORD) password = "";
-            if (confirm == PH_CONFIRM) confirm = "";
-
-            // Password strength
             bool hasUpper = false, hasLower = false, hasDigit = false, hasSpecial = false;
             foreach (char c in password)
             {
@@ -190,7 +264,6 @@ namespace CaroGame
             }
             else ep.SetError(tb_psw, "");
 
-            // Confirm password
             if (!string.Equals(password, confirm, StringComparison.Ordinal))
             {
                 ep.SetError(tb_cfpsw, "Password confirmation does not match!");
@@ -198,7 +271,6 @@ namespace CaroGame
             }
             else ep.SetError(tb_cfpsw, "");
 
-            // Age validation (>= 13)
             int age = DateTime.Today.Year - birthDate.Year;
             if (birthDate > DateTime.Today.AddYears(-age)) age--;
 
@@ -231,10 +303,7 @@ namespace CaroGame
                     MessageBox.Show(parts.Length > 1 ? parts[1] : "Registration successful!", "Success",
                         MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-                    var signIn = new SignIn(_client);
-                    Hide();
-                    signIn.FormClosed += (s, _) => Show();
-                    signIn.Show();
+                    GoBackToSignIn(); // ✅ không new SignIn
                 }
                 else
                 {
@@ -247,13 +316,6 @@ namespace CaroGame
                 MessageBox.Show("Error: " + ex.Message, "Error",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-        }
-
-        private void linkedlb_signin_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
-        {
-            // NOTE: nếu SignIn của bạn cần TCPClient thì dùng new SignIn(_client)
-            new SignIn(_client).Show();
-            this.Hide();
         }
     }
 }
