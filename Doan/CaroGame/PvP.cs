@@ -24,9 +24,13 @@ namespace CaroGame
         private bool _waitingRematch = false;
         private bool _resultSent = false;
 
-        // ✅ nếu đối thủ đã gửi rematch offer thì mình chỉ Accept/Decline
+        // nếu đối thủ gửi offer
         private bool _hasIncomingRematchOffer = false;
         private string _incomingOfferFrom = "";
+
+        // ✅ dialogs (modeless) để có thể đóng khi nhận packet
+        private ResultDialog _resultDialog = null;
+        private WaitingRematchDialog _waitingDialog = null;
 
         public PvP(Room room, int mySide, string p1, string p2, TCPClient client)
         {
@@ -63,8 +67,7 @@ namespace CaroGame
             ChessBoard = new ChessBoardManager(pnlChessBoard, GameMode.PvP);
             ChessBoard.MySide = this.MySide;
 
-            // ✅ FIX BUG: đồng bộ tên Player trong ChessBoardManager với tên thật từ server
-            // (để GameEnded bắn đúng winnerRaw = player1Name/player2Name)
+            // ✅ FIX BUG WINNER: đồng bộ tên Player trong ChessBoardManager với tên thật
             if (ChessBoard.Player != null && ChessBoard.Player.Count >= 2)
             {
                 ChessBoard.Player[0].Name = player1Name; // X
@@ -115,6 +118,47 @@ namespace CaroGame
             catch { }
         }
 
+        // ================= DIALOG HELPERS =================
+
+        private void CloseResultDialog()
+        {
+            try
+            {
+                if (_resultDialog != null && !_resultDialog.IsDisposed)
+                    _resultDialog.Close();
+            }
+            catch { }
+            _resultDialog = null;
+        }
+
+        private void CloseWaitingDialog()
+        {
+            try
+            {
+                if (_waitingDialog != null && !_waitingDialog.IsDisposed)
+                    _waitingDialog.Close();
+            }
+            catch { }
+            _waitingDialog = null;
+        }
+
+        private void CloseAllPopups()
+        {
+            CloseResultDialog();
+            CloseWaitingDialog();
+        }
+
+        private void ShowOpponentLeftAndExit()
+        {
+            // đóng hết popup hiện tại (kể cả đang endgame/rematch)
+            CloseAllPopups();
+
+            MessageBox.Show("Đối thủ đã thoát. Trận đấu sẽ kết thúc.", "Thông báo",
+                MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+            ExitMatch(sendSurrenderIfNeeded: false);
+        }
+
         // ================= GAME END + RESULT =================
 
         private void ChessBoard_GameEnded(string winnerRaw)
@@ -122,28 +166,38 @@ namespace CaroGame
             if (_gameEnded) return;
             _gameEnded = true;
 
-            // ✅ winnerRaw có thể là "X"/"O" hoặc tên người
             bool iWon = ComputeWinByWinnerRaw(winnerRaw);
-
             SendGameResultOnce(iWon);
 
-            DialogResult result = MessageBox.Show(
-                $"Kết quả: {(iWon ? "Bạn thắng 🎉" : "Bạn thua 😢")}\n\nRematch hay Exit?",
-                "Kết thúc trận",
-                MessageBoxButtons.RetryCancel,
-                MessageBoxIcon.Information
-            );
+            // ✅ Không dùng MessageBox thắng/thua (block) nữa
+            CloseAllPopups();
 
-            if (result == DialogResult.Retry)
+            _resultDialog = new ResultDialog(iWon);
+
+            _resultDialog.RematchClicked += () =>
+            {
+                CloseResultDialog();
                 RematchFlow();
-            else
+            };
+
+            _resultDialog.ExitClicked += () =>
+            {
+                CloseResultDialog();
                 ExitMatch(sendSurrenderIfNeeded: false);
+            };
+
+            _resultDialog.FormClosed += (s, e) =>
+            {
+                _resultDialog = null;
+            };
+
+            _resultDialog.Show(this);
         }
 
-        // ✅ Tính thắng thua chắc chắn (không còn “cả 2 thua”)
         private bool ComputeWinByWinnerRaw(string winnerRaw)
         {
             string w = (winnerRaw ?? "").Trim();
+            if (string.IsNullOrEmpty(w)) return false;
 
             // Case 1: ChessBoard gửi "X"/"O"
             if (string.Equals(w, "X", StringComparison.OrdinalIgnoreCase))
@@ -151,13 +205,12 @@ namespace CaroGame
             if (string.Equals(w, "O", StringComparison.OrdinalIgnoreCase))
                 return MySide == 1;
 
-            // Case 2: ChessBoard gửi tên
+            // Case 2: ChessBoard gửi tên (đã sync trong InitGame)
             if (!string.IsNullOrEmpty(player1Name) && string.Equals(w, player1Name, StringComparison.OrdinalIgnoreCase))
                 return MySide == 0;
             if (!string.IsNullOrEmpty(player2Name) && string.Equals(w, player2Name, StringComparison.OrdinalIgnoreCase))
                 return MySide == 1;
 
-            // Fallback: nếu không chắc -> coi như thua (để tránh “2 thằng đều thắng”)
             return false;
         }
 
@@ -166,21 +219,21 @@ namespace CaroGame
             if (_resultSent) return;
             _resultSent = true;
 
-            // ✅ ĐÚNG FORMAT SERVER của bạn: GAME_RESULT|WIN/LOSE (username lấy theo currentUsername)
             if (tcpClient != null && tcpClient.IsConnected())
                 tcpClient.Send($"GAME_RESULT|{(iWon ? "WIN" : "LOSE")}");
         }
 
         // ================= REMATCH FLOW =================
-        // ✅ Nếu đối thủ đã gửi offer -> mình chỉ ACCEPT / DECLINE (không cần gửi REQUEST nữa)
 
         private void RematchFlow()
         {
-            if (tcpClient == null) return;
+            if (tcpClient == null || !tcpClient.IsConnected()) return;
 
+            // Nếu đang có offer (trường hợp bạn muốn bấm nút Rematch để accept/decline)
             if (_hasIncomingRematchOffer)
             {
-                // đã có offer từ đối thủ => chỉ Accept/Decline
+                CloseAllPopups();
+
                 DialogResult res = MessageBox.Show(
                     $"{_incomingOfferFrom} muốn Rematch.\nBạn có đồng ý không?",
                     "Rematch",
@@ -189,16 +242,22 @@ namespace CaroGame
                 );
 
                 if (res == DialogResult.Yes)
+                {
                     tcpClient.Send("REMATCH_ACCEPT");
+                }
                 else
+                {
                     tcpClient.Send("REMATCH_DECLINE");
+                    // ✅ không đồng ý -> cả hai thoát (mình thoát luôn)
+                    ExitMatch(sendSurrenderIfNeeded: false);
+                }
 
                 _hasIncomingRematchOffer = false;
                 _incomingOfferFrom = "";
                 return;
             }
 
-            // chưa có offer => mình là người gửi request
+            // chưa có offer => mình gửi request
             RequestRematch();
         }
 
@@ -207,14 +266,38 @@ namespace CaroGame
             if (_waitingRematch) return;
             _waitingRematch = true;
 
-            MessageBox.Show("Đã gửi yêu cầu Rematch.\nĐang chờ đối thủ...", "Rematch");
+            CloseAllPopups();
 
-            if (tcpClient != null)
-                tcpClient.Send("REMATCH_REQUEST");
+            _waitingDialog = new WaitingRematchDialog();
+            _waitingDialog.CancelClicked += () =>
+            {
+                CloseWaitingDialog();
+                try
+                {
+                    if (tcpClient != null && tcpClient.IsConnected())
+                        tcpClient.Send("REMATCH_DECLINE");
+                }
+                catch { }
+
+                ExitMatch(sendSurrenderIfNeeded: false);
+            };
+
+            _waitingDialog.FormClosed += (s, e) => { _waitingDialog = null; };
+
+            _waitingDialog.Show(this);
+
+            try
+            {
+                if (tcpClient != null && tcpClient.IsConnected())
+                    tcpClient.Send("REMATCH_REQUEST");
+            }
+            catch { }
         }
 
         private void StartRematch(string sideRaw)
         {
+            CloseAllPopups();
+
             _gameEnded = false;
             _waitingRematch = false;
             _resultSent = false;
@@ -227,6 +310,13 @@ namespace CaroGame
             ChessBoard.resetGame();
             ChessBoard.MySide = MySide;
             ChessBoard.IsMyTurn = (MySide == 0);
+
+            // ✅ sync lại tên (cho chắc)
+            if (ChessBoard.Player != null && ChessBoard.Player.Count >= 2)
+            {
+                ChessBoard.Player[0].Name = player1Name;
+                ChessBoard.Player[1].Name = player2Name;
+            }
 
             SetupPlayerInfo();
             this.Text = $"PvP - Rematch ({(MySide == 0 ? "X" : "O")})";
@@ -279,29 +369,53 @@ namespace CaroGame
                             break;
 
                         case "OPPONENT_LEFT":
-                            MessageBox.Show("Đối thủ đã thoát. Bạn thắng!", "Thông báo",
-                                MessageBoxButtons.OK, MessageBoxIcon.Information);
-                            ExitMatch(sendSurrenderIfNeeded: false);
+                            // ✅ yêu cầu của bạn: nếu game over cũng phải đóng popup hiện tại và báo đối thủ thoát
+                            ShowOpponentLeftAndExit();
                             break;
 
                         case "REMATCH_OFFER":
-                            // ✅ chỉ set flag, để khi mình bấm Rematch thì accept/decline
+                            // ✅ khi nhận offer: đóng dialog thắng/thua hiện tại và hỏi rematch ngay
                             _hasIncomingRematchOffer = true;
                             _incomingOfferFrom = (parts.Length >= 2) ? parts[1] : "Opponent";
 
-                            // Nếu bạn muốn: pop-up ngay lập tức thay vì đợi bấm Rematch:
-                            // RematchFlow();
+                            CloseAllPopups();
+
+                            DialogResult res = MessageBox.Show(
+                                $"{_incomingOfferFrom} muốn Rematch.\nBạn có đồng ý không?",
+                                "Rematch",
+                                MessageBoxButtons.YesNo,
+                                MessageBoxIcon.Question
+                            );
+
+                            if (res == DialogResult.Yes)
+                            {
+                                tcpClient.Send("REMATCH_ACCEPT");
+                            }
+                            else
+                            {
+                                tcpClient.Send("REMATCH_DECLINE");
+                                // ✅ không đồng ý -> thoát luôn (để “cả hai cùng thoát”)
+                                ExitMatch(sendSurrenderIfNeeded: false);
+                            }
+
+                            _hasIncomingRematchOffer = false;
+                            _incomingOfferFrom = "";
                             break;
 
                         case "REMATCH_START":
+                            CloseAllPopups();
                             if (parts.Length >= 2) StartRematch(parts[1]);
                             break;
 
                         case "REMATCH_DECLINED":
-                            MessageBox.Show("Đối thủ từ chối Rematch.", "Rematch");
+                            CloseAllPopups();
+                            MessageBox.Show("Đối thủ từ chối Rematch. Trận sẽ thoát.", "Rematch");
                             _waitingRematch = false;
                             _hasIncomingRematchOffer = false;
                             _incomingOfferFrom = "";
+
+                            // ✅ yêu cầu của bạn: cả hai cùng thoát
+                            ExitMatch(sendSurrenderIfNeeded: false);
                             break;
 
                         case "REMATCH_SENT":
@@ -315,17 +429,22 @@ namespace CaroGame
 
         private void ExitMatch(bool sendSurrenderIfNeeded)
         {
+            CloseAllPopups();
+
             if (tcpClient != null)
             {
                 tcpClient.OnMessageReceived -= HandleServerMessage;
 
                 if (sendSurrenderIfNeeded && !_gameEnded)
-                    tcpClient.Send("SURRENDER");
+                {
+                    try { tcpClient.Send("SURRENDER"); } catch { }
+                }
             }
+
             Close();
         }
 
-        // ================= UI HANDLERS (GIỮ ĐÚNG TÊN CONTROL CỦA BẠN) =================
+        // ================= UI HANDLERS =================
 
         private void btnUndo_Click(object sender, EventArgs e)
         {
@@ -478,6 +597,8 @@ namespace CaroGame
 
         protected override void OnFormClosing(FormClosingEventArgs e)
         {
+            CloseAllPopups();
+
             if (tcpClient != null)
                 tcpClient.OnMessageReceived -= HandleServerMessage;
 
@@ -485,5 +606,101 @@ namespace CaroGame
         }
 
         private void Btn_Click(object? sender, EventArgs e) { }
+
+        // ==========================================================
+        // ✅ NESTED DIALOG CLASSES (tất cả nằm trong PvP.cs cho tiện)
+        // ==========================================================
+
+        private class ResultDialog : Form
+        {
+            public event Action RematchClicked;
+            public event Action ExitClicked;
+
+            public ResultDialog(bool iWon)
+            {
+                Text = "Kết thúc trận";
+                FormBorderStyle = FormBorderStyle.FixedDialog;
+                MaximizeBox = false;
+                MinimizeBox = false;
+                StartPosition = FormStartPosition.CenterParent;
+                Size = new Size(380, 190);
+                TopMost = true;
+
+                var lbl = new Label()
+                {
+                    AutoSize = false,
+                    Dock = DockStyle.Top,
+                    Height = 80,
+                    TextAlign = ContentAlignment.MiddleCenter,
+                    Font = new Font("Segoe UI", 12, FontStyle.Bold),
+                    Text = $"Kết quả: {(iWon ? "Bạn thắng 🎉" : "Bạn thua 😢")}"
+                };
+
+                var btnRematch = new Button()
+                {
+                    Text = "Rematch",
+                    Width = 120,
+                    Height = 36,
+                    Left = 60,
+                    Top = 95
+                };
+
+                var btnExit = new Button()
+                {
+                    Text = "Thoát",
+                    Width = 120,
+                    Height = 36,
+                    Left = 200,
+                    Top = 95
+                };
+
+                btnRematch.Click += (s, e) => RematchClicked?.Invoke();
+                btnExit.Click += (s, e) => ExitClicked?.Invoke();
+
+                Controls.Add(lbl);
+                Controls.Add(btnRematch);
+                Controls.Add(btnExit);
+            }
+        }
+
+        private class WaitingRematchDialog : Form
+        {
+            public event Action CancelClicked;
+
+            public WaitingRematchDialog()
+            {
+                Text = "Rematch";
+                FormBorderStyle = FormBorderStyle.FixedDialog;
+                MaximizeBox = false;
+                MinimizeBox = false;
+                StartPosition = FormStartPosition.CenterParent;
+                Size = new Size(380, 160);
+                TopMost = true;
+
+                var lbl = new Label()
+                {
+                    AutoSize = false,
+                    Dock = DockStyle.Top,
+                    Height = 70,
+                    TextAlign = ContentAlignment.MiddleCenter,
+                    Font = new Font("Segoe UI", 10, FontStyle.Regular),
+                    Text = "Đã gửi yêu cầu Rematch.\nĐang chờ đối thủ..."
+                };
+
+                var btnCancel = new Button()
+                {
+                    Text = "Huỷ & Thoát",
+                    Width = 140,
+                    Height = 34,
+                    Left = 110,
+                    Top = 80
+                };
+
+                btnCancel.Click += (s, e) => CancelClicked?.Invoke();
+
+                Controls.Add(lbl);
+                Controls.Add(btnCancel);
+            }
+        }
     }
 }
