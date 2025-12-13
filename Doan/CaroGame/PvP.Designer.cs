@@ -303,10 +303,10 @@
             // rtbChat
             // 
             rtbChat.BackColor = Color.White;
-            rtbChat.Location = new Point(30, 37);
+            rtbChat.Location = new Point(19, 37);
             rtbChat.Name = "rtbChat";
             rtbChat.ReadOnly = true;
-            rtbChat.Size = new Size(387, 185);
+            rtbChat.Size = new Size(398, 193);
             rtbChat.TabIndex = 0;
             rtbChat.Text = "";
             // 
