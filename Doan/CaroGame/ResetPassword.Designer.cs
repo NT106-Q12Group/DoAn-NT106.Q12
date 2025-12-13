@@ -43,6 +43,7 @@
             checkBox1 = new CheckBox();
             checkBox2 = new CheckBox();
             pictureBox1 = new PictureBox();
+            btnExit = new Button();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             SuspendLayout();
             // 
@@ -118,11 +119,11 @@
             // 
             label1.AutoSize = true;
             label1.Font = new Font("Segoe UI", 15F, FontStyle.Bold);
-            label1.Location = new Point(81, 144);
+            label1.Location = new Point(92, 136);
             label1.Name = "label1";
-            label1.Size = new Size(259, 35);
+            label1.Size = new Size(231, 35);
             label1.TabIndex = 8;
-            label1.Text = "FORGOT PASSWORD";
+            label1.Text = "RESET PASSWORD";
             // 
             // label2
             // 
@@ -199,12 +200,30 @@
             pictureBox1.TabIndex = 18;
             pictureBox1.TabStop = false;
             // 
+            // btnExit
+            // 
+            btnExit.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            btnExit.BackgroundImage = Properties.Resources.Caro_Game__7_;
+            btnExit.BackgroundImageLayout = ImageLayout.Stretch;
+            btnExit.Cursor = Cursors.Hand;
+            btnExit.FlatAppearance.BorderSize = 0;
+            btnExit.FlatAppearance.MouseDownBackColor = SystemColors.HotTrack;
+            btnExit.FlatAppearance.MouseOverBackColor = SystemColors.HotTrack;
+            btnExit.FlatStyle = FlatStyle.Flat;
+            btnExit.Location = new Point(346, 12);
+            btnExit.Name = "btnExit";
+            btnExit.Size = new Size(65, 51);
+            btnExit.TabIndex = 19;
+            btnExit.UseVisualStyleBackColor = true;
+            btnExit.Click += btnExit_Click;
+            // 
             // ResetPassword
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.LightBlue;
             ClientSize = new Size(411, 538);
+            Controls.Add(btnExit);
             Controls.Add(pictureBox1);
             Controls.Add(checkBox2);
             Controls.Add(checkBox1);
@@ -246,5 +265,6 @@
         private CheckBox checkBox1;
         private CheckBox checkBox2;
         private PictureBox pictureBox1;
+        private Button btnExit;
     }
 }

@@ -12,6 +12,8 @@ namespace CaroGame
         private readonly TCPClient _client;
         private bool _signingIn = false;
         private string _currentUser = "";
+        private bool _pswPlaceholderActive = true;
+
 
         // Constructor mặc định
         public SignIn() : this(new TCPClient("3.230.162.159", 25565)) { }
@@ -45,6 +47,12 @@ namespace CaroGame
             };
         }
 
+        private void UpdatePasswordMasking()
+        {
+            tb_psw.UseSystemPasswordChar = (!_pswPlaceholderActive && !cb_showpsw.Checked);
+        }
+
+
         private void SetPlaceholder(TextBox tb, string text)
         {
             tb.Text = text; tb.ForeColor = Color.Gray;
@@ -54,22 +62,47 @@ namespace CaroGame
 
         private void SetPswPlaceholder(TextBox tb, string text)
         {
-            tb.Text = text; tb.ForeColor = Color.Gray; tb.UseSystemPasswordChar = false;
+            _pswPlaceholderActive = true;
+            tb.Text = text;
+            tb.ForeColor = Color.Gray;
+
+            UpdatePasswordMasking();
+
             tb.Enter += (s, e) =>
             {
-                if (tb.Text == text) { tb.UseSystemPasswordChar = true; tb.Text = ""; tb.ForeColor = Color.Black; }
+                if (_pswPlaceholderActive)
+                {
+                    tb.Text = "";
+                    tb.ForeColor = Color.Black;
+                    _pswPlaceholderActive = false;
+                    UpdatePasswordMasking(); // ✅ tôn trọng checkbox
+                }
             };
+
             tb.Leave += (s, e) =>
             {
-                if (string.IsNullOrEmpty(tb.Text)) { tb.UseSystemPasswordChar = false; tb.Text = text; tb.ForeColor = Color.Gray; }
+                if (string.IsNullOrEmpty(tb.Text))
+                {
+                    _pswPlaceholderActive = true;
+                    tb.Text = text;
+                    tb.ForeColor = Color.Gray;
+                    UpdatePasswordMasking(); // ✅ placeholder luôn hiện chữ
+                }
+            };
+
+            // ✅ Nếu user bắt đầu gõ (trường hợp focus/typing khác), vẫn update mask đúng theo checkbox
+            tb.TextChanged += (s, e) =>
+            {
+                if (_pswPlaceholderActive) return; // đang placeholder thì thôi
+                UpdatePasswordMasking();
             };
         }
 
         private void cb_showpsw_CheckedChanged(object? sender, EventArgs e)
         {
-            if (tb_psw.Text == PH_PASSWORD) { tb_psw.UseSystemPasswordChar = false; return; }
-            tb_psw.UseSystemPasswordChar = !cb_showpsw.Checked;
+            UpdatePasswordMasking();
         }
+
 
         private void btn_signin_Click(object? sender, EventArgs e)
         {
@@ -126,22 +159,31 @@ namespace CaroGame
                         PlayerID = 0,
                         PlayerName = uname,
                         Email = email,
-                        Birthday = birthday
+                        Birthday = birthday,
+                        SessionPassword = (tb_psw.Text == PH_PASSWORD) ? "" : tb_psw.Text
                     };
 
-                    // Kích hoạt luồng lắng nghe trước khi vào Dashboard
+
                     _client.StartListening();
 
-                    var Dash = new Dashboard(uname, _client);
-                    Dash.SetPlayer(pv);
+                    var dash = new Dashboard(uname, _client);
+                    dash.SetPlayer(pv);
 
-                    // Khi Dashboard đóng -> Đóng luôn form SignIn (kết thúc app)
-                    Dash.FormClosed += (s, _) => this.Close();
+                    // ✅ QUAN TRỌNG: Dashboard đóng thì quay lại SignIn (KHÔNG Close SignIn)
+                    dash.FormClosed += (s, _) =>
+                    {
+                        this.Show();
+                        this.Activate();
+                    };
 
-                    this.Hide(); // Ẩn form SignIn đi
-                    Dash.Show();
+                    this.Hide();
+                    dash.Show();
 
-                    MessageBox.Show("Signed in successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    // show messagebox đính vào SignIn (khỏi bị chìm)
+                    this.BeginInvoke((Action)(() =>
+                    {
+                        MessageBox.Show(this, "Signed in successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }));
                 }
                 else
                 {
@@ -163,16 +205,24 @@ namespace CaroGame
         private void linkedlb_signup_LinkClicked(object? sender, LinkLabelLinkClickedEventArgs e)
         {
             var signUp = new SignUp(_client);
-            Hide();
-            signUp.FormClosed += (s, _) => Show();
-            signUp.Show();
+            signUp.Show(this);
+
+            signUp.FormClosed += (s, _) =>
+            {
+                if (!this.IsDisposed)
+                {
+                    this.Show();
+                    this.Activate();
+                }
+            };
+
+            this.Hide();
         }
 
         protected override void OnFormClosing(FormClosingEventArgs e)
         {
             try
             {
-                // Chỉ disconnect khi form thực sự đóng (không phải Hide)
                 if (_client.IsConnected())
                 {
                     if (!string.IsNullOrEmpty(_currentUser))
@@ -182,15 +232,19 @@ namespace CaroGame
                 }
             }
             catch { }
+
             base.OnFormClosing(e);
         }
 
         private void linkLabel1_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
-            var resetPsw = new ResetPassword(_client);
-            Hide();
-            resetPsw.FormClosed += (s, _) => Show();
-            resetPsw.Show();
+            using (var resetPsw = new ResetPassword(_client))
+            {
+                this.Hide();
+                resetPsw.ShowDialog(this);
+                this.Show();
+                this.Activate();
+            }
         }
     }
 }

@@ -126,7 +126,7 @@
             ptbAvaP2.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             ptbAvaP2.BackgroundImageLayout = ImageLayout.Stretch;
             ptbAvaP2.BorderStyle = BorderStyle.Fixed3D;
-            ptbAvaP2.Location = new Point(336, 127);
+            ptbAvaP2.Location = new Point(336, 117);
             ptbAvaP2.Name = "ptbAvaP2";
             ptbAvaP2.Size = new Size(104, 101);
             ptbAvaP2.TabIndex = 10;
@@ -137,7 +137,7 @@
             ptbAvaP1.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             ptbAvaP1.BackgroundImageLayout = ImageLayout.Stretch;
             ptbAvaP1.BorderStyle = BorderStyle.Fixed3D;
-            ptbAvaP1.Location = new Point(9, 12);
+            ptbAvaP1.Location = new Point(9, 3);
             ptbAvaP1.Name = "ptbAvaP1";
             ptbAvaP1.Size = new Size(106, 99);
             ptbAvaP1.TabIndex = 9;
@@ -303,10 +303,10 @@
             // rtbChat
             // 
             rtbChat.BackColor = Color.White;
-            rtbChat.Location = new Point(30, 37);
+            rtbChat.Location = new Point(19, 37);
             rtbChat.Name = "rtbChat";
             rtbChat.ReadOnly = true;
-            rtbChat.Size = new Size(387, 185);
+            rtbChat.Size = new Size(398, 193);
             rtbChat.TabIndex = 0;
             rtbChat.Text = "";
             // 

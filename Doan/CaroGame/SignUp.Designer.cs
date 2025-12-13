@@ -30,7 +30,6 @@
         {
             tb_username = new TextBox();
             tb_cfpsw = new TextBox();
-            tb_birth = new TextBox();
             tb_psw = new TextBox();
             tb_email = new TextBox();
             btn_signup = new Button();
@@ -45,6 +44,7 @@
             lblEmail = new Label();
             lblBirth = new Label();
             pictureBox1 = new PictureBox();
+            dateTimePicker1 = new DateTimePicker();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             SuspendLayout();
             // 
@@ -65,15 +65,6 @@
             tb_cfpsw.Name = "tb_cfpsw";
             tb_cfpsw.Size = new Size(445, 30);
             tb_cfpsw.TabIndex = 3;
-            // 
-            // tb_birth
-            // 
-            tb_birth.Font = new Font("Segoe UI", 10F);
-            tb_birth.Location = new Point(30, 486);
-            tb_birth.Margin = new Padding(3, 4, 3, 4);
-            tb_birth.Name = "tb_birth";
-            tb_birth.Size = new Size(445, 30);
-            tb_birth.TabIndex = 5;
             // 
             // tb_psw
             // 
@@ -223,12 +214,20 @@
             pictureBox1.TabIndex = 17;
             pictureBox1.TabStop = false;
             // 
+            // dateTimePicker1
+            // 
+            dateTimePicker1.Location = new Point(30, 485);
+            dateTimePicker1.Name = "dateTimePicker1";
+            dateTimePicker1.Size = new Size(445, 27);
+            dateTimePicker1.TabIndex = 18;
+            // 
             // SignUp
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.LightBlue;
             ClientSize = new Size(505, 598);
+            Controls.Add(dateTimePicker1);
             Controls.Add(pictureBox1);
             Controls.Add(lblBirth);
             Controls.Add(lblEmail);
@@ -243,7 +242,6 @@
             Controls.Add(btn_signup);
             Controls.Add(tb_email);
             Controls.Add(tb_psw);
-            Controls.Add(tb_birth);
             Controls.Add(tb_cfpsw);
             Controls.Add(tb_username);
             FormBorderStyle = FormBorderStyle.FixedSingle;
@@ -261,7 +259,6 @@
 
         private TextBox tb_username;
         private TextBox tb_cfpsw;
-        private TextBox tb_birth;
         private TextBox tb_psw;
         private TextBox tb_email;
         private Button btn_signup;
@@ -276,5 +273,6 @@
         private Label lblEmail;
         private Label lblBirth;
         private PictureBox pictureBox1;
+        private DateTimePicker dateTimePicker1;
     }
 }

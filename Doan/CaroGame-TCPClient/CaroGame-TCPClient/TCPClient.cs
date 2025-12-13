@@ -13,6 +13,9 @@ namespace CaroGame_TCPClient
         private bool isConnected;
         private NetworkStream? stream;
         public static TCPClient? Instance { get; private set; }
+        private readonly object _reqLock = new object();
+        private volatile bool _pauseListening = false;
+
 
         // Sự kiện bắn tin nhắn từ Server ra ngoài Form
         public event Action<string>? OnMessageReceived;
@@ -37,11 +40,10 @@ namespace CaroGame_TCPClient
 
                 client = new TcpClient();
                 client.Connect(serverIP, serverPort);
+                client.ReceiveTimeout = 500;
                 stream = client.GetStream();
+                stream.ReadTimeout = 500;
                 isConnected = true;
-
-                // Lưu ý: Không gọi StartListening() ở đây.
-                // Hàm này nên được gọi sau khi người dùng Login thành công.
 
                 return true;
             }
@@ -73,37 +75,72 @@ namespace CaroGame_TCPClient
         // Dùng cho: Login, Register, GetInfo (khi chưa vào bàn chơi)
         private string SendRequest(string request)
         {
-            try
+            lock (_reqLock)
             {
-                if (!isConnected || stream == null)
+                try
                 {
-                    if (!Connect()) return "ERROR|Cannot connect to server";
+                    if (!isConnected || stream == null)
+                    {
+                        if (!Connect()) return "ERROR|Cannot connect to server";
+                    }
+
+                    _pauseListening = true;   // ✅ pause trước khi write/read
+                    Thread.Sleep(30);         // ✅ nhường cho listener thoát vòng loop (do timeout)
+
+                    byte[] data = Encoding.UTF8.GetBytes(request);
+                    stream!.Write(data, 0, data.Length);
+                    stream!.Flush();
+
+                    byte[] buffer = new byte[4096];
+                    int bytesRead = stream!.Read(buffer, 0, buffer.Length); // read response của request này
+
+                    if (bytesRead == 0)
+                    {
+                        Disconnect();
+                        return "ERROR|Server disconnected";
+                    }
+
+                    return Encoding.UTF8.GetString(buffer, 0, bytesRead);
                 }
-
-                // Nếu luồng Listening đang chạy, việc gọi hàm này có thể gây tranh chấp dữ liệu.
-                // Nhưng với logic hiện tại (Login xong mới Play), rủi ro thấp.
-
-                byte[] data = Encoding.UTF8.GetBytes(request);
-                stream!.Write(data, 0, data.Length);
-                stream!.Flush();
-
-                byte[] buffer = new byte[4096];
-                int bytesRead = stream!.Read(buffer, 0, buffer.Length);
-
-                if (bytesRead == 0)
+                catch (Exception ex)
                 {
                     Disconnect();
-                    return "ERROR|Server disconnected";
+                    return $"ERROR|Connection error: {ex.Message}";
                 }
+                finally
+                {
+                    _pauseListening = false; // ✅ bật lại listener
+                }
+            }
+        }
+
+        private string SendRequestNewConnection(string request)
+        {
+            try
+            {
+                using var temp = new TcpClient();
+                temp.Connect(serverIP, serverPort);
+
+                using var s = temp.GetStream();
+                s.ReadTimeout = 5000;
+                s.WriteTimeout = 5000;
+
+                byte[] data = Encoding.UTF8.GetBytes(request);
+                s.Write(data, 0, data.Length);
+                s.Flush();
+
+                byte[] buffer = new byte[4096];
+                int bytesRead = s.Read(buffer, 0, buffer.Length);
+                if (bytesRead == 0) return "ERROR|Server disconnected";
 
                 return Encoding.UTF8.GetString(buffer, 0, bytesRead);
             }
             catch (Exception ex)
             {
-                Disconnect();
                 return $"ERROR|Connection error: {ex.Message}";
             }
         }
+
 
         // --- HÀM 2: Gửi Nhanh (Async - Fire & Forget) ---
         // Dùng cho: Trong trận đấu (Move, Chat, Undo)
@@ -133,12 +170,19 @@ namespace CaroGame_TCPClient
 
             listenerThread = new Thread(() =>
             {
-                try
+                byte[] buffer = new byte[4096];
+
+                while (isConnected && client != null && stream != null)
                 {
-                    byte[] buffer = new byte[4096];
-                    while (isConnected && client != null && stream != null)
+                    try
                     {
-                        int bytesRead = stream.Read(buffer, 0, buffer.Length);
+                        if (_pauseListening)
+                        {
+                            Thread.Sleep(20);
+                            continue;
+                        }
+
+                        int bytesRead = stream.Read(buffer, 0, buffer.Length); // có timeout
                         if (bytesRead == 0)
                         {
                             Disconnect();
@@ -147,22 +191,22 @@ namespace CaroGame_TCPClient
                         }
 
                         string message = Encoding.UTF8.GetString(buffer, 0, bytesRead);
-
-                        // [NÂNG CẤP] Xử lý dính gói tin (TCP Fragmentation) đơn giản
-                        // Server có thể gửi "MOVE|...NEXT_TURN|..." liền nhau.
-                        // Ta cần tách chúng ra nếu cần thiết. 
-                        // Tuy nhiên, để đơn giản cho Demo, ta giả định Server gửi đủ chậm hoặc Client xử lý chuỗi.
-                        // Nếu muốn chắc chắn, bạn nên dùng ký tự kết thúc gói tin (như \n) và split.
-
                         OnMessageReceived?.Invoke(message);
                     }
-                }
-                catch
-                {
-                    Disconnect();
-                    OnMessageReceived?.Invoke("DISCONNECT|Connection lost");
+                    catch (IOException)
+                    {
+                        // timeout -> loop tiếp, không disconnect
+                        continue;
+                    }
+                    catch
+                    {
+                        Disconnect();
+                        OnMessageReceived?.Invoke("DISCONNECT|Connection lost");
+                        break;
+                    }
                 }
             });
+
             listenerThread.IsBackground = true;
             listenerThread.Start();
         }
@@ -185,6 +229,22 @@ namespace CaroGame_TCPClient
         {
             string hashedPassword = HashUtil.Sha256(newPassword);
             return SendRequest($"UPDATEPASS|{username}|{hashedPassword}");
+        }
+
+        public string VerifyPassword(string username, string password)
+        {
+            string hashedPassword = HashUtil.Sha256(password);
+            return SendRequestNewConnection($"VERIFY_PASSWORD|{username}|{hashedPassword}");
+        }
+
+        public string UpdateEmail(string username, string email)
+        {
+            return SendRequestNewConnection($"UPDATEEMAIL|{username}|{email}");
+        }
+
+        public string UpdateBirthday(string username, string birthday)
+        {
+            return SendRequestNewConnection($"UPDATEBIRTHDAY|{username}|{birthday}");
         }
 
         public string GetUser(string username) => SendRequest($"GETPLAYER|{username}");
