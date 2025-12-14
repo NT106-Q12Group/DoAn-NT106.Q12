@@ -2,6 +2,7 @@
 using System.Drawing;
 using System.Windows.Forms;
 using CaroGame_TCPClient;
+using System.IO;
 
 namespace CaroGame
 {
@@ -91,31 +92,6 @@ namespace CaroGame
             }
 
             ChessBoard.DrawChessBoard();
-        }
-
-        private void SetupPlayerInfo()
-        {
-            if (label1 != null) label1.Text = player1Name;
-            if (label2 != null) label2.Text = player2Name;
-
-            if (label1 != null) { label1.ForeColor = Color.Black; label1.Font = new Font(label1.Font, FontStyle.Regular); }
-            if (label2 != null) { label2.ForeColor = Color.Black; label2.Font = new Font(label2.Font, FontStyle.Regular); }
-
-            if (MySide == 0)
-            {
-                if (label1 != null) { label1.ForeColor = Color.Red; label1.Font = new Font(label1.Font, FontStyle.Bold); }
-            }
-            else
-            {
-                if (label2 != null) { label2.ForeColor = Color.Blue; label2.Font = new Font(label2.Font, FontStyle.Bold); }
-            }
-
-            try
-            {
-                if (ptbAvaP1 != null) { ptbAvaP1.Image = null; ptbAvaP1.BackColor = Color.LightGray; }
-                if (ptbAvaP2 != null) { ptbAvaP2.Image = null; ptbAvaP2.BackColor = Color.LightGray; }
-            }
-            catch { }
         }
 
         // ================= DIALOG HELPERS =================
@@ -318,7 +294,7 @@ namespace CaroGame
                 ChessBoard.Player[1].Name = player2Name;
             }
 
-            SetupPlayerInfo();
+       
             this.Text = $"PvP - Rematch ({(MySide == 0 ? "X" : "O")})";
         }
 
@@ -706,6 +682,77 @@ namespace CaroGame
                 Controls.Add(lbl);
                 Controls.Add(btnCancel);
             }
+        }
+        // ==========================================================
+        // ✅ PHẦN CODE BỔ SUNG: LOAD AVATAR (KHUNG VUÔNG)
+        // ==========================================================
+
+        private void LoadAvatar(PictureBox ptb, string imagePath)
+        {
+            if (ptb == null) return;
+
+            ptb.Image = null;
+            ptb.BackColor = Color.LightGray;
+
+            {
+
+                if (File.Exists(imagePath))
+                {
+                    using (var fs = new FileStream(imagePath, FileMode.Open, FileAccess.Read))
+                    {
+                        ptb.Image = Image.FromStream(fs);
+                    }
+                    ptb.BackColor = Color.Transparent;
+                }
+                try
+                {
+
+                    if (File.Exists(imagePath))
+                    {
+                        using (var fs = new FileStream(imagePath, FileMode.Open, FileAccess.Read))
+                        {
+                            ptb.Image = Image.FromStream(fs);
+                        }
+                        ptb.BackColor = Color.Transparent;
+                    }
+
+                    ptb.SizeMode = PictureBoxSizeMode.Zoom;
+
+                    ptb.BorderStyle = BorderStyle.FixedSingle;
+                }
+                catch (Exception ex)
+                {
+                    ptb.Image = null;
+                    ptb.BackColor = Color.Red;
+                }
+            }
+        }
+        private void SetupPlayerInfo()
+        {
+            if (label1 != null) label1.Text = player1Name;
+            if (label2 != null) label2.Text = player2Name;
+
+            if (label1 != null) { label1.ForeColor = Color.Black; label1.Font = new Font(label1.Font, FontStyle.Regular); }
+            if (label2 != null) { label2.ForeColor = Color.Black; label2.Font = new Font(label2.Font, FontStyle.Regular); }
+
+            if (MySide == 0)
+            {
+                if (label1 != null) { label1.ForeColor = Color.Red; label1.Font = new Font(label1.Font, FontStyle.Bold); }
+            }
+            else
+            {
+                if (label2 != null) { label2.ForeColor = Color.Blue; label2.Font = new Font(label2.Font, FontStyle.Bold); }
+            }
+
+            // ==========================================================
+            // LOGIC LOAD AVATAR MỚI (KHUNG VUÔNG)
+            // ==========================================================
+
+            string avatarPathP1 = "Avatars/SovaAva.png";
+            string avatarPathP2 = "Avatars/ReynaAva.png";
+
+            LoadAvatar(ptbAvaP1, avatarPathP1);
+            LoadAvatar(ptbAvaP2, avatarPathP2);
         }
     }
 }
