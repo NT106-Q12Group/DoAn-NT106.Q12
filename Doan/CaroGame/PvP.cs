@@ -2,6 +2,7 @@
 using System.Drawing;
 using System.Windows.Forms;
 using CaroGame_TCPClient;
+using System.IO;
 
 namespace CaroGame
 {
@@ -92,7 +93,39 @@ namespace CaroGame
 
             ChessBoard.DrawChessBoard();
         }
+        private void LoadAvatar(PictureBox ptb, string imagePath)
+        {
+            if (ptb == null) return;
 
+            ptb.Image = null;
+            ptb.BackColor = Color.LightGray;
+
+            try
+            {
+
+                if (File.Exists(imagePath))
+                {
+                    using (var fs = new FileStream(imagePath, FileMode.Open, FileAccess.Read))
+                    {
+                        ptb.Image = Image.FromStream(fs);
+                    }
+                    ptb.BackColor = Color.Transparent; 
+                }
+
+                ptb.SizeMode = PictureBoxSizeMode.Zoom;
+
+                ptb.BorderStyle = BorderStyle.FixedSingle;
+            }
+            catch (Exception) 
+            {
+                ptb.Image = null;
+                ptb.BackColor = Color.Red; 
+            }
+        }
+
+        // ==========================================================
+        // ✅  LOAD AVATAR (KHUNG VUÔNG)
+        // ==========================================================
         private void SetupPlayerInfo()
         {
             if (label1 != null) label1.Text = player1Name;
@@ -110,16 +143,14 @@ namespace CaroGame
                 if (label2 != null) { label2.ForeColor = Color.Blue; label2.Font = new Font(label2.Font, FontStyle.Bold); }
             }
 
-            try
-            {
-                if (ptbAvaP1 != null) { ptbAvaP1.Image = null; ptbAvaP1.BackColor = Color.LightGray; }
-                if (ptbAvaP2 != null) { ptbAvaP2.Image = null; ptbAvaP2.BackColor = Color.LightGray; }
-            }
-            catch { }
+            string avatarPathP1 = @"Avatars/SovaAva (1).jpg";
+            string avatarPathP2 = @"Avatars/ReynaAva (2).jpg";
+
+            LoadAvatar(ptbAvaP1, avatarPathP1);
+            LoadAvatar(ptbAvaP2, avatarPathP2);
         }
 
         // ================= DIALOG HELPERS =================
-
         private void CloseResultDialog()
         {
             try
@@ -318,7 +349,7 @@ namespace CaroGame
                 ChessBoard.Player[1].Name = player2Name;
             }
 
-            SetupPlayerInfo();
+
             this.Text = $"PvP - Rematch ({(MySide == 0 ? "X" : "O")})";
         }
 
@@ -452,7 +483,15 @@ namespace CaroGame
             if (!ChessBoard.IsMyTurn) return;
             ChessBoard.ExecuteUndoPvP();
 
+<<<<<<< HEAD
             undoCount = true;
+=======
+            if (tcpClient == null || !tcpClient.IsConnected()) return;
+
+            isMyUndoRequest = true;
+
+            btnUndo.Enabled = false;
+>>>>>>> main
 
             tcpClient.Send("UNDO_REQUEST");
 
@@ -706,3 +745,4 @@ namespace CaroGame
         }
     }
 }
+    
