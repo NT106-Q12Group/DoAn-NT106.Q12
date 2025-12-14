@@ -102,7 +102,7 @@ namespace CaroGame
 
             try
             {
-                // 1. Tải ảnh từ File (Sử dụng FileStream để tránh lỗi file bị khóa)
+
                 if (File.Exists(imagePath))
                 {
                     using (var fs = new FileStream(imagePath, FileMode.Open, FileAccess.Read))
@@ -112,16 +112,14 @@ namespace CaroGame
                     ptb.BackColor = Color.Transparent; 
                 }
 
-                // 2. Thiết lập chế độ hiển thị ảnh trong PictureBox
                 ptb.SizeMode = PictureBoxSizeMode.Zoom;
 
-                // 3. Thêm viền
                 ptb.BorderStyle = BorderStyle.FixedSingle;
             }
-            catch (Exception) // Đã sửa lỗi CS0168
+            catch (Exception) 
             {
                 ptb.Image = null;
-                ptb.BackColor = Color.Red; // Báo hiệu lỗi tải ảnh
+                ptb.BackColor = Color.Red; 
             }
         }
 
