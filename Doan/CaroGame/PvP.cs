@@ -294,7 +294,7 @@ namespace CaroGame
                 ChessBoard.Player[1].Name = player2Name;
             }
 
-       
+
             this.Text = $"PvP - Rematch ({(MySide == 0 ? "X" : "O")})";
         }
 
@@ -428,7 +428,7 @@ namespace CaroGame
 
             if (!ChessBoard.IsMyTurn) return;
 
-            if (tcpClient == null || !tcpClient.IsConnected()) return;  
+            if (tcpClient == null || !tcpClient.IsConnected()) return;
 
             isMyUndoRequest = true;
 
@@ -694,8 +694,8 @@ namespace CaroGame
             ptb.Image = null;
             ptb.BackColor = Color.LightGray;
 
+            try
             {
-
                 if (File.Exists(imagePath))
                 {
                     using (var fs = new FileStream(imagePath, FileMode.Open, FileAccess.Read))
@@ -704,27 +704,13 @@ namespace CaroGame
                     }
                     ptb.BackColor = Color.Transparent;
                 }
-                try
-                {
-
-                    if (File.Exists(imagePath))
-                    {
-                        using (var fs = new FileStream(imagePath, FileMode.Open, FileAccess.Read))
-                        {
-                            ptb.Image = Image.FromStream(fs);
-                        }
-                        ptb.BackColor = Color.Transparent;
-                    }
-
-                    ptb.SizeMode = PictureBoxSizeMode.Zoom;
-
-                    ptb.BorderStyle = BorderStyle.FixedSingle;
-                }
-                catch (Exception ex)
-                {
-                    ptb.Image = null;
-                    ptb.BackColor = Color.Red;
-                }
+                ptb.SizeMode = PictureBoxSizeMode.Zoom;
+                ptb.BorderStyle = BorderStyle.FixedSingle;
+            }
+            catch (Exception)
+            {
+                ptb.Image = null;
+                ptb.BackColor = Color.Red;
             }
         }
         private void SetupPlayerInfo()
@@ -744,15 +730,12 @@ namespace CaroGame
                 if (label2 != null) { label2.ForeColor = Color.Blue; label2.Font = new Font(label2.Font, FontStyle.Bold); }
             }
 
-            // ==========================================================
-            // LOGIC LOAD AVATAR MỚI (KHUNG VUÔNG)
-            // ==========================================================
-
-            string avatarPathP1 = "Avatars/SovaAva.png";
-            string avatarPathP2 = "Avatars/ReynaAva.png";
+            string avatarPathP1 = @"Avatars/SovaAva (1).jpg";
+            string avatarPathP2 = @"Avatars/ReynaAva (2).jpg";
 
             LoadAvatar(ptbAvaP1, avatarPathP1);
             LoadAvatar(ptbAvaP2, avatarPathP2);
         }
     }
 }
+    
