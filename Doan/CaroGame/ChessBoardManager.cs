@@ -358,7 +358,14 @@ namespace CaroGame
 
         public void ExecuteUndoPvP()
         {
-            if (moveHistory.Count < 2) return;
+            if (moveHistory.Count == 0) return;
+
+            if (moveHistory.Count == 1)
+            {
+                undoLastMove();
+                IsMyTurn = (MySide == 0);
+                return;
+            }
 
             undoLastMove();
             undoLastMove();

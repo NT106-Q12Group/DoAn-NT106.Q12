@@ -449,16 +449,13 @@ namespace CaroGame
         private void btnUndo_Click(object sender, EventArgs e)
         {
             if (undoCount) return;
-
             if (!ChessBoard.IsMyTurn) return;
+            ChessBoard.ExecuteUndoPvP();
 
-            if (tcpClient == null || !tcpClient.IsConnected()) return;  
-
-            isMyUndoRequest = true;
-
-            btnUndo.Enabled = false;
+            undoCount = true;
 
             tcpClient.Send("UNDO_REQUEST");
+
         }
 
         private void btnSend_Click(object sender, EventArgs e)
