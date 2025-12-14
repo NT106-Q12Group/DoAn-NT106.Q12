@@ -93,9 +93,66 @@ namespace CaroGame
 
             ChessBoard.DrawChessBoard();
         }
+        private void LoadAvatar(PictureBox ptb, string imagePath)
+        {
+            if (ptb == null) return;
+
+            ptb.Image = null;
+            ptb.BackColor = Color.LightGray;
+
+            try
+            {
+                // 1. Tải ảnh từ File (Sử dụng FileStream để tránh lỗi file bị khóa)
+                if (File.Exists(imagePath))
+                {
+                    using (var fs = new FileStream(imagePath, FileMode.Open, FileAccess.Read))
+                    {
+                        ptb.Image = Image.FromStream(fs);
+                    }
+                    ptb.BackColor = Color.Transparent; 
+                }
+
+                // 2. Thiết lập chế độ hiển thị ảnh trong PictureBox
+                ptb.SizeMode = PictureBoxSizeMode.Zoom;
+
+                // 3. Thêm viền
+                ptb.BorderStyle = BorderStyle.FixedSingle;
+            }
+            catch (Exception) // Đã sửa lỗi CS0168
+            {
+                ptb.Image = null;
+                ptb.BackColor = Color.Red; // Báo hiệu lỗi tải ảnh
+            }
+        }
+
+        // ==========================================================
+        // ✅  LOAD AVATAR (KHUNG VUÔNG)
+        // ==========================================================
+        private void SetupPlayerInfo()
+        {
+            if (label1 != null) label1.Text = player1Name;
+            if (label2 != null) label2.Text = player2Name;
+
+            if (label1 != null) { label1.ForeColor = Color.Black; label1.Font = new Font(label1.Font, FontStyle.Regular); }
+            if (label2 != null) { label2.ForeColor = Color.Black; label2.Font = new Font(label2.Font, FontStyle.Regular); }
+
+            if (MySide == 0)
+            {
+                if (label1 != null) { label1.ForeColor = Color.Red; label1.Font = new Font(label1.Font, FontStyle.Bold); }
+            }
+            else
+            {
+                if (label2 != null) { label2.ForeColor = Color.Blue; label2.Font = new Font(label2.Font, FontStyle.Bold); }
+            }
+
+            string avatarPathP1 = @"Avatars/SovaAva (1).jpg";
+            string avatarPathP2 = @"Avatars/ReynaAva (2).jpg";
+
+            LoadAvatar(ptbAvaP1, avatarPathP1);
+            LoadAvatar(ptbAvaP2, avatarPathP2);
+        }
 
         // ================= DIALOG HELPERS =================
-
         private void CloseResultDialog()
         {
             try
@@ -682,59 +739,6 @@ namespace CaroGame
                 Controls.Add(lbl);
                 Controls.Add(btnCancel);
             }
-        }
-        // ==========================================================
-        // ✅ PHẦN CODE BỔ SUNG: LOAD AVATAR (KHUNG VUÔNG)
-        // ==========================================================
-
-        private void LoadAvatar(PictureBox ptb, string imagePath)
-        {
-            if (ptb == null) return;
-
-            ptb.Image = null;
-            ptb.BackColor = Color.LightGray;
-
-            try
-            {
-                if (File.Exists(imagePath))
-                {
-                    using (var fs = new FileStream(imagePath, FileMode.Open, FileAccess.Read))
-                    {
-                        ptb.Image = Image.FromStream(fs);
-                    }
-                    ptb.BackColor = Color.Transparent;
-                }
-                ptb.SizeMode = PictureBoxSizeMode.Zoom;
-                ptb.BorderStyle = BorderStyle.FixedSingle;
-            }
-            catch (Exception)
-            {
-                ptb.Image = null;
-                ptb.BackColor = Color.Red;
-            }
-        }
-        private void SetupPlayerInfo()
-        {
-            if (label1 != null) label1.Text = player1Name;
-            if (label2 != null) label2.Text = player2Name;
-
-            if (label1 != null) { label1.ForeColor = Color.Black; label1.Font = new Font(label1.Font, FontStyle.Regular); }
-            if (label2 != null) { label2.ForeColor = Color.Black; label2.Font = new Font(label2.Font, FontStyle.Regular); }
-
-            if (MySide == 0)
-            {
-                if (label1 != null) { label1.ForeColor = Color.Red; label1.Font = new Font(label1.Font, FontStyle.Bold); }
-            }
-            else
-            {
-                if (label2 != null) { label2.ForeColor = Color.Blue; label2.Font = new Font(label2.Font, FontStyle.Bold); }
-            }
-
-            string avatarPathP1 = @"Avatars/SovaAva (1).jpg";
-            string avatarPathP2 = @"Avatars/ReynaAva (2).jpg";
-
-            LoadAvatar(ptbAvaP1, avatarPathP1);
-            LoadAvatar(ptbAvaP2, avatarPathP2);
         }
     }
 }
