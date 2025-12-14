@@ -483,15 +483,13 @@ namespace CaroGame
             if (!ChessBoard.IsMyTurn) return;
             ChessBoard.ExecuteUndoPvP();
 
-<<<<<<< HEAD
             undoCount = true;
-=======
+
             if (tcpClient == null || !tcpClient.IsConnected()) return;
 
             isMyUndoRequest = true;
 
             btnUndo.Enabled = false;
->>>>>>> main
 
             tcpClient.Send("UNDO_REQUEST");
 
