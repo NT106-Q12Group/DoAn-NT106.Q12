@@ -46,11 +46,13 @@
             // pictureBox1
             // 
             pictureBox1.BackColor = SystemColors.Control;
+            pictureBox1.BackgroundImage = Properties.Resources.SovaAva__1_;
+            pictureBox1.BackgroundImageLayout = ImageLayout.Stretch;
             pictureBox1.BorderStyle = BorderStyle.Fixed3D;
-            pictureBox1.Location = new Point(43, 62);
+            pictureBox1.Location = new Point(41, 62);
             pictureBox1.Margin = new Padding(3, 4, 3, 4);
             pictureBox1.Name = "pictureBox1";
-            pictureBox1.Size = new Size(114, 111);
+            pictureBox1.Size = new Size(100, 100);
             pictureBox1.TabIndex = 0;
             pictureBox1.TabStop = false;
             // 

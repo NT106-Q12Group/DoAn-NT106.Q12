@@ -403,6 +403,16 @@ namespace CaroGame.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap ReynaAva__2_ {
+            get {
+                object obj = ResourceManager.GetObject("ReynaAva (2)", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap shooting_star {
             get {
                 object obj = ResourceManager.GetObject("shooting-star", resourceCulture);
@@ -426,6 +436,16 @@ namespace CaroGame.Properties {
         internal static System.Drawing.Bitmap smile {
             get {
                 object obj = ResourceManager.GetObject("smile", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap SovaAva__1_ {
+            get {
+                object obj = ResourceManager.GetObject("SovaAva (1)", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
