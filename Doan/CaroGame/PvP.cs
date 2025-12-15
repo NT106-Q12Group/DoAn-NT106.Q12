@@ -2,7 +2,7 @@
 using System.Drawing;
 using System.Windows.Forms;
 using CaroGame_TCPClient;
-using System.IO;
+
 
 namespace CaroGame
 {
@@ -93,39 +93,7 @@ namespace CaroGame
 
             ChessBoard.DrawChessBoard();
         }
-        private void LoadAvatar(PictureBox ptb, string imagePath)
-        {
-            if (ptb == null) return;
 
-            ptb.Image = null;
-            ptb.BackColor = Color.LightGray;
-
-            try
-            {
-
-                if (File.Exists(imagePath))
-                {
-                    using (var fs = new FileStream(imagePath, FileMode.Open, FileAccess.Read))
-                    {
-                        ptb.Image = Image.FromStream(fs);
-                    }
-                    ptb.BackColor = Color.Transparent; 
-                }
-
-                ptb.SizeMode = PictureBoxSizeMode.Zoom;
-
-                ptb.BorderStyle = BorderStyle.FixedSingle;
-            }
-            catch (Exception) 
-            {
-                ptb.Image = null;
-                ptb.BackColor = Color.Red; 
-            }
-        }
-
-        // ==========================================================
-        // ✅  LOAD AVATAR (KHUNG VUÔNG)
-        // ==========================================================
         private void SetupPlayerInfo()
         {
             if (label1 != null) label1.Text = player1Name;
@@ -143,11 +111,6 @@ namespace CaroGame
                 if (label2 != null) { label2.ForeColor = Color.Blue; label2.Font = new Font(label2.Font, FontStyle.Bold); }
             }
 
-            string avatarPathP1 = @"Avatars/SovaAva (1).jpg";
-            string avatarPathP2 = @"Avatars/ReynaAva (2).jpg";
-
-            LoadAvatar(ptbAvaP1, avatarPathP1);
-            LoadAvatar(ptbAvaP2, avatarPathP2);
         }
 
         // ================= DIALOG HELPERS =================
