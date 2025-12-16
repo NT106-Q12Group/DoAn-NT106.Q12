@@ -90,6 +90,8 @@
             // pictureBox2
             // 
             pictureBox2.BackColor = SystemColors.Control;
+            pictureBox2.BackgroundImage = Properties.Resources.Songoku;
+            pictureBox2.BackgroundImageLayout = ImageLayout.Stretch;
             pictureBox2.BorderStyle = BorderStyle.Fixed3D;
             pictureBox2.Location = new Point(463, 62);
             pictureBox2.Margin = new Padding(3, 4, 3, 4);

@@ -32,6 +32,7 @@
             pnlInfo = new Panel();
             ptbOne = new PictureBox();
             ptbZero = new PictureBox();
+            ptbAvaP2 = new PictureBox();
             ptbAvaP1 = new PictureBox();
             btnExit = new Button();
             btnChat = new Button();
@@ -52,15 +53,14 @@
             btnSend = new Button();
             txtMessage = new TextBox();
             label3 = new Label();
-            ptbAvaP2 = new PictureBox();
             pnlInfo.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)ptbOne).BeginInit();
             ((System.ComponentModel.ISupportInitialize)ptbZero).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)ptbAvaP2).BeginInit();
             ((System.ComponentModel.ISupportInitialize)ptbAvaP1).BeginInit();
             ((System.ComponentModel.ISupportInitialize)ptbO).BeginInit();
             ((System.ComponentModel.ISupportInitialize)ptbX).BeginInit();
             panelChat.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)ptbAvaP2).BeginInit();
             SuspendLayout();
             // 
             // pnlLeaderBoard
@@ -120,6 +120,18 @@
             ptbZero.TabIndex = 14;
             ptbZero.TabStop = false;
             ptbZero.Visible = false;
+            // 
+            // ptbAvaP2
+            // 
+            ptbAvaP2.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            ptbAvaP2.BackgroundImage = Properties.Resources.Songoku;
+            ptbAvaP2.BackgroundImageLayout = ImageLayout.Stretch;
+            ptbAvaP2.BorderStyle = BorderStyle.Fixed3D;
+            ptbAvaP2.Location = new Point(336, 117);
+            ptbAvaP2.Name = "ptbAvaP2";
+            ptbAvaP2.Size = new Size(104, 101);
+            ptbAvaP2.TabIndex = 10;
+            ptbAvaP2.TabStop = false;
             // 
             // ptbAvaP1
             // 
@@ -359,17 +371,6 @@
             label3.TabIndex = 9;
             label3.Text = "Leaderboard";
             // 
-            // ptbAvaP2
-            // 
-            ptbAvaP2.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            ptbAvaP2.BackgroundImageLayout = ImageLayout.Stretch;
-            ptbAvaP2.BorderStyle = BorderStyle.Fixed3D;
-            ptbAvaP2.Location = new Point(336, 117);
-            ptbAvaP2.Name = "ptbAvaP2";
-            ptbAvaP2.Size = new Size(104, 101);
-            ptbAvaP2.TabIndex = 10;
-            ptbAvaP2.TabStop = false;
-            // 
             // PvP
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
@@ -390,12 +391,12 @@
             pnlInfo.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)ptbOne).EndInit();
             ((System.ComponentModel.ISupportInitialize)ptbZero).EndInit();
+            ((System.ComponentModel.ISupportInitialize)ptbAvaP2).EndInit();
             ((System.ComponentModel.ISupportInitialize)ptbAvaP1).EndInit();
             ((System.ComponentModel.ISupportInitialize)ptbO).EndInit();
             ((System.ComponentModel.ISupportInitialize)ptbX).EndInit();
             panelChat.ResumeLayout(false);
             panelChat.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)ptbAvaP2).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }
