@@ -60,6 +60,8 @@
             // pictureBox2
             // 
             pictureBox2.BackColor = SystemColors.Control;
+            pictureBox2.BackgroundImage = Properties.Resources.Songoku1;
+            pictureBox2.BackgroundImageLayout = ImageLayout.Stretch;
             pictureBox2.BorderStyle = BorderStyle.Fixed3D;
             pictureBox2.Location = new Point(400, 51);
             pictureBox2.Name = "pictureBox2";
@@ -70,6 +72,8 @@
             // pictureBox3
             // 
             pictureBox3.BackColor = SystemColors.Control;
+            pictureBox3.BackgroundImage = Properties.Resources.SovaAva__1_;
+            pictureBox3.BackgroundImageLayout = ImageLayout.Stretch;
             pictureBox3.BorderStyle = BorderStyle.Fixed3D;
             pictureBox3.Location = new Point(46, 51);
             pictureBox3.Name = "pictureBox3";
