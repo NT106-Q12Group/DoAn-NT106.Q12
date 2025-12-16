@@ -30,8 +30,8 @@
         {
             pictureBox1 = new PictureBox();
             pictureBox2 = new PictureBox();
-            pictureBox3 = new PictureBox();
             panel1 = new Panel();
+            pictureBox3 = new PictureBox();
             ptbReady2 = new PictureBox();
             ptbReady1 = new PictureBox();
             rtbID = new RichTextBox();
@@ -41,8 +41,8 @@
             btnExit = new Button();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pictureBox2).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)pictureBox3).BeginInit();
             panel1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)pictureBox3).BeginInit();
             ((System.ComponentModel.ISupportInitialize)ptbReady2).BeginInit();
             ((System.ComponentModel.ISupportInitialize)ptbReady1).BeginInit();
             SuspendLayout();
@@ -60,8 +60,7 @@
             // pictureBox2
             // 
             pictureBox2.BackColor = SystemColors.Control;
-            pictureBox2.BackgroundImage = Properties.Resources.Songoku1;
-            pictureBox2.BackgroundImageLayout = ImageLayout.Stretch;
+            pictureBox2.BackgroundImageLayout = ImageLayout.None;
             pictureBox2.BorderStyle = BorderStyle.Fixed3D;
             pictureBox2.Location = new Point(400, 51);
             pictureBox2.Name = "pictureBox2";
@@ -69,34 +68,33 @@
             pictureBox2.TabIndex = 1;
             pictureBox2.TabStop = false;
             // 
-            // pictureBox3
-            // 
-            pictureBox3.BackColor = SystemColors.Control;
-            pictureBox3.BackgroundImage = Properties.Resources.SovaAva__1_;
-            pictureBox3.BackgroundImageLayout = ImageLayout.Stretch;
-            pictureBox3.BorderStyle = BorderStyle.Fixed3D;
-            pictureBox3.Location = new Point(46, 51);
-            pictureBox3.Name = "pictureBox3";
-            pictureBox3.Size = new Size(114, 111);
-            pictureBox3.TabIndex = 2;
-            pictureBox3.TabStop = false;
-            // 
             // panel1
             // 
             panel1.BackColor = Color.White;
             panel1.BorderStyle = BorderStyle.Fixed3D;
+            panel1.Controls.Add(pictureBox3);
             panel1.Controls.Add(ptbReady2);
             panel1.Controls.Add(ptbReady1);
             panel1.Controls.Add(rtbID);
             panel1.Controls.Add(label6);
             panel1.Controls.Add(label2);
-            panel1.Controls.Add(pictureBox3);
             panel1.Controls.Add(pictureBox1);
             panel1.Controls.Add(pictureBox2);
             panel1.Location = new Point(12, 12);
             panel1.Name = "panel1";
             panel1.Size = new Size(561, 284);
             panel1.TabIndex = 3;
+            // 
+            // pictureBox3
+            // 
+            pictureBox3.BackColor = SystemColors.Control;
+            pictureBox3.BackgroundImageLayout = ImageLayout.None;
+            pictureBox3.BorderStyle = BorderStyle.Fixed3D;
+            pictureBox3.Location = new Point(40, 51);
+            pictureBox3.Name = "pictureBox3";
+            pictureBox3.Size = new Size(114, 111);
+            pictureBox3.TabIndex = 12;
+            pictureBox3.TabStop = false;
             // 
             // ptbReady2
             // 
@@ -199,9 +197,9 @@
             Text = "WaitingRoom";
             ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
             ((System.ComponentModel.ISupportInitialize)pictureBox2).EndInit();
-            ((System.ComponentModel.ISupportInitialize)pictureBox3).EndInit();
             panel1.ResumeLayout(false);
             panel1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)pictureBox3).EndInit();
             ((System.ComponentModel.ISupportInitialize)ptbReady2).EndInit();
             ((System.ComponentModel.ISupportInitialize)ptbReady1).EndInit();
             ResumeLayout(false);
@@ -211,7 +209,6 @@
 
         private PictureBox pictureBox1;
         private PictureBox pictureBox2;
-        private PictureBox pictureBox3;
         private Panel panel1;
         private Label label6;
         private Label label2;
@@ -220,5 +217,6 @@
         private Button btnExit;
         private PictureBox ptbReady2;
         private PictureBox ptbReady1;
+        private PictureBox pictureBox3;
     }
 }
