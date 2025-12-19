@@ -489,27 +489,27 @@ namespace CaroGame
 
         private void btnChat_Click(object sender, EventArgs e)
         {
-            if (panelChat != null) panelChat.Visible = !panelChat.Visible;
+            if (panelChat != null) 
+                panelChat.Visible = !panelChat.Visible;
         }
 
-        private Menu menuForm;
-        private void btnMenu_Click(object sender, EventArgs e)
-        {
-            if (menuForm == null || menuForm.IsDisposed)
-            {
-                menuForm = new Menu();
-                menuForm.StartPosition = FormStartPosition.Manual;
-                menuForm.Location = new Point(this.Left + 22, this.Top + 50);
-                menuForm.Show(this);
-            }
-            else { menuForm.Close(); menuForm = null; }
-        }
+        //private void btnMenu_Click(object sender, EventArgs e)
+        //{
+        //    if (menuForm == null || menuForm.IsDisposed)
+        //    {
+        //        menuForm = new Menu();
+        //        menuForm.StartPosition = FormStartPosition.Manual;
+        //        menuForm.Location = new Point(this.Left + 22, this.Top + 50);
+        //        menuForm.Show(this);
+        //    }
+        //    else { menuForm.Close(); menuForm = null; }
+        //}
 
         // alias handlers nếu Designer gọi dạng btn_...
         private void btn_Undo_Click(object sender, EventArgs e) => btnUndo_Click(sender, e);
         private void btn_Send_Click(object sender, EventArgs e) => btnSend_Click(sender, e);
         private void btn_Exit_Click(object sender, EventArgs e) => btnExit_Click(sender, e);
-        private void btn_Menu_Click(object sender, EventArgs e) => btnMenu_Click(sender, e);
+        //private void btn_Menu_Click(object sender, EventArgs e) => btnMenu_Click(sender, e);
         private void btn_Chat_Click(object sender, EventArgs e) => btnChat_Click(sender, e);
 
         private void AppendMessage(string sender, string message, Color color)

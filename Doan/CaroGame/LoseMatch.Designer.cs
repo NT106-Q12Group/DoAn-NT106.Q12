@@ -58,7 +58,7 @@
             // 
             btnExit.Cursor = Cursors.Hand;
             btnExit.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
-            btnExit.Location = new Point(110, 285);
+            btnExit.Location = new Point(110, 292);
             btnExit.Name = "btnExit";
             btnExit.Size = new Size(117, 49);
             btnExit.TabIndex = 6;
@@ -70,7 +70,7 @@
             // 
             lblLose.AutoSize = true;
             lblLose.Font = new Font("Segoe UI", 14F, FontStyle.Bold | FontStyle.Italic);
-            lblLose.Location = new Point(92, 161);
+            lblLose.Location = new Point(89, 162);
             lblLose.Name = "lblLose";
             lblLose.Size = new Size(152, 32);
             lblLose.TabIndex = 5;
@@ -80,7 +80,7 @@
             // 
             btnRematch.Cursor = Cursors.Hand;
             btnRematch.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
-            btnRematch.Location = new Point(110, 230);
+            btnRematch.Location = new Point(110, 237);
             btnRematch.Name = "btnRematch";
             btnRematch.Size = new Size(117, 49);
             btnRematch.TabIndex = 4;
@@ -135,7 +135,7 @@
             // 
             label1.AutoSize = true;
             label1.Font = new Font("Segoe UI", 13F, FontStyle.Bold | FontStyle.Italic);
-            label1.Location = new Point(72, 190);
+            label1.Location = new Point(72, 194);
             label1.Name = "label1";
             label1.Size = new Size(184, 30);
             label1.TabIndex = 12;

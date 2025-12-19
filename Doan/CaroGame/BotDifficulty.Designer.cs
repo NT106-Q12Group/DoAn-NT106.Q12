@@ -250,16 +250,16 @@
             // btnExit
             // 
             btnExit.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            btnExit.BackgroundImage = Properties.Resources.Caro_Game__7_;
+            btnExit.BackgroundImage = Properties.Resources.exitblack;
             btnExit.BackgroundImageLayout = ImageLayout.Stretch;
             btnExit.Cursor = Cursors.Hand;
             btnExit.FlatAppearance.BorderSize = 0;
             btnExit.FlatAppearance.MouseDownBackColor = SystemColors.HotTrack;
             btnExit.FlatAppearance.MouseOverBackColor = SystemColors.HotTrack;
             btnExit.FlatStyle = FlatStyle.Flat;
-            btnExit.Location = new Point(231, 246);
+            btnExit.Location = new Point(228, 246);
             btnExit.Name = "btnExit";
-            btnExit.Size = new Size(65, 51);
+            btnExit.Size = new Size(67, 67);
             btnExit.TabIndex = 23;
             btnExit.UseVisualStyleBackColor = true;
             btnExit.Click += btnExit_Click;

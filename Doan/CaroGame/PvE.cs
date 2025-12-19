@@ -11,7 +11,6 @@ namespace CaroGame
         ChessBoardManager ChessBoard;
         private string botDifficulty;
         private string _playerName;
-        private Menu menuForm;
         private bool undoCount = false;
 
         private TCPClient tcpClient; // NEW
@@ -29,7 +28,9 @@ namespace CaroGame
             botDifficulty = difficulty;
 
             ChessBoard = new ChessBoardManager(pnlChessBoard, GameMode.PvE);
+
             ChessBoard.GameEnded += OnGameEnded;
+
             ChessBoard.DrawChessBoard();
 
             SetBotDifficulty(botDifficulty);
@@ -91,18 +92,6 @@ namespace CaroGame
             if (ptbZero != null) ptbZero.Visible = false;
         }
 
-        private void btnMenu_Click(object sender, EventArgs e)
-        {
-            if (menuForm == null || menuForm.IsDisposed)
-            {
-                menuForm = new Menu();
-                menuForm.StartPosition = FormStartPosition.Manual;
-                menuForm.Location = new Point(this.Left + 22, this.Top + 50);
-                menuForm.Show(this);
-            }
-            else { menuForm.Close(); menuForm = null; }
-        }
-
         private void btnExit_Click(object sender, EventArgs e)
         {
             DialogResult result = MessageBox.Show(
@@ -118,7 +107,8 @@ namespace CaroGame
 
         private void btnChat_Click(object sender, EventArgs e)
         {
-            if (panelChat != null) panelChat.Visible = !panelChat.Visible;
+            if (panelChat != null) 
+                panelChat.Visible = !panelChat.Visible;
         }
 
         private void btnSend_Click(object sender, EventArgs e)
@@ -167,5 +157,18 @@ namespace CaroGame
 
         private void Form1_Load(object sender, EventArgs e) { }
         private void pnlChessBoard_Paint(object sender, PaintEventArgs e) { }
+
+        private void btnNew_Click(object sender, EventArgs e)
+        {
+            DialogResult result = MessageBox.Show(
+                "Bạn có chắc chắn muốn tạo ván đấu mới không?",
+                "Tạo ván đấu mới",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question
+            );
+
+            if (result == DialogResult.Yes)
+                resetChess(); ;
+        }
     }
 }

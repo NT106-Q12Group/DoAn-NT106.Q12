@@ -37,18 +37,20 @@
             dgv_leaderboard.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.ColumnHeader;
             dgv_leaderboard.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             dgv_leaderboard.Dock = DockStyle.Bottom;
-            dgv_leaderboard.Location = new Point(0, 66);
+            dgv_leaderboard.Location = new Point(0, 53);
+            dgv_leaderboard.Margin = new Padding(2, 2, 2, 2);
             dgv_leaderboard.Name = "dgv_leaderboard";
             dgv_leaderboard.RowHeadersWidth = 62;
-            dgv_leaderboard.Size = new Size(800, 384);
+            dgv_leaderboard.Size = new Size(640, 307);
             dgv_leaderboard.TabIndex = 0;
             // 
             // Leaderboard
             // 
-            AutoScaleDimensions = new SizeF(10F, 25F);
+            AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(800, 450);
+            ClientSize = new Size(640, 360);
             Controls.Add(dgv_leaderboard);
+            Margin = new Padding(2, 2, 2, 2);
             Name = "Leaderboard";
             Text = "Leaderboard";
             ((System.ComponentModel.ISupportInitialize)dgv_leaderboard).EndInit();

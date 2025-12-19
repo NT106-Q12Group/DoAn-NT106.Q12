@@ -35,7 +35,7 @@
             ptbAvaP1 = new PictureBox();
             btnExit = new Button();
             btnChat = new Button();
-            btnMenu = new Button();
+            btnNew = new Button();
             label2 = new Label();
             label1 = new Label();
             pgbP2 = new ProgressBar();
@@ -45,7 +45,6 @@
             ptbZero = new PictureBox();
             btnUndo = new Button();
             panelChat = new Panel();
-            label4 = new Label();
             btnSend = new Button();
             txtMessage = new TextBox();
             rtbChat = new RichTextBox();
@@ -79,7 +78,7 @@
             pnlInfo.Controls.Add(ptbAvaP1);
             pnlInfo.Controls.Add(btnExit);
             pnlInfo.Controls.Add(btnChat);
-            pnlInfo.Controls.Add(btnMenu);
+            pnlInfo.Controls.Add(btnNew);
             pnlInfo.Controls.Add(label2);
             pnlInfo.Controls.Add(label1);
             pnlInfo.Controls.Add(pgbP2);
@@ -99,7 +98,7 @@
             ptbOne.BackgroundImage = Properties.Resources.number_11;
             ptbOne.BackgroundImageLayout = ImageLayout.Stretch;
             ptbOne.Cursor = Cursors.Hand;
-            ptbOne.Location = new Point(192, 236);
+            ptbOne.Location = new Point(189, 239);
             ptbOne.Name = "ptbOne";
             ptbOne.Size = new Size(20, 20);
             ptbOne.TabIndex = 11;
@@ -133,16 +132,16 @@
             // 
             btnExit.Anchor = AnchorStyles.Top;
             btnExit.BackColor = Color.Transparent;
-            btnExit.BackgroundImage = Properties.Resources.Caro_Game__7_;
+            btnExit.BackgroundImage = Properties.Resources.exit;
             btnExit.BackgroundImageLayout = ImageLayout.Stretch;
             btnExit.Cursor = Cursors.Hand;
             btnExit.FlatAppearance.BorderSize = 0;
             btnExit.FlatAppearance.MouseDownBackColor = SystemColors.ButtonHighlight;
             btnExit.FlatAppearance.MouseOverBackColor = SystemColors.ButtonHighlight;
             btnExit.FlatStyle = FlatStyle.Flat;
-            btnExit.Location = new Point(347, 243);
+            btnExit.Location = new Point(351, 240);
             btnExit.Name = "btnExit";
-            btnExit.Size = new Size(65, 51);
+            btnExit.Size = new Size(67, 67);
             btnExit.TabIndex = 8;
             btnExit.UseVisualStyleBackColor = false;
             btnExit.Click += btnExit_Click;
@@ -151,7 +150,7 @@
             // 
             btnChat.Anchor = AnchorStyles.Top;
             btnChat.BackColor = Color.Transparent;
-            btnChat.BackgroundImage = Properties.Resources.Caro_Game__6_;
+            btnChat.BackgroundImage = Properties.Resources.chat;
             btnChat.BackgroundImageLayout = ImageLayout.Stretch;
             btnChat.Cursor = Cursors.Hand;
             btnChat.FlatAppearance.BorderColor = SystemColors.ActiveCaptionText;
@@ -159,30 +158,30 @@
             btnChat.FlatAppearance.MouseDownBackColor = SystemColors.ButtonHighlight;
             btnChat.FlatAppearance.MouseOverBackColor = SystemColors.ButtonHighlight;
             btnChat.FlatStyle = FlatStyle.Flat;
-            btnChat.Location = new Point(246, 243);
+            btnChat.Location = new Point(250, 243);
             btnChat.Name = "btnChat";
-            btnChat.Size = new Size(65, 51);
+            btnChat.Size = new Size(60, 60);
             btnChat.TabIndex = 7;
             btnChat.UseVisualStyleBackColor = false;
             // 
-            // btnMenu
+            // btnNew
             // 
-            btnMenu.Anchor = AnchorStyles.Top;
-            btnMenu.BackColor = Color.Transparent;
-            btnMenu.BackgroundImage = Properties.Resources.menuCaro;
-            btnMenu.BackgroundImageLayout = ImageLayout.Stretch;
-            btnMenu.Cursor = Cursors.Hand;
-            btnMenu.FlatAppearance.BorderColor = SystemColors.ButtonHighlight;
-            btnMenu.FlatAppearance.BorderSize = 0;
-            btnMenu.FlatAppearance.MouseDownBackColor = SystemColors.ButtonHighlight;
-            btnMenu.FlatAppearance.MouseOverBackColor = SystemColors.ButtonHighlight;
-            btnMenu.FlatStyle = FlatStyle.Flat;
-            btnMenu.Location = new Point(41, 243);
-            btnMenu.Name = "btnMenu";
-            btnMenu.Size = new Size(66, 51);
-            btnMenu.TabIndex = 5;
-            btnMenu.UseVisualStyleBackColor = false;
-            btnMenu.Click += btnMenu_Click;
+            btnNew.Anchor = AnchorStyles.Top;
+            btnNew.BackColor = Color.Transparent;
+            btnNew.BackgroundImage = Properties.Resources.reset;
+            btnNew.BackgroundImageLayout = ImageLayout.Stretch;
+            btnNew.Cursor = Cursors.Hand;
+            btnNew.FlatAppearance.BorderColor = SystemColors.ButtonHighlight;
+            btnNew.FlatAppearance.BorderSize = 0;
+            btnNew.FlatAppearance.MouseDownBackColor = SystemColors.ButtonHighlight;
+            btnNew.FlatAppearance.MouseOverBackColor = SystemColors.ButtonHighlight;
+            btnNew.FlatStyle = FlatStyle.Flat;
+            btnNew.Location = new Point(41, 243);
+            btnNew.Name = "btnNew";
+            btnNew.Size = new Size(57, 57);
+            btnNew.TabIndex = 5;
+            btnNew.UseVisualStyleBackColor = false;
+            btnNew.Click += btnNew_Click;
             // 
             // label2
             // 
@@ -250,7 +249,7 @@
             ptbZero.BackgroundImage = Properties.Resources.zero;
             ptbZero.BackgroundImageLayout = ImageLayout.Stretch;
             ptbZero.Cursor = Cursors.Hand;
-            ptbZero.Location = new Point(192, 236);
+            ptbZero.Location = new Point(189, 239);
             ptbZero.Name = "ptbZero";
             ptbZero.Size = new Size(20, 20);
             ptbZero.TabIndex = 12;
@@ -261,16 +260,16 @@
             // 
             btnUndo.Anchor = AnchorStyles.Top;
             btnUndo.BackColor = Color.Transparent;
-            btnUndo.BackgroundImage = Properties.Resources.Caro_Game__5_;
+            btnUndo.BackgroundImage = Properties.Resources.undo;
             btnUndo.BackgroundImageLayout = ImageLayout.Stretch;
             btnUndo.Cursor = Cursors.Hand;
             btnUndo.FlatAppearance.BorderSize = 0;
             btnUndo.FlatAppearance.MouseDownBackColor = SystemColors.ButtonHighlight;
             btnUndo.FlatAppearance.MouseOverBackColor = SystemColors.ButtonHighlight;
             btnUndo.FlatStyle = FlatStyle.Flat;
-            btnUndo.Location = new Point(143, 243);
+            btnUndo.Location = new Point(137, 232);
             btnUndo.Name = "btnUndo";
-            btnUndo.Size = new Size(65, 51);
+            btnUndo.Size = new Size(80, 80);
             btnUndo.TabIndex = 6;
             btnUndo.UseVisualStyleBackColor = false;
             btnUndo.Click += btnUndo_Click;
@@ -279,7 +278,6 @@
             // 
             panelChat.BackColor = Color.DeepSkyBlue;
             panelChat.BorderStyle = BorderStyle.Fixed3D;
-            panelChat.Controls.Add(label4);
             panelChat.Controls.Add(btnSend);
             panelChat.Controls.Add(txtMessage);
             panelChat.Controls.Add(rtbChat);
@@ -289,41 +287,31 @@
             panelChat.TabIndex = 3;
             panelChat.Visible = false;
             // 
-            // label4
-            // 
-            label4.AutoSize = true;
-            label4.Font = new Font("Segoe UI", 15F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            label4.Location = new Point(189, 2);
-            label4.Name = "label4";
-            label4.Size = new Size(65, 35);
-            label4.TabIndex = 3;
-            label4.Text = "Chat";
-            // 
             // btnSend
             // 
             btnSend.Cursor = Cursors.Hand;
-            btnSend.Location = new Point(335, 236);
+            btnSend.Location = new Point(335, 228);
             btnSend.Name = "btnSend";
-            btnSend.Size = new Size(82, 37);
+            btnSend.Size = new Size(102, 49);
             btnSend.TabIndex = 2;
             btnSend.Text = "Send";
             btnSend.UseVisualStyleBackColor = true;
             // 
             // txtMessage
             // 
-            txtMessage.Location = new Point(30, 236);
+            txtMessage.Location = new Point(6, 228);
             txtMessage.Multiline = true;
             txtMessage.Name = "txtMessage";
-            txtMessage.Size = new Size(300, 37);
+            txtMessage.Size = new Size(324, 49);
             txtMessage.TabIndex = 1;
             // 
             // rtbChat
             // 
             rtbChat.BackColor = Color.White;
-            rtbChat.Location = new Point(30, 37);
+            rtbChat.Location = new Point(6, 16);
             rtbChat.Name = "rtbChat";
             rtbChat.ReadOnly = true;
-            rtbChat.Size = new Size(387, 185);
+            rtbChat.Size = new Size(431, 206);
             rtbChat.TabIndex = 0;
             rtbChat.Text = "";
             // 
@@ -364,7 +352,7 @@
         private Button btnExit;
         private Button btnChat;
         private Button btnUndo;
-        private Button btnMenu;
+        private Button btnNew;
         private Label label2;
         private Label label1;
         private ProgressBar pgbP2;
@@ -372,7 +360,6 @@
         private ProgressBar pgbP1;
         private PictureBox ptbX;
         private Panel panelChat;
-        private Label label4;
         private Button btnSend;
         private TextBox txtMessage;
         private RichTextBox rtbChat;

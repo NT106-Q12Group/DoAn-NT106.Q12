@@ -95,7 +95,7 @@
             // 
             save_btn.Cursor = Cursors.Hand;
             save_btn.Font = new Font("Segoe UI", 9F);
-            save_btn.Location = new Point(139, 488);
+            save_btn.Location = new Point(34, 489);
             save_btn.Name = "save_btn";
             save_btn.Size = new Size(141, 37);
             save_btn.TabIndex = 5;
@@ -203,17 +203,13 @@
             // btnExit
             // 
             btnExit.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            btnExit.BackgroundImage = Properties.Resources.Caro_Game__7_;
             btnExit.BackgroundImageLayout = ImageLayout.Stretch;
             btnExit.Cursor = Cursors.Hand;
-            btnExit.FlatAppearance.BorderSize = 0;
-            btnExit.FlatAppearance.MouseDownBackColor = SystemColors.HotTrack;
-            btnExit.FlatAppearance.MouseOverBackColor = SystemColors.HotTrack;
-            btnExit.FlatStyle = FlatStyle.Flat;
-            btnExit.Location = new Point(346, 12);
+            btnExit.Location = new Point(286, 489);
             btnExit.Name = "btnExit";
-            btnExit.Size = new Size(65, 51);
+            btnExit.Size = new Size(94, 37);
             btnExit.TabIndex = 19;
+            btnExit.Text = "Cancel";
             btnExit.UseVisualStyleBackColor = true;
             btnExit.Click += btnExit_Click;
             // 
@@ -241,6 +237,7 @@
             Controls.Add(username_tb);
             FormBorderStyle = FormBorderStyle.None;
             Name = "ResetPassword";
+            StartPosition = FormStartPosition.CenterScreen;
             Text = "Form1";
             Load += ResetPassword_Load;
             ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
