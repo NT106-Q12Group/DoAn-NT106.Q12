@@ -312,6 +312,12 @@ namespace CaroGame
                 ChessBoard.Player[1].Name = player2Name;
             }
 
+            undoCount = false;
+            isMyUndoRequest = false;
+            if (btnUndo != null) btnUndo.Enabled = true;
+
+            if (ptbOne != null) ptbOne.Visible = true;
+            if (ptbZero != null) ptbZero.Visible = false;
 
             this.Text = $"PvP - Rematch ({(MySide == 0 ? "X" : "O")})";
         }
@@ -352,10 +358,7 @@ namespace CaroGame
                             break;
 
                         case "UNDO_SUCCESS":
-                            if (!isMyUndoRequest)
-                            {
-                                ChessBoard.ExecuteUndoPvP();
-                            }
+                            ChessBoard.ExecuteUndoPvP();
 
                             undoCount = true;
                             if (ptbOne != null) ptbOne.Visible = false;
@@ -446,18 +449,12 @@ namespace CaroGame
         {
             if (undoCount) return;
             if (!ChessBoard.IsMyTurn) return;
-            ChessBoard.ExecuteUndoPvP();
-
-            undoCount = true;
-
             if (tcpClient == null || !tcpClient.IsConnected()) return;
 
             isMyUndoRequest = true;
-
             btnUndo.Enabled = false;
 
             tcpClient.Send("REQUEST_UNDO");
-
         }
 
         private void btnSend_Click(object sender, EventArgs e)
