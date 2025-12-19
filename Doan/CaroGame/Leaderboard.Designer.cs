@@ -29,36 +29,58 @@
         private void InitializeComponent()
         {
             dgv_leaderboard = new DataGridView();
+            label3 = new Label();
             ((System.ComponentModel.ISupportInitialize)dgv_leaderboard).BeginInit();
             SuspendLayout();
             // 
             // dgv_leaderboard
             // 
             dgv_leaderboard.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.ColumnHeader;
+            dgv_leaderboard.BackgroundColor = Color.LightBlue;
             dgv_leaderboard.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             dgv_leaderboard.Dock = DockStyle.Bottom;
             dgv_leaderboard.Location = new Point(0, 53);
-            dgv_leaderboard.Margin = new Padding(2, 2, 2, 2);
+            dgv_leaderboard.Margin = new Padding(2);
             dgv_leaderboard.Name = "dgv_leaderboard";
             dgv_leaderboard.RowHeadersWidth = 62;
             dgv_leaderboard.Size = new Size(640, 307);
             dgv_leaderboard.TabIndex = 0;
             // 
+            // label3
+            // 
+            label3.Anchor = AnchorStyles.Top;
+            label3.AutoSize = true;
+            label3.Font = new Font("Snap ITC", 19.8000011F, FontStyle.Italic, GraphicsUnit.Point, 0);
+            label3.ForeColor = Color.Yellow;
+            label3.Location = new Point(191, 7);
+            label3.Name = "label3";
+            label3.Size = new Size(251, 44);
+            label3.TabIndex = 10;
+            label3.Text = "Leaderboard";
+            // 
             // Leaderboard
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
+            BackColor = SystemColors.HotTrack;
             ClientSize = new Size(640, 360);
+            Controls.Add(label3);
             Controls.Add(dgv_leaderboard);
-            Margin = new Padding(2, 2, 2, 2);
+            FormBorderStyle = FormBorderStyle.FixedSingle;
+            Margin = new Padding(2);
+            MaximizeBox = false;
+            MinimizeBox = false;
             Name = "Leaderboard";
+            StartPosition = FormStartPosition.CenterScreen;
             Text = "Leaderboard";
             ((System.ComponentModel.ISupportInitialize)dgv_leaderboard).EndInit();
             ResumeLayout(false);
+            PerformLayout();
         }
 
         #endregion
 
         private DataGridView dgv_leaderboard;
+        private Label label3;
     }
 }

@@ -28,7 +28,6 @@
         /// </summary>
         private void InitializeComponent()
         {
-            pnlLeaderBoard = new Panel();
             pnlInfo = new Panel();
             ptbOne = new PictureBox();
             ptbZero = new PictureBox();
@@ -51,7 +50,6 @@
             btn_emoji = new Button();
             btnSend = new Button();
             txtMessage = new TextBox();
-            label3 = new Label();
             pnlInfo.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)ptbOne).BeginInit();
             ((System.ComponentModel.ISupportInitialize)ptbZero).BeginInit();
@@ -61,16 +59,6 @@
             ((System.ComponentModel.ISupportInitialize)ptbX).BeginInit();
             panelChat.SuspendLayout();
             SuspendLayout();
-            // 
-            // pnlLeaderBoard
-            // 
-            pnlLeaderBoard.Anchor = AnchorStyles.Top;
-            pnlLeaderBoard.BackColor = SystemColors.ButtonHighlight;
-            pnlLeaderBoard.BorderStyle = BorderStyle.Fixed3D;
-            pnlLeaderBoard.Location = new Point(667, 372);
-            pnlLeaderBoard.Name = "pnlLeaderBoard";
-            pnlLeaderBoard.Size = new Size(381, 241);
-            pnlLeaderBoard.TabIndex = 2;
             // 
             // pnlInfo
             // 
@@ -293,9 +281,9 @@
             panelChat.Controls.Add(btn_emoji);
             panelChat.Controls.Add(btnSend);
             panelChat.Controls.Add(txtMessage);
-            panelChat.Location = new Point(631, 329);
+            panelChat.Location = new Point(631, 330);
             panelChat.Name = "panelChat";
-            panelChat.Size = new Size(449, 284);
+            panelChat.Size = new Size(449, 283);
             panelChat.TabIndex = 1;
             panelChat.Visible = false;
             // 
@@ -346,18 +334,6 @@
             txtMessage.Size = new Size(300, 37);
             txtMessage.TabIndex = 1;
             // 
-            // label3
-            // 
-            label3.Anchor = AnchorStyles.Top;
-            label3.AutoSize = true;
-            label3.Font = new Font("Snap ITC", 19.8000011F, FontStyle.Italic, GraphicsUnit.Point, 0);
-            label3.ForeColor = Color.Yellow;
-            label3.Location = new Point(734, 326);
-            label3.Name = "label3";
-            label3.Size = new Size(251, 44);
-            label3.TabIndex = 9;
-            label3.Text = "Leaderboard";
-            // 
             // PvP
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
@@ -365,8 +341,6 @@
             BackColor = SystemColors.HotTrack;
             ClientSize = new Size(1098, 626);
             Controls.Add(panelChat);
-            Controls.Add(label3);
-            Controls.Add(pnlLeaderBoard);
             Controls.Add(pnlInfo);
             Controls.Add(pnlChessBoard);
             FormBorderStyle = FormBorderStyle.None;
@@ -385,11 +359,9 @@
             panelChat.ResumeLayout(false);
             panelChat.PerformLayout();
             ResumeLayout(false);
-            PerformLayout();
         }
 
         #endregion
-        private Panel pnlLeaderBoard;
         private Panel pnlInfo;
         private PictureBox ptbX;
         private Panel pnlChessBoard;
@@ -402,7 +374,6 @@
         private Button btnChat;
         private Button btnUndo;
         private Button btnMenu;
-        private Label label3;
         private PictureBox ptbAvaP1;
         private Panel panelChat;
         private Button btnSend;

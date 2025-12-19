@@ -78,6 +78,7 @@
             // btnBack
             // 
             btnBack.Cursor = Cursors.Hand;
+            btnBack.Font = new Font("Segoe UI", 10F);
             btnBack.Location = new Point(282, 302);
             btnBack.Margin = new Padding(3, 4, 3, 4);
             btnBack.Name = "btnBack";
