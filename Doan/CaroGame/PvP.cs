@@ -18,20 +18,11 @@ namespace CaroGame
         private bool myUndoUsed = false;
         private bool oppUndoUsed = false;
 
-        // Names (2 người chơi trong phòng)
-        private string player1Name; // tên người chơi "slot 1" (không nhất thiết luôn là X sau rematch)
-        private string player2Name;
-
-        private string _myName = "";
-        private string _oppName = "";
-
-        // 2 icon quân X/O (lấy từ PictureBox bạn gán tĩnh hoặc fallback theo ChessBoard)
-        private Image _imgX = null;
-        private Image _imgO = null;
-
-        // 2 picturebox hiển thị quân cho Player1/Player2 (tìm runtime để khỏi bị lỗi compile nếu tên khác)
-        private PictureBox _pbP1Mark = null;
-        private PictureBox _pbP2Mark = null;
+        // Names đang hiển thị theo "slot UI"
+        // QUAN TRỌNG: vì icon tĩnh: label1 luôn đứng cạnh icon X, label2 cạnh icon O
+        // => khi rematch đổi quân, ta swap 2 tên này để khớp icon
+        private string player1Name; // UI slot X
+        private string player2Name; // UI slot O
 
         private TCPClient tcpClient;
 
@@ -43,7 +34,7 @@ namespace CaroGame
         private bool _hasIncomingRematchOffer = false;
         private string _incomingOfferFrom = "";
 
-        // Dialogs (modeless)
+        // dialogs (modeless)
         private ResultDialog _resultDialog = null;
         private WaitingRematchDialog _waitingDialog = null;
 
@@ -52,8 +43,11 @@ namespace CaroGame
             InitializeComponent();
             this.room = room;
             this.MySide = mySide;
+
+            // ban đầu (vào game lần 1): p1 là X, p2 là O (theo UI bạn thiết kế tĩnh)
             this.player1Name = p1;
             this.player2Name = p2;
+
             this.tcpClient = client;
 
             InitGame();
@@ -80,28 +74,10 @@ namespace CaroGame
             ChessBoard = new ChessBoardManager(pnlChessBoard, GameMode.PvP);
             ChessBoard.MySide = this.MySide;
 
-            // ✅ xác định "tôi" và "đối thủ" (cố định cả trận kể cả rematch)
-            _myName = (MySide == 0) ? player1Name : player2Name;
-            _oppName = (MySide == 0) ? player2Name : player1Name;
-
-            // ✅ tìm 2 PictureBox icon quân (nếu bạn gán tĩnh trong Designer)
-            ResolveMarkPictureBoxes();
-
-            // ✅ ưu tiên lấy icon X/O từ 2 picturebox tĩnh (Player1 ban đầu là X, Player2 ban đầu là O)
-            if (_pbP1Mark != null && _pbP2Mark != null && _pbP1Mark.Image != null && _pbP2Mark.Image != null)
-            {
-                _imgX = _pbP1Mark.Image; // ban đầu P1 là X
-                _imgO = _pbP2Mark.Image; // ban đầu P2 là O
-            }
-            else
-            {
-                // fallback: lấy theo ChessBoardManager (nếu không tìm được picturebox)
-                if (ChessBoard.Player != null && ChessBoard.Player.Count >= 2)
-                {
-                    _imgX = ChessBoard.Player[0].Mark;
-                    _imgO = ChessBoard.Player[1].Mark;
-                }
-            }
+            // ✅ Mapping tên trong ChessBoard theo icon tĩnh:
+            // Player[0] là X => lấy theo label1 (player1Name)
+            // Player[1] là O => lấy theo label2 (player2Name)
+            SyncChessBoardNamesWithUI();
 
             ChessBoard.PlayerClickedNode -= ChessBoard_PlayerClickedNode;
             ChessBoard.PlayerClickedNode += ChessBoard_PlayerClickedNode;
@@ -115,119 +91,71 @@ namespace CaroGame
                 tcpClient.OnMessageReceived += HandleServerMessage;
             }
 
-            // ✅ apply UI + mapping tên theo side hiện tại
-            ApplySideUI();
+            SetupPlayerInfo();
 
             ChessBoard.IsMyTurn = (this.MySide == 0);
+            this.Text = $"PvP - Bạn là {(this.MySide == 0 ? "X (Đi trước)" : "O (Đi sau)")}";
 
             ChessBoard.DrawChessBoard();
         }
 
-        // ================== APPLY SIDE (UI + mapping) ==================
-        private void ApplySideUI()
+        // =============== CORE UI HELPERS ===============
+        private void SetupPlayerInfo()
         {
-            // tên người chơi đang là X / O ở ván hiện tại
-            string xName = (MySide == 0) ? _myName : _oppName;
-            string oName = (MySide == 0) ? _oppName : _myName;
-
-            // ✅ Mapping trong ChessBoard: Player[0] là X, Player[1] là O
-            if (ChessBoard.Player != null && ChessBoard.Player.Count >= 2)
-            {
-                ChessBoard.Player[0].Name = xName;
-                ChessBoard.Player[1].Name = oName;
-            }
-
-            // ✅ UI: label vẫn là tên 2 người cố định theo room
+            // label1 luôn là người cạnh icon X
             if (label1 != null) label1.Text = player1Name;
             if (label2 != null) label2.Text = player2Name;
 
-            // ✅ đổi icon quân cho 2 người dựa trên ai đang là X/O
-            SetPlayerMarkIcons(xName);
-
-            // ✅ highlight "mình" theo quân hiện tại
-            if (label1 != null) { label1.ForeColor = Color.Black; label1.Font = new Font(label1.Font, FontStyle.Regular); }
-            if (label2 != null) { label2.ForeColor = Color.Black; label2.Font = new Font(label2.Font, FontStyle.Regular); }
-
-            Label myLabel = null;
-            if (label1 != null && string.Equals(player1Name, _myName, StringComparison.OrdinalIgnoreCase)) myLabel = label1;
-            if (label2 != null && string.Equals(player2Name, _myName, StringComparison.OrdinalIgnoreCase)) myLabel = label2;
-
-            if (myLabel != null)
+            if (label1 != null)
             {
-                myLabel.Font = new Font(myLabel.Font, FontStyle.Bold);
-                myLabel.ForeColor = (MySide == 0) ? Color.Red : Color.Blue;
+                label1.ForeColor = Color.Black;
+                label1.Font = new Font(label1.Font, FontStyle.Regular);
+            }
+            if (label2 != null)
+            {
+                label2.ForeColor = Color.Black;
+                label2.Font = new Font(label2.Font, FontStyle.Regular);
             }
 
-            // title
-            this.Text = $"PvP - Bạn là {(MySide == 0 ? "X (Đi trước)" : "O (Đi sau)")}";
-        }
-
-        private void SetPlayerMarkIcons(string xName)
-        {
-            if (_imgX == null || _imgO == null) return;
-            if (_pbP1Mark == null || _pbP2Mark == null) return;
-
-            bool p1IsX = string.Equals(player1Name, xName, StringComparison.OrdinalIgnoreCase);
-
-            _pbP1Mark.Image = p1IsX ? _imgX : _imgO;
-            _pbP2Mark.Image = p1IsX ? _imgO : _imgX;
-        }
-
-        // ✅ tìm picturebox icon theo Tag hoặc theo Name (bạn có thể chỉnh list tên nếu khác)
-        private void ResolveMarkPictureBoxes()
-        {
-            // 1) Ưu tiên Tag (nếu bạn set trong Designer)
-            // - set Tag của PB icon Player1 = "P1_MARK"
-            // - set Tag của PB icon Player2 = "P2_MARK"
-            _pbP1Mark = FindControlByTag<PictureBox>(this, "P1_MARK");
-            _pbP2Mark = FindControlByTag<PictureBox>(this, "P2_MARK");
-            if (_pbP1Mark != null && _pbP2Mark != null) return;
-
-            // 2) Fallback theo Name (chỉnh lại cho đúng tên control của bạn nếu cần)
-            _pbP1Mark ??= FindControlByNames<PictureBox>(this,
-                "ptbP1Mark", "ptbPlayer1Mark", "pbPlayer1Mark", "pictureBoxP1Mark", "pictureBoxX", "ptbX");
-
-            _pbP2Mark ??= FindControlByNames<PictureBox>(this,
-                "ptbP2Mark", "ptbPlayer2Mark", "pbPlayer2Mark", "pictureBoxP2Mark", "pictureBoxO", "ptbO");
-
-            // NOTE:
-            // Nếu vẫn null -> vào Designer đặt Tag cho 2 picturebox rồi xong.
-        }
-
-        private T FindControlByTag<T>(Control root, string tag) where T : Control
-        {
-            foreach (Control c in root.Controls)
+            // highlight người chơi theo MySide hiện tại
+            // MySide==0 => mình là X => highlight label1
+            // MySide==1 => mình là O => highlight label2
+            if (MySide == 0)
             {
-                if (c is T t && c.Tag != null && string.Equals(c.Tag.ToString(), tag, StringComparison.OrdinalIgnoreCase))
-                    return t;
-
-                var child = FindControlByTag<T>(c, tag);
-                if (child != null) return child;
+                if (label1 != null)
+                {
+                    label1.ForeColor = Color.Red;
+                    label1.Font = new Font(label1.Font, FontStyle.Bold);
+                }
             }
-            return null;
+            else
+            {
+                if (label2 != null)
+                {
+                    label2.ForeColor = Color.Blue;
+                    label2.Font = new Font(label2.Font, FontStyle.Bold);
+                }
+            }
         }
 
-        private T FindControlByNames<T>(Control root, params string[] names) where T : Control
+        private void SyncChessBoardNamesWithUI()
         {
-            foreach (var name in names)
+            if (ChessBoard?.Player != null && ChessBoard.Player.Count >= 2)
             {
-                var found = FindControlByName<T>(root, name);
-                if (found != null) return found;
+                ChessBoard.Player[0].Name = player1Name; // X
+                ChessBoard.Player[1].Name = player2Name; // O
             }
-            return null;
         }
 
-        private T FindControlByName<T>(Control root, string name) where T : Control
+        private void SwapNamesForStaticIcons()
         {
-            foreach (Control c in root.Controls)
-            {
-                if (c is T t && string.Equals(c.Name, name, StringComparison.OrdinalIgnoreCase))
-                    return t;
+            // swap tên 2 label để khớp icon tĩnh (label1 luôn X, label2 luôn O)
+            string tmp = player1Name;
+            player1Name = player2Name;
+            player2Name = tmp;
 
-                var child = FindControlByName<T>(c, name);
-                if (child != null) return child;
-            }
-            return null;
+            SetupPlayerInfo();
+            SyncChessBoardNamesWithUI();
         }
 
         // ================= DIALOG HELPERS =================
@@ -295,25 +223,25 @@ namespace CaroGame
             };
 
             _resultDialog.FormClosed += (s, e) => { _resultDialog = null; };
-
             _resultDialog.Show(this);
         }
 
-        // ✅ robust: dựa vào MySide + myName/oppName
         private bool ComputeWinByWinnerRaw(string winnerRaw)
         {
             string w = (winnerRaw ?? "").Trim();
             if (string.IsNullOrEmpty(w)) return false;
 
+            // Case 1: board gửi "X"/"O"
             if (string.Equals(w, "X", StringComparison.OrdinalIgnoreCase))
                 return MySide == 0;
             if (string.Equals(w, "O", StringComparison.OrdinalIgnoreCase))
                 return MySide == 1;
 
-            if (!string.IsNullOrEmpty(_myName) && string.Equals(w, _myName, StringComparison.OrdinalIgnoreCase))
-                return true;
-            if (!string.IsNullOrEmpty(_oppName) && string.Equals(w, _oppName, StringComparison.OrdinalIgnoreCase))
-                return false;
+            // Case 2: board gửi tên (đã sync theo UI)
+            if (string.Equals(w, player1Name, StringComparison.OrdinalIgnoreCase)) // X
+                return MySide == 0;
+            if (string.Equals(w, player2Name, StringComparison.OrdinalIgnoreCase)) // O
+                return MySide == 1;
 
             return false;
         }
@@ -381,7 +309,6 @@ namespace CaroGame
             };
 
             _waitingDialog.FormClosed += (s, e) => { _waitingDialog = null; };
-
             _waitingDialog.Show(this);
 
             try
@@ -403,8 +330,10 @@ namespace CaroGame
             _hasIncomingRematchOffer = false;
             _incomingOfferFrom = "";
 
-            // server gửi "X" / "O" cho MÌNH
-            MySide = (sideRaw ?? "").Trim().ToUpper() == "X" ? 0 : 1;
+            int oldSide = MySide;
+
+            // server gửi side cho MÌNH: "X" / "O"
+            MySide = ((sideRaw ?? "").Trim().ToUpper() == "X") ? 0 : 1;
 
             ChessBoard.resetGame();
             ChessBoard.MySide = MySide;
@@ -414,15 +343,23 @@ namespace CaroGame
             myUndoUsed = false;
             oppUndoUsed = false;
             isMyUndoRequest = false;
-
             if (btnUndo != null) btnUndo.Enabled = true;
 
             // reset UI undo của mình (ptbOne/ptbZero)
             if (ptbOne != null) ptbOne.Visible = true;
             if (ptbZero != null) ptbZero.Visible = false;
 
-            // ✅ QUAN TRỌNG: cập nhật lại UI icon X/O + mapping tên theo side mới
-            ApplySideUI();
+            // ✅ icon tĩnh: label1 luôn cạnh X, label2 luôn cạnh O
+            // => nếu side của mình đổi so với ván trước thì swap tên hiển thị để khớp icon
+            if (oldSide != MySide)
+                SwapNamesForStaticIcons();
+            else
+            {
+                SetupPlayerInfo();
+                SyncChessBoardNamesWithUI();
+            }
+
+            this.Text = $"PvP - Rematch ({(MySide == 0 ? "X" : "O")})";
         }
 
         // ================= NETWORK =================
@@ -460,7 +397,6 @@ namespace CaroGame
                             break;
 
                         case "UNDO_SUCCESS":
-                            // ✅ cả 2 bên đều phải undo board
                             ChessBoard.ExecuteUndoPvP();
 
                             if (isMyUndoRequest)
@@ -468,7 +404,6 @@ namespace CaroGame
                                 myUndoUsed = true;
                                 if (btnUndo != null) btnUndo.Enabled = false;
 
-                                // UI undo của mình
                                 if (ptbOne != null) ptbOne.Visible = false;
                                 if (ptbZero != null) ptbZero.Visible = true;
                             }
@@ -558,7 +493,7 @@ namespace CaroGame
             if (tcpClient == null || !tcpClient.IsConnected()) return;
 
             isMyUndoRequest = true;
-            if (btnUndo != null) btnUndo.Enabled = false; // khóa tạm khi chờ server
+            if (btnUndo != null) btnUndo.Enabled = false;
             tcpClient.Send("REQUEST_UNDO");
         }
 
