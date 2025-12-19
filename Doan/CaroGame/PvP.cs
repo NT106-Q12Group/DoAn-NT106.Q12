@@ -3,7 +3,6 @@ using System.Drawing;
 using System.Windows.Forms;
 using CaroGame_TCPClient;
 
-
 namespace CaroGame
 {
     public partial class PvP : Form
@@ -11,27 +10,40 @@ namespace CaroGame
         private ChessBoardManager ChessBoard;
         public Room room;
 
-        // 0: X (P1), 1: O (P2)
+        // 0: X, 1: O
         public int MySide { get; set; }
 
+        // Undo
         private bool isMyUndoRequest = false;
         private bool myUndoUsed = false;
         private bool oppUndoUsed = false;
 
-
-        private string player1Name;
+        // Names (2 người chơi trong phòng)
+        private string player1Name; // tên người chơi "slot 1" (không nhất thiết luôn là X sau rematch)
         private string player2Name;
+
+        private string _myName = "";
+        private string _oppName = "";
+
+        // 2 icon quân X/O (lấy từ PictureBox bạn gán tĩnh hoặc fallback theo ChessBoard)
+        private Image _imgX = null;
+        private Image _imgO = null;
+
+        // 2 picturebox hiển thị quân cho Player1/Player2 (tìm runtime để khỏi bị lỗi compile nếu tên khác)
+        private PictureBox _pbP1Mark = null;
+        private PictureBox _pbP2Mark = null;
+
         private TCPClient tcpClient;
 
         private bool _gameEnded = false;
         private bool _waitingRematch = false;
         private bool _resultSent = false;
 
-        // nếu đối thủ gửi offer
+        // Rematch
         private bool _hasIncomingRematchOffer = false;
         private string _incomingOfferFrom = "";
 
-        // ✅ dialogs (modeless) để có thể đóng khi nhận packet
+        // Dialogs (modeless)
         private ResultDialog _resultDialog = null;
         private WaitingRematchDialog _waitingDialog = null;
 
@@ -65,21 +77,31 @@ namespace CaroGame
             SetupEmojiPickerPanel();
             if (pnlChessBoard != null) pnlChessBoard.BringToFront();
 
-            SetupPlayerInfo();
-
             ChessBoard = new ChessBoardManager(pnlChessBoard, GameMode.PvP);
             ChessBoard.MySide = this.MySide;
 
-            // ✅ FIX BUG WINNER: đồng bộ tên Player trong ChessBoardManager với tên thật
-            if (ChessBoard.Player != null && ChessBoard.Player.Count >= 2)
+            // ✅ xác định "tôi" và "đối thủ" (cố định cả trận kể cả rematch)
+            _myName = (MySide == 0) ? player1Name : player2Name;
+            _oppName = (MySide == 0) ? player2Name : player1Name;
+
+            // ✅ tìm 2 PictureBox icon quân (nếu bạn gán tĩnh trong Designer)
+            ResolveMarkPictureBoxes();
+
+            // ✅ ưu tiên lấy icon X/O từ 2 picturebox tĩnh (Player1 ban đầu là X, Player2 ban đầu là O)
+            if (_pbP1Mark != null && _pbP2Mark != null && _pbP1Mark.Image != null && _pbP2Mark.Image != null)
             {
-                ChessBoard.Player[0].Name = player1Name; // X
-                ChessBoard.Player[1].Name = player2Name; // O
+                _imgX = _pbP1Mark.Image; // ban đầu P1 là X
+                _imgO = _pbP2Mark.Image; // ban đầu P2 là O
             }
-
-            ChessBoard.IsMyTurn = (this.MySide == 0);
-
-            this.Text = $"PvP - Bạn là {(this.MySide == 0 ? "X (Đi trước)" : "O (Đi sau)")}";
+            else
+            {
+                // fallback: lấy theo ChessBoardManager (nếu không tìm được picturebox)
+                if (ChessBoard.Player != null && ChessBoard.Player.Count >= 2)
+                {
+                    _imgX = ChessBoard.Player[0].Mark;
+                    _imgO = ChessBoard.Player[1].Mark;
+                }
+            }
 
             ChessBoard.PlayerClickedNode -= ChessBoard_PlayerClickedNode;
             ChessBoard.PlayerClickedNode += ChessBoard_PlayerClickedNode;
@@ -93,26 +115,119 @@ namespace CaroGame
                 tcpClient.OnMessageReceived += HandleServerMessage;
             }
 
+            // ✅ apply UI + mapping tên theo side hiện tại
+            ApplySideUI();
+
+            ChessBoard.IsMyTurn = (this.MySide == 0);
+
             ChessBoard.DrawChessBoard();
         }
 
-        private void SetupPlayerInfo()
+        // ================== APPLY SIDE (UI + mapping) ==================
+        private void ApplySideUI()
         {
+            // tên người chơi đang là X / O ở ván hiện tại
+            string xName = (MySide == 0) ? _myName : _oppName;
+            string oName = (MySide == 0) ? _oppName : _myName;
+
+            // ✅ Mapping trong ChessBoard: Player[0] là X, Player[1] là O
+            if (ChessBoard.Player != null && ChessBoard.Player.Count >= 2)
+            {
+                ChessBoard.Player[0].Name = xName;
+                ChessBoard.Player[1].Name = oName;
+            }
+
+            // ✅ UI: label vẫn là tên 2 người cố định theo room
             if (label1 != null) label1.Text = player1Name;
             if (label2 != null) label2.Text = player2Name;
 
+            // ✅ đổi icon quân cho 2 người dựa trên ai đang là X/O
+            SetPlayerMarkIcons(xName);
+
+            // ✅ highlight "mình" theo quân hiện tại
             if (label1 != null) { label1.ForeColor = Color.Black; label1.Font = new Font(label1.Font, FontStyle.Regular); }
             if (label2 != null) { label2.ForeColor = Color.Black; label2.Font = new Font(label2.Font, FontStyle.Regular); }
 
-            if (MySide == 0)
+            Label myLabel = null;
+            if (label1 != null && string.Equals(player1Name, _myName, StringComparison.OrdinalIgnoreCase)) myLabel = label1;
+            if (label2 != null && string.Equals(player2Name, _myName, StringComparison.OrdinalIgnoreCase)) myLabel = label2;
+
+            if (myLabel != null)
             {
-                if (label1 != null) { label1.ForeColor = Color.Red; label1.Font = new Font(label1.Font, FontStyle.Bold); }
-            }
-            else
-            {
-                if (label2 != null) { label2.ForeColor = Color.Blue; label2.Font = new Font(label2.Font, FontStyle.Bold); }
+                myLabel.Font = new Font(myLabel.Font, FontStyle.Bold);
+                myLabel.ForeColor = (MySide == 0) ? Color.Red : Color.Blue;
             }
 
+            // title
+            this.Text = $"PvP - Bạn là {(MySide == 0 ? "X (Đi trước)" : "O (Đi sau)")}";
+        }
+
+        private void SetPlayerMarkIcons(string xName)
+        {
+            if (_imgX == null || _imgO == null) return;
+            if (_pbP1Mark == null || _pbP2Mark == null) return;
+
+            bool p1IsX = string.Equals(player1Name, xName, StringComparison.OrdinalIgnoreCase);
+
+            _pbP1Mark.Image = p1IsX ? _imgX : _imgO;
+            _pbP2Mark.Image = p1IsX ? _imgO : _imgX;
+        }
+
+        // ✅ tìm picturebox icon theo Tag hoặc theo Name (bạn có thể chỉnh list tên nếu khác)
+        private void ResolveMarkPictureBoxes()
+        {
+            // 1) Ưu tiên Tag (nếu bạn set trong Designer)
+            // - set Tag của PB icon Player1 = "P1_MARK"
+            // - set Tag của PB icon Player2 = "P2_MARK"
+            _pbP1Mark = FindControlByTag<PictureBox>(this, "P1_MARK");
+            _pbP2Mark = FindControlByTag<PictureBox>(this, "P2_MARK");
+            if (_pbP1Mark != null && _pbP2Mark != null) return;
+
+            // 2) Fallback theo Name (chỉnh lại cho đúng tên control của bạn nếu cần)
+            _pbP1Mark ??= FindControlByNames<PictureBox>(this,
+                "ptbP1Mark", "ptbPlayer1Mark", "pbPlayer1Mark", "pictureBoxP1Mark", "pictureBoxX", "ptbX");
+
+            _pbP2Mark ??= FindControlByNames<PictureBox>(this,
+                "ptbP2Mark", "ptbPlayer2Mark", "pbPlayer2Mark", "pictureBoxP2Mark", "pictureBoxO", "ptbO");
+
+            // NOTE:
+            // Nếu vẫn null -> vào Designer đặt Tag cho 2 picturebox rồi xong.
+        }
+
+        private T FindControlByTag<T>(Control root, string tag) where T : Control
+        {
+            foreach (Control c in root.Controls)
+            {
+                if (c is T t && c.Tag != null && string.Equals(c.Tag.ToString(), tag, StringComparison.OrdinalIgnoreCase))
+                    return t;
+
+                var child = FindControlByTag<T>(c, tag);
+                if (child != null) return child;
+            }
+            return null;
+        }
+
+        private T FindControlByNames<T>(Control root, params string[] names) where T : Control
+        {
+            foreach (var name in names)
+            {
+                var found = FindControlByName<T>(root, name);
+                if (found != null) return found;
+            }
+            return null;
+        }
+
+        private T FindControlByName<T>(Control root, string name) where T : Control
+        {
+            foreach (Control c in root.Controls)
+            {
+                if (c is T t && string.Equals(c.Name, name, StringComparison.OrdinalIgnoreCase))
+                    return t;
+
+                var child = FindControlByName<T>(c, name);
+                if (child != null) return child;
+            }
+            return null;
         }
 
         // ================= DIALOG HELPERS =================
@@ -146,7 +261,6 @@ namespace CaroGame
 
         private void ShowOpponentLeftAndExit()
         {
-            // đóng hết popup hiện tại (kể cả đang endgame/rematch)
             CloseAllPopups();
 
             MessageBox.Show("Đối thủ đã thoát. Trận đấu sẽ kết thúc.", "Thông báo",
@@ -156,7 +270,6 @@ namespace CaroGame
         }
 
         // ================= GAME END + RESULT =================
-
         private void ChessBoard_GameEnded(string winnerRaw)
         {
             if (_gameEnded) return;
@@ -165,7 +278,6 @@ namespace CaroGame
             bool iWon = ComputeWinByWinnerRaw(winnerRaw);
             SendGameResultOnce(iWon);
 
-            // ✅ Không dùng MessageBox thắng/thua (block) nữa
             CloseAllPopups();
 
             _resultDialog = new ResultDialog(iWon);
@@ -182,30 +294,26 @@ namespace CaroGame
                 ExitMatch(sendSurrenderIfNeeded: false);
             };
 
-            _resultDialog.FormClosed += (s, e) =>
-            {
-                _resultDialog = null;
-            };
+            _resultDialog.FormClosed += (s, e) => { _resultDialog = null; };
 
             _resultDialog.Show(this);
         }
 
+        // ✅ robust: dựa vào MySide + myName/oppName
         private bool ComputeWinByWinnerRaw(string winnerRaw)
         {
             string w = (winnerRaw ?? "").Trim();
             if (string.IsNullOrEmpty(w)) return false;
 
-            // Case 1: ChessBoard gửi "X"/"O"
             if (string.Equals(w, "X", StringComparison.OrdinalIgnoreCase))
                 return MySide == 0;
             if (string.Equals(w, "O", StringComparison.OrdinalIgnoreCase))
                 return MySide == 1;
 
-            // Case 2: ChessBoard gửi tên (đã sync trong InitGame)
-            if (!string.IsNullOrEmpty(player1Name) && string.Equals(w, player1Name, StringComparison.OrdinalIgnoreCase))
-                return MySide == 0;
-            if (!string.IsNullOrEmpty(player2Name) && string.Equals(w, player2Name, StringComparison.OrdinalIgnoreCase))
-                return MySide == 1;
+            if (!string.IsNullOrEmpty(_myName) && string.Equals(w, _myName, StringComparison.OrdinalIgnoreCase))
+                return true;
+            if (!string.IsNullOrEmpty(_oppName) && string.Equals(w, _oppName, StringComparison.OrdinalIgnoreCase))
+                return false;
 
             return false;
         }
@@ -220,12 +328,10 @@ namespace CaroGame
         }
 
         // ================= REMATCH FLOW =================
-
         private void RematchFlow()
         {
             if (tcpClient == null || !tcpClient.IsConnected()) return;
 
-            // Nếu đang có offer (trường hợp bạn muốn bấm nút Rematch để accept/decline)
             if (_hasIncomingRematchOffer)
             {
                 CloseAllPopups();
@@ -238,13 +344,10 @@ namespace CaroGame
                 );
 
                 if (res == DialogResult.Yes)
-                {
                     tcpClient.Send("REMATCH_ACCEPT");
-                }
                 else
                 {
                     tcpClient.Send("REMATCH_DECLINE");
-                    // ✅ không đồng ý -> cả hai thoát (mình thoát luôn)
                     ExitMatch(sendSurrenderIfNeeded: false);
                 }
 
@@ -253,7 +356,6 @@ namespace CaroGame
                 return;
             }
 
-            // chưa có offer => mình gửi request
             RequestRematch();
         }
 
@@ -301,36 +403,29 @@ namespace CaroGame
             _hasIncomingRematchOffer = false;
             _incomingOfferFrom = "";
 
-            MySide = (sideRaw.ToUpper() == "X") ? 0 : 1;
+            // server gửi "X" / "O" cho MÌNH
+            MySide = (sideRaw ?? "").Trim().ToUpper() == "X" ? 0 : 1;
 
             ChessBoard.resetGame();
             ChessBoard.MySide = MySide;
             ChessBoard.IsMyTurn = (MySide == 0);
 
-            // ✅ sync lại tên (cho chắc)
-            if (ChessBoard.Player != null && ChessBoard.Player.Count >= 2)
-            {
-                ChessBoard.Player[0].Name = player1Name;
-                ChessBoard.Player[1].Name = player2Name;
-            }
-
+            // reset undo
             myUndoUsed = false;
             oppUndoUsed = false;
             isMyUndoRequest = false;
 
             if (btnUndo != null) btnUndo.Enabled = true;
 
-            // reset UI undo của mình
+            // reset UI undo của mình (ptbOne/ptbZero)
             if (ptbOne != null) ptbOne.Visible = true;
             if (ptbZero != null) ptbZero.Visible = false;
 
-            // reset UI undo của đối thủ (nếu có)
-
-            this.Text = $"PvP - Rematch ({(MySide == 0 ? "X" : "O")})";
+            // ✅ QUAN TRỌNG: cập nhật lại UI icon X/O + mapping tên theo side mới
+            ApplySideUI();
         }
 
         // ================= NETWORK =================
-
         private void ChessBoard_PlayerClickedNode(Point point)
         {
             if (tcpClient != null && tcpClient.IsConnected())
@@ -365,38 +460,32 @@ namespace CaroGame
                             break;
 
                         case "UNDO_SUCCESS":
+                            // ✅ cả 2 bên đều phải undo board
                             ChessBoard.ExecuteUndoPvP();
 
                             if (isMyUndoRequest)
                             {
-                                // ✅ mình vừa undo thành công -> trừ lượt undo của mình
                                 myUndoUsed = true;
                                 if (btnUndo != null) btnUndo.Enabled = false;
 
-                                // UI "undo của mình" (giữ như bạn đang dùng ptbOne/ptbZero)
+                                // UI undo của mình
                                 if (ptbOne != null) ptbOne.Visible = false;
                                 if (ptbZero != null) ptbZero.Visible = true;
                             }
                             else
                             {
-                                // ✅ đối thủ undo -> chỉ đánh dấu đối thủ đã dùng
                                 oppUndoUsed = true;
-
-                                // Nếu bạn có icon/label của đối thủ thì update ở đây (ví dụ)
-                                // ptbOppOne.Visible = false;
-                                // ptbOppZero.Visible = true;
+                                // nếu bạn có UI undo của đối thủ thì update ở đây
                             }
 
                             isMyUndoRequest = false;
                             break;
 
                         case "OPPONENT_LEFT":
-                            // ✅ yêu cầu của bạn: nếu game over cũng phải đóng popup hiện tại và báo đối thủ thoát
                             ShowOpponentLeftAndExit();
                             break;
 
                         case "REMATCH_OFFER":
-                            // ✅ khi nhận offer: đóng dialog thắng/thua hiện tại và hỏi rematch ngay
                             _hasIncomingRematchOffer = true;
                             _incomingOfferFrom = (parts.Length >= 2) ? parts[1] : "Opponent";
 
@@ -410,13 +499,10 @@ namespace CaroGame
                             );
 
                             if (res == DialogResult.Yes)
-                            {
                                 tcpClient.Send("REMATCH_ACCEPT");
-                            }
                             else
                             {
                                 tcpClient.Send("REMATCH_DECLINE");
-                                // ✅ không đồng ý -> thoát luôn (để “cả hai cùng thoát”)
                                 ExitMatch(sendSurrenderIfNeeded: false);
                             }
 
@@ -435,8 +521,6 @@ namespace CaroGame
                             _waitingRematch = false;
                             _hasIncomingRematchOffer = false;
                             _incomingOfferFrom = "";
-
-                            // ✅ yêu cầu của bạn: cả hai cùng thoát
                             ExitMatch(sendSurrenderIfNeeded: false);
                             break;
 
@@ -467,18 +551,16 @@ namespace CaroGame
         }
 
         // ================= UI HANDLERS =================
-
         private void btnUndo_Click(object sender, EventArgs e)
         {
-            if (myUndoUsed) return;                 // ✅ chỉ chặn theo lượt undo của mình
+            if (myUndoUsed) return;
             if (!ChessBoard.IsMyTurn) return;
             if (tcpClient == null || !tcpClient.IsConnected()) return;
 
             isMyUndoRequest = true;
-            btnUndo.Enabled = false;                // khóa tạm trong lúc chờ server
+            if (btnUndo != null) btnUndo.Enabled = false; // khóa tạm khi chờ server
             tcpClient.Send("REQUEST_UNDO");
         }
-
 
         private void btnSend_Click(object sender, EventArgs e)
         {
@@ -511,27 +593,14 @@ namespace CaroGame
 
         private void btnChat_Click(object sender, EventArgs e)
         {
-            if (panelChat != null) 
+            if (panelChat != null)
                 panelChat.Visible = !panelChat.Visible;
         }
-
-        //private void btnMenu_Click(object sender, EventArgs e)
-        //{
-        //    if (menuForm == null || menuForm.IsDisposed)
-        //    {
-        //        menuForm = new Menu();
-        //        menuForm.StartPosition = FormStartPosition.Manual;
-        //        menuForm.Location = new Point(this.Left + 22, this.Top + 50);
-        //        menuForm.Show(this);
-        //    }
-        //    else { menuForm.Close(); menuForm = null; }
-        //}
 
         // alias handlers nếu Designer gọi dạng btn_...
         private void btn_Undo_Click(object sender, EventArgs e) => btnUndo_Click(sender, e);
         private void btn_Send_Click(object sender, EventArgs e) => btnSend_Click(sender, e);
         private void btn_Exit_Click(object sender, EventArgs e) => btnExit_Click(sender, e);
-        //private void btn_Menu_Click(object sender, EventArgs e) => btnMenu_Click(sender, e);
         private void btn_Chat_Click(object sender, EventArgs e) => btnChat_Click(sender, e);
 
         private void AppendMessage(string sender, string message, Color color)
@@ -629,12 +698,11 @@ namespace CaroGame
             base.OnFormClosing(e);
         }
 
-        private void Btn_Click(object? sender, EventArgs e) { }
+        private void Btn_Click(object sender, EventArgs e) { }
 
         // ==========================================================
-        // ✅ NESTED DIALOG CLASSES (tất cả nằm trong PvP.cs cho tiện)
+        // ✅ NESTED DIALOG CLASSES
         // ==========================================================
-
         private class ResultDialog : Form
         {
             public event Action RematchClicked;
@@ -728,4 +796,3 @@ namespace CaroGame
         }
     }
 }
-    
