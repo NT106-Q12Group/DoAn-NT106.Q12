@@ -15,7 +15,9 @@ namespace CaroGame
         public int MySide { get; set; }
 
         private bool isMyUndoRequest = false;
-        private bool undoCount = false;
+        private bool myUndoUsed = false;
+        private bool oppUndoUsed = false;
+
 
         private string player1Name;
         private string player2Name;
@@ -312,12 +314,17 @@ namespace CaroGame
                 ChessBoard.Player[1].Name = player2Name;
             }
 
-            undoCount = false;
+            myUndoUsed = false;
+            oppUndoUsed = false;
             isMyUndoRequest = false;
+
             if (btnUndo != null) btnUndo.Enabled = true;
 
+            // reset UI undo của mình
             if (ptbOne != null) ptbOne.Visible = true;
             if (ptbZero != null) ptbZero.Visible = false;
+
+            // reset UI undo của đối thủ (nếu có)
 
             this.Text = $"PvP - Rematch ({(MySide == 0 ? "X" : "O")})";
         }
@@ -360,9 +367,25 @@ namespace CaroGame
                         case "UNDO_SUCCESS":
                             ChessBoard.ExecuteUndoPvP();
 
-                            undoCount = true;
-                            if (ptbOne != null) ptbOne.Visible = false;
-                            if (ptbZero != null) ptbZero.Visible = true;
+                            if (isMyUndoRequest)
+                            {
+                                // ✅ mình vừa undo thành công -> trừ lượt undo của mình
+                                myUndoUsed = true;
+                                if (btnUndo != null) btnUndo.Enabled = false;
+
+                                // UI "undo của mình" (giữ như bạn đang dùng ptbOne/ptbZero)
+                                if (ptbOne != null) ptbOne.Visible = false;
+                                if (ptbZero != null) ptbZero.Visible = true;
+                            }
+                            else
+                            {
+                                // ✅ đối thủ undo -> chỉ đánh dấu đối thủ đã dùng
+                                oppUndoUsed = true;
+
+                                // Nếu bạn có icon/label của đối thủ thì update ở đây (ví dụ)
+                                // ptbOppOne.Visible = false;
+                                // ptbOppZero.Visible = true;
+                            }
 
                             isMyUndoRequest = false;
                             break;
@@ -447,15 +470,15 @@ namespace CaroGame
 
         private void btnUndo_Click(object sender, EventArgs e)
         {
-            if (undoCount) return;
+            if (myUndoUsed) return;                 // ✅ chỉ chặn theo lượt undo của mình
             if (!ChessBoard.IsMyTurn) return;
             if (tcpClient == null || !tcpClient.IsConnected()) return;
 
             isMyUndoRequest = true;
-            btnUndo.Enabled = false;
-
+            btnUndo.Enabled = false;                // khóa tạm trong lúc chờ server
             tcpClient.Send("REQUEST_UNDO");
         }
+
 
         private void btnSend_Click(object sender, EventArgs e)
         {
