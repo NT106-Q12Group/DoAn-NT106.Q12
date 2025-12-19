@@ -92,7 +92,7 @@
             // 
             lb_signup.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             lb_signup.AutoSize = true;
-            lb_signup.Location = new Point(22, 390);
+            lb_signup.Location = new Point(22, 393);
             lb_signup.Name = "lb_signup";
             lb_signup.Size = new Size(187, 20);
             lb_signup.TabIndex = 4;
@@ -103,12 +103,12 @@
             linkedlb_signup.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             linkedlb_signup.AutoSize = true;
             linkedlb_signup.Cursor = Cursors.Hand;
-            linkedlb_signup.Location = new Point(208, 390);
+            linkedlb_signup.Location = new Point(208, 393);
             linkedlb_signup.Name = "linkedlb_signup";
-            linkedlb_signup.Size = new Size(64, 20);
+            linkedlb_signup.Size = new Size(61, 20);
             linkedlb_signup.TabIndex = 5;
             linkedlb_signup.TabStop = true;
-            linkedlb_signup.Text = "Sign Up.";
+            linkedlb_signup.Text = "Sign Up";
             linkedlb_signup.LinkClicked += linkedlb_signup_LinkClicked;
             // 
             // lblUsernameSI
@@ -161,7 +161,7 @@
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.LightBlue;
-            ClientSize = new Size(295, 424);
+            ClientSize = new Size(295, 417);
             Controls.Add(linkLabel1);
             Controls.Add(pictureBox1);
             Controls.Add(lblPasswordSI);

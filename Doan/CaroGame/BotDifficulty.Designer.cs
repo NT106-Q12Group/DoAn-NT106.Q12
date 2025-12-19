@@ -94,7 +94,7 @@
             btn_hard.Cursor = Cursors.Hand;
             btn_hard.FlatAppearance.BorderSize = 0;
             btn_hard.Font = new Font("Stencil", 13.8F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            btn_hard.Location = new Point(21, 188);
+            btn_hard.Location = new Point(21, 193);
             btn_hard.Name = "btn_hard";
             btn_hard.Size = new Size(231, 43);
             btn_hard.TabIndex = 2;
@@ -108,7 +108,7 @@
             btn_extremely_hard.Cursor = Cursors.Hand;
             btn_extremely_hard.FlatAppearance.BorderSize = 0;
             btn_extremely_hard.Font = new Font("Stencil", 13.8F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            btn_extremely_hard.Location = new Point(271, 188);
+            btn_extremely_hard.Location = new Point(271, 193);
             btn_extremely_hard.Name = "btn_extremely_hard";
             btn_extremely_hard.Size = new Size(231, 43);
             btn_extremely_hard.TabIndex = 3;
@@ -131,7 +131,7 @@
             // 
             pictureBox1.BackgroundImage = Properties.Resources.star;
             pictureBox1.BackgroundImageLayout = ImageLayout.Stretch;
-            pictureBox1.Location = new Point(123, 157);
+            pictureBox1.Location = new Point(123, 162);
             pictureBox1.Name = "pictureBox1";
             pictureBox1.Size = new Size(25, 25);
             pictureBox1.TabIndex = 5;
@@ -141,7 +141,7 @@
             // 
             pictureBox2.BackgroundImage = Properties.Resources.star;
             pictureBox2.BackgroundImageLayout = ImageLayout.Stretch;
-            pictureBox2.Location = new Point(154, 157);
+            pictureBox2.Location = new Point(154, 162);
             pictureBox2.Name = "pictureBox2";
             pictureBox2.Size = new Size(25, 25);
             pictureBox2.TabIndex = 6;
@@ -151,7 +151,7 @@
             // 
             pictureBox3.BackgroundImage = Properties.Resources.star;
             pictureBox3.BackgroundImageLayout = ImageLayout.Stretch;
-            pictureBox3.Location = new Point(92, 157);
+            pictureBox3.Location = new Point(92, 162);
             pictureBox3.Name = "pictureBox3";
             pictureBox3.Size = new Size(25, 25);
             pictureBox3.TabIndex = 7;
@@ -191,7 +191,7 @@
             // 
             pictureBox13.BackgroundImage = Properties.Resources.star;
             pictureBox13.BackgroundImageLayout = ImageLayout.Stretch;
-            pictureBox13.Location = new Point(389, 157);
+            pictureBox13.Location = new Point(389, 162);
             pictureBox13.Name = "pictureBox13";
             pictureBox13.Size = new Size(25, 25);
             pictureBox13.TabIndex = 20;
@@ -201,7 +201,7 @@
             // 
             pictureBox14.BackgroundImage = Properties.Resources.star;
             pictureBox14.BackgroundImageLayout = ImageLayout.Stretch;
-            pictureBox14.Location = new Point(327, 157);
+            pictureBox14.Location = new Point(327, 162);
             pictureBox14.Name = "pictureBox14";
             pictureBox14.Size = new Size(25, 25);
             pictureBox14.TabIndex = 19;
@@ -211,7 +211,7 @@
             // 
             pictureBox15.BackgroundImage = Properties.Resources.star;
             pictureBox15.BackgroundImageLayout = ImageLayout.Stretch;
-            pictureBox15.Location = new Point(358, 157);
+            pictureBox15.Location = new Point(358, 162);
             pictureBox15.Name = "pictureBox15";
             pictureBox15.Size = new Size(25, 25);
             pictureBox15.TabIndex = 18;
@@ -221,7 +221,7 @@
             // 
             pictureBox16.BackgroundImage = Properties.Resources.star;
             pictureBox16.BackgroundImageLayout = ImageLayout.Stretch;
-            pictureBox16.Location = new Point(420, 157);
+            pictureBox16.Location = new Point(420, 162);
             pictureBox16.Name = "pictureBox16";
             pictureBox16.Size = new Size(25, 25);
             pictureBox16.TabIndex = 17;
