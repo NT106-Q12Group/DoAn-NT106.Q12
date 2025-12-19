@@ -39,6 +39,7 @@
             dgv_leaderboard.Dock = DockStyle.Bottom;
             dgv_leaderboard.Location = new Point(0, 66);
             dgv_leaderboard.Name = "dgv_leaderboard";
+            dgv_leaderboard.ReadOnly = true;
             dgv_leaderboard.RowHeadersWidth = 62;
             dgv_leaderboard.Size = new Size(800, 384);
             dgv_leaderboard.TabIndex = 0;
