@@ -53,7 +53,17 @@ namespace CaroGame
 
         private void btn_pause_Click(object sender, EventArgs e)
         {
-            
+
+        }
+
+        private void btn_newgame_Click_1(object sender, EventArgs e)
+        {
+
+        }
+
+        private void btn_return_Click_1(object sender, EventArgs e)
+        {
+
         }
     }
 }
