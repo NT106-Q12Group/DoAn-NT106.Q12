@@ -363,14 +363,17 @@ namespace CaroGame
             if (moveHistory.Count == 1)
             {
                 undoLastMove();
-                IsMyTurn = (MySide == 0);
+                // Sau undo, lượt phụ thuộc vào số nước còn lại
+                int nextSide = moveHistory.Count % 2; // 0: X, 1: O
+                IsMyTurn = (MySide == nextSide);
                 return;
             }
 
             undoLastMove();
             undoLastMove();
 
-            IsMyTurn = true;
+            int next = moveHistory.Count % 2;
+            IsMyTurn = (MySide == next);
         }
 
         public bool undoTurnPvE()

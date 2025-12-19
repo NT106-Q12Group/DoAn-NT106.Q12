@@ -352,14 +352,16 @@ namespace CaroGame
                             break;
 
                         case "UNDO_SUCCESS":
-                            ChessBoard.ExecuteUndoPvP();
-                            if (isMyUndoRequest)
+                            if (!isMyUndoRequest)
                             {
-                                undoCount = true;
-                                if (ptbOne != null) ptbOne.Visible = false;
-                                if (ptbZero != null) ptbZero.Visible = true;
-                                isMyUndoRequest = false;
+                                ChessBoard.ExecuteUndoPvP();
                             }
+
+                            undoCount = true;
+                            if (ptbOne != null) ptbOne.Visible = false;
+                            if (ptbZero != null) ptbZero.Visible = true;
+
+                            isMyUndoRequest = false;
                             break;
 
                         case "OPPONENT_LEFT":
@@ -454,7 +456,7 @@ namespace CaroGame
 
             btnUndo.Enabled = false;
 
-            tcpClient.Send("UNDO_REQUEST");
+            tcpClient.Send("REQUEST_UNDO");
 
         }
 
