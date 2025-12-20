@@ -698,6 +698,17 @@ namespace CaroGame_TCPServer
             string r = (resultRaw ?? "").Trim().ToUpperInvariant();
             Console.WriteLine($"[RESULT] {username}: {r}");
 
+            // Hàm cộng điểm
+
+            if (r == "WIN")
+            {
+                PlayerADO.AddScore(username, 1); // Thắng +1 điểm
+            }
+            else if (r == "LOSE")
+            {
+                PlayerADO.AddScore(username, 0); // Thua +0 điểm
+            }
+
             // Ví dụ:
             // if (r == "WIN") PlayerADO.AddWin(username);
             // else if (r == "LOSE") PlayerADO.AddLose(username);
