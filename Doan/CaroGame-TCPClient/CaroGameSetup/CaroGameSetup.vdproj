@@ -21,6 +21,12 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_C704A2B0F647401B9F95601D59D33B1D"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_F1E7E8E509894921B56BE386BEBD2730"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -82,6 +88,14 @@
             "PrerequisitesLocation" = "2:1"
             "Url" = "8:"
             "ComponentsUrl" = "8:"
+                "Items"
+                {
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:.NETFramework,Version=v4.7.2"
+                    {
+                    "Name" = "8:Microsoft .NET Framework 4.7.2 (x86 and x64)"
+                    "ProductCode" = "8:.NETFramework,Version=v4.7.2"
+                    }
+                }
             }
         }
     }
@@ -114,6 +128,26 @@
         }
         "File"
         {
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_C704A2B0F647401B9F95601D59D33B1D"
+            {
+            "SourcePath" = "8:..\\CaroGame-TCPClient\\Resources\\GameIcon.ico"
+            "TargetName" = "8:GameIcon.ico"
+            "Tag" = "8:"
+            "Folder" = "8:_8DEA3EECB55F4A9E8C2FB664912D1F28"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
         }
         "FileType"
         {
@@ -291,6 +325,20 @@
         }
         "Shortcut"
         {
+            "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_4FD4A60290DD4C098FA03F21C5B07349"
+            {
+            "Name" = "8:Shortcut To MainGame"
+            "Arguments" = "8:"
+            "Description" = "8:"
+            "ShowCmd" = "3:1"
+            "IconIndex" = "3:0"
+            "Transitive" = "11:FALSE"
+            "Target" = "8:_57C7F8389452447C829EC4723CCA5B70"
+            "Folder" = "8:_CE7A261CD07B494A95F3C7010646949D"
+            "WorkingFolder" = "8:_8DEA3EECB55F4A9E8C2FB664912D1F28"
+            "Icon" = "8:_C704A2B0F647401B9F95601D59D33B1D"
+            "Feature" = "8:"
+            }
         }
         "UserInterface"
         {
