@@ -201,6 +201,7 @@
             btnMenu.Size = new Size(57, 57);
             btnMenu.TabIndex = 5;
             btnMenu.UseVisualStyleBackColor = true;
+            btnMenu.Click += btnMenu_Click;
             // 
             // label2
             // 

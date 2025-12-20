@@ -22,6 +22,7 @@ namespace CaroGame_TCPServer
         private static Dictionary<string, int> PlayerSides = new Dictionary<string, int>(); // 1=X, 2=O
 
         private static HashSet<string> RematchWaiting = new HashSet<string>();
+        private static HashSet<string> ResetWaiting = new HashSet<string>();
 
         // ===== Custom Room State =====
         private class CustomRoomState
@@ -306,6 +307,18 @@ namespace CaroGame_TCPServer
 
                     case "REMATCH_DECLINE":
                         HandleRematchDecline(currentUsername);
+                        return null;
+
+                    case "RESET_REQUEST":
+                        HandleResetRequest(currentUsername);
+                        return null;
+
+                    case "RESET_ACCEPT":
+                        HandleResetAccept(currentUsername);
+                        return null;
+
+                    case "RESET_DECLINE":
+                        HandleResetDecline(currentUsername);
                         return null;
 
                     case "GAME_RESULT":
@@ -673,6 +686,59 @@ namespace CaroGame_TCPServer
 
                 SendToPlayer(sender, $"REMATCH_DECLINED|{sender}");
                 SendToPlayer(opponent, $"REMATCH_DECLINED|{sender}");
+            }
+        }
+
+        // ===================== RESET =====================
+        private void HandleResetRequest(string sender)
+        {
+            lock (lockObj)
+            {
+                if (string.IsNullOrEmpty(sender)) return;
+                if (!ActiveMatches.ContainsKey(sender)) return;
+                if (ResetWaiting.Contains(sender)) return;
+
+                string opponent = ActiveMatches[sender];
+
+                ResetWaiting.Add(sender);
+                SendToPlayer(opponent, $"RESET_OFFER|{sender}");
+                SendToPlayer(sender, "RESET_SENT");
+            }
+        }
+
+        private void HandleResetAccept(string sender)
+        {
+            lock (lockObj)
+            {
+                if (string.IsNullOrEmpty(sender)) return;
+                if (!ActiveMatches.ContainsKey(sender)) return;
+
+                string opponent = ActiveMatches[sender];
+
+                if (!ResetWaiting.Contains(opponent)) return;
+
+                ResetWaiting.Remove(opponent);
+
+                SendToPlayer(sender, $"RESET_EXECUTE|{sender}");
+                SendToPlayer(opponent, $"RESET_EXECUTE|{sender}");
+                Console.WriteLine($"[RESET] {opponent} accepted reset from {sender}");
+            }
+        }
+
+        private void HandleResetDecline(string sender)
+        {
+            lock (lockObj)
+            {
+                if (string.IsNullOrEmpty(sender)) return;
+                if (!ActiveMatches.ContainsKey(sender)) return;
+
+                string opponent = ActiveMatches[sender];
+
+                if (!ResetWaiting.Contains(opponent)) return;
+
+                ResetWaiting.Remove(opponent);
+
+                SendToPlayer(opponent, $"RESET_DECLINED|{sender}");
             }
         }
 

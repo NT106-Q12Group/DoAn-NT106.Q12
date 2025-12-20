@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Drawing;
+using System.Drawing.Printing;
+using System.Runtime.CompilerServices;
 using System.Windows.Forms;
 using CaroGame_TCPClient;
 
@@ -28,15 +30,22 @@ namespace CaroGame
 
         private bool _gameEnded = false;
         private bool _waitingRematch = false;
+        private bool _waitingReset = false;
+
         private bool _resultSent = false;
+
+        //Reset
+        private bool _hasIncomingResetOffer = false;
+        private string _incomingResetFrom = "";
 
         // Rematch
         private bool _hasIncomingRematchOffer = false;
-        private string _incomingOfferFrom = "";
+        private string _incomingRematchFrom = "";
 
         // dialogs (modeless)
         private ResultDialog _resultDialog = null;
-        private WaitingRematchDialog _waitingDialog = null;
+        private WaitingRematchDialog _waitingRematchDialog = null;
+        private WaitingResetDialog _waitingResetDialog = null;
 
         public PvP(Room room, int mySide, string p1, string p2, TCPClient client)
         {
@@ -170,21 +179,33 @@ namespace CaroGame
             _resultDialog = null;
         }
 
-        private void CloseWaitingDialog()
+        private void CloseWaitingRematchDialog()
         {
             try
             {
-                if (_waitingDialog != null && !_waitingDialog.IsDisposed)
-                    _waitingDialog.Close();
+                if (_waitingRematchDialog != null && !_waitingRematchDialog.IsDisposed)
+                    _waitingRematchDialog.Close();
             }
             catch { }
-            _waitingDialog = null;
+            _waitingRematchDialog = null;
+        }
+
+        private void CloseWaitingResetDialog()
+        {
+            try
+            {
+                if (_waitingResetDialog != null && !_waitingResetDialog.IsDisposed)
+                    _waitingResetDialog.Close();
+            }
+            catch { }
+            _waitingResetDialog = null;
         }
 
         private void CloseAllPopups()
         {
             CloseResultDialog();
-            CloseWaitingDialog();
+            CloseWaitingRematchDialog();
+            CloseWaitingResetDialog();
         }
 
         private void ShowOpponentLeftAndExit()
@@ -265,7 +286,7 @@ namespace CaroGame
                 CloseAllPopups();
 
                 DialogResult res = MessageBox.Show(
-                    $"{_incomingOfferFrom} muốn Rematch.\nBạn có đồng ý không?",
+                    $"{_incomingRematchFrom} muốn Rematch.\nBạn có đồng ý không?",
                     "Rematch",
                     MessageBoxButtons.YesNo,
                     MessageBoxIcon.Question
@@ -280,7 +301,7 @@ namespace CaroGame
                 }
 
                 _hasIncomingRematchOffer = false;
-                _incomingOfferFrom = "";
+                _incomingRematchFrom = "";
                 return;
             }
 
@@ -294,10 +315,10 @@ namespace CaroGame
 
             CloseAllPopups();
 
-            _waitingDialog = new WaitingRematchDialog();
-            _waitingDialog.CancelClicked += () =>
+            _waitingRematchDialog = new WaitingRematchDialog();
+            _waitingRematchDialog.CancelClicked += () =>
             {
-                CloseWaitingDialog();
+                CloseWaitingRematchDialog();
                 try
                 {
                     if (tcpClient != null && tcpClient.IsConnected())
@@ -308,8 +329,8 @@ namespace CaroGame
                 ExitMatch(sendSurrenderIfNeeded: false);
             };
 
-            _waitingDialog.FormClosed += (s, e) => { _waitingDialog = null; };
-            _waitingDialog.Show(this);
+            _waitingRematchDialog.FormClosed += (s, e) => { _waitingRematchDialog = null; };
+            _waitingRematchDialog.Show(this);
 
             try
             {
@@ -328,7 +349,7 @@ namespace CaroGame
             _resultSent = false;
 
             _hasIncomingRematchOffer = false;
-            _incomingOfferFrom = "";
+            _incomingRematchFrom = "";
 
             int oldSide = MySide;
 
@@ -360,6 +381,66 @@ namespace CaroGame
             }
 
             this.Text = $"PvP - Rematch ({(MySide == 0 ? "X" : "O")})";
+        }
+
+        private void RequestReset()
+        {
+            if (_waitingReset) return;
+            if (tcpClient == null || !tcpClient.IsConnected()) return;
+
+            _waitingReset = true;
+            CloseAllPopups();
+
+            _waitingResetDialog = new WaitingResetDialog();
+            _waitingResetDialog.CancelClicked += () =>
+            {
+                CloseWaitingResetDialog();
+                _waitingReset = false;
+
+                try
+                {
+                    if (tcpClient != null && tcpClient.IsConnected())
+                        tcpClient.Send("RESET_DECLINE");
+                }
+                catch { }
+            };
+
+            _waitingResetDialog.FormClosed += (s, e) => { _waitingResetDialog = null; };
+            _waitingResetDialog.Show(this);
+
+            try
+            {
+                    tcpClient.Send("RESET_REQUEST");
+            }
+            catch { }
+        }
+
+        private void StartReset()
+        {
+            CloseAllPopups();
+
+            _gameEnded = false;
+            _waitingReset = false;
+            _resultSent = false;
+
+            _hasIncomingResetOffer = false;
+            _incomingResetFrom = "";
+
+            ChessBoard.resetGame();
+            ChessBoard.IsMyTurn = (MySide == 0);
+
+            // Reset Undo
+            myUndoUsed = false;
+            oppUndoUsed = false;
+            isMyUndoRequest = false;
+            if (btnUndo != null) btnUndo.Enabled = true;
+
+            // reset UI undo của mình (ptbOne/ptbZero)
+            if (ptbOne != null) ptbOne.Visible = true;
+            if (ptbZero != null) ptbZero.Visible = false;
+
+            SetupPlayerInfo();
+            SyncChessBoardNamesWithUI();
         }
 
         // ================= NETWORK =================
@@ -422,12 +503,12 @@ namespace CaroGame
 
                         case "REMATCH_OFFER":
                             _hasIncomingRematchOffer = true;
-                            _incomingOfferFrom = (parts.Length >= 2) ? parts[1] : "Opponent";
+                            _incomingRematchFrom = (parts.Length >= 2) ? parts[1] : "Opponent";
 
                             CloseAllPopups();
 
                             DialogResult res = MessageBox.Show(
-                                $"{_incomingOfferFrom} muốn Rematch.\nBạn có đồng ý không?",
+                                $"{_incomingRematchFrom} muốn Rematch.\nBạn có đồng ý không?",
                                 "Rematch",
                                 MessageBoxButtons.YesNo,
                                 MessageBoxIcon.Question
@@ -442,7 +523,7 @@ namespace CaroGame
                             }
 
                             _hasIncomingRematchOffer = false;
-                            _incomingOfferFrom = "";
+                            _incomingRematchFrom = "";
                             break;
 
                         case "REMATCH_START":
@@ -455,12 +536,50 @@ namespace CaroGame
                             MessageBox.Show("Đối thủ từ chối Rematch. Trận sẽ thoát.", "Rematch");
                             _waitingRematch = false;
                             _hasIncomingRematchOffer = false;
-                            _incomingOfferFrom = "";
+                            _incomingRematchFrom = "";
                             ExitMatch(sendSurrenderIfNeeded: false);
                             break;
 
                         case "REMATCH_SENT":
                             // server confirm đã gửi
+                            break;
+
+                        case "RESET_OFFER":
+                            _hasIncomingResetOffer = true;
+                            _incomingResetFrom = (parts.Length >= 2) ? parts[1] : "Opponent";
+
+                            CloseAllPopups();
+
+                            DialogResult response = MessageBox.Show(
+                                $"{_incomingResetFrom} muốn reset ván đấu.\nBạn có đồng ý không?",
+                                "Reset",
+                                MessageBoxButtons.YesNo,
+                                MessageBoxIcon.Question
+                            );
+
+                            if (response == DialogResult.Yes)
+                                tcpClient.Send("RESET_ACCEPT");
+                            else
+                                tcpClient.Send("RESET_DECLINE");
+
+                            _hasIncomingResetOffer = false;
+                            _incomingResetFrom = "";
+                            break;
+
+                        case "RESET_EXECUTE":
+                            CloseAllPopups();
+                            StartReset();
+                            break;
+
+                        case "RESET_DECLINED":
+                            CloseAllPopups();
+                            MessageBox.Show("Đối thủ từ chối Reset. Trận đấu tiếp tục...", "Reset Game");
+                            _waitingReset = false;
+                            _hasIncomingResetOffer = false;
+                            _incomingResetFrom = "";
+                            break;
+
+                        case "RESET_SENT":
                             break;
                     }
                 }
@@ -530,6 +649,11 @@ namespace CaroGame
         {
             if (panelChat != null)
                 panelChat.Visible = !panelChat.Visible;
+        }
+
+        private void btnMenu_Click(object sender, EventArgs e)
+        {
+            RequestReset();
         }
 
         // alias handlers nếu Designer gọi dạng btn_...
@@ -649,7 +773,7 @@ namespace CaroGame
                 FormBorderStyle = FormBorderStyle.FixedDialog;
                 MaximizeBox = false;
                 MinimizeBox = false;
-                StartPosition = FormStartPosition.CenterParent;
+                StartPosition = FormStartPosition.CenterScreen;
                 Size = new Size(380, 190);
                 TopMost = true;
 
@@ -700,7 +824,7 @@ namespace CaroGame
                 FormBorderStyle = FormBorderStyle.FixedDialog;
                 MaximizeBox = false;
                 MinimizeBox = false;
-                StartPosition = FormStartPosition.CenterParent;
+                StartPosition = FormStartPosition.CenterScreen;
                 Size = new Size(380, 160);
                 TopMost = true;
 
@@ -717,6 +841,46 @@ namespace CaroGame
                 var btnCancel = new Button()
                 {
                     Text = "Huỷ & Thoát",
+                    Width = 140,
+                    Height = 34,
+                    Left = 110,
+                    Top = 80
+                };
+
+                btnCancel.Click += (s, e) => CancelClicked?.Invoke();
+
+                Controls.Add(lbl);
+                Controls.Add(btnCancel);
+            }
+        }
+
+        private class WaitingResetDialog : Form
+        {
+            public event Action CancelClicked;
+
+            public WaitingResetDialog()
+            {
+                Text = "Reset";
+                FormBorderStyle = FormBorderStyle.FixedDialog;
+                MaximizeBox = false;
+                MinimizeBox = false;
+                StartPosition = FormStartPosition.CenterScreen;
+                Size = new Size(380, 160);
+                TopMost = true;
+
+                var lbl = new Label()
+                {
+                    AutoSize = false,
+                    Dock = DockStyle.Top,
+                    Height = 70,
+                    TextAlign = ContentAlignment.MiddleCenter,
+                    Font = new Font("Segoe UI", 10, FontStyle.Regular),
+                    Text = "Đã gửi yêu cầu Reset.\nĐang chờ đối thủ..."
+                };
+
+                var btnCancel = new Button()
+                {
+                    Text = "Hủy",
                     Width = 140,
                     Height = 34,
                     Left = 110,

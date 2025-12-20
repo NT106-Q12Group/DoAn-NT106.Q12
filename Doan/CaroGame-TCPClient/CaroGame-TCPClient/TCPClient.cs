@@ -295,6 +295,12 @@ namespace CaroGame_TCPClient
             Send("REQUEST_UNDO");
         }
 
+        // Hàm Reset Game
+        public void RequestReset()
+        {
+            Send("REQUEST_RESET");
+        }
+
         public void SendPacket(Packet packet)
         {
             string data = "";
