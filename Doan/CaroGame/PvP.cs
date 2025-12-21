@@ -102,9 +102,11 @@ namespace CaroGame
 
             SetupPlayerInfo();
 
+            // X luôn đi trước khi bắt đầu ván mới
             ChessBoard.IsMyTurn = (this.MySide == 0);
 
-            TurnUI(ChessBoard.IsMyTurn);
+            // ✅ UI lượt phải theo side X/O, không theo "lượt mình"
+            TurnUIBySide(0);
 
             this.Text = $"PvP - Bạn là {(this.MySide == 0 ? "X (Đi trước)" : "O (Đi sau)")}";
 
@@ -170,18 +172,43 @@ namespace CaroGame
             SyncChessBoardNamesWithUI();
         }
 
-        // ================= TURN CHECKING =================
-        private void TurnUI(bool isMyTurn)
+        // ================= TURN UI (FIXED) =================
+        // 0 = lượt X (slot label1/pgbP1), 1 = lượt O (slot label2/pgbP2)
+        private void TurnUIBySide(int turnSide)
+        {
+            if (pgbP1 == null || pgbP2 == null) return;
+
+            bool xTurn = (turnSide == 0);
+
+            pgbP1.Visible = true;
+            pgbP1.Style = ProgressBarStyle.Blocks;
+            pgbP1.Value = xTurn ? 100 : 0;
+
+            pgbP2.Visible = true;
+            pgbP2.Style = ProgressBarStyle.Blocks;
+            pgbP2.Value = xTurn ? 0 : 100;
+        }
+
+        private void TurnUIEnd()
         {
             if (pgbP1 == null || pgbP2 == null) return;
 
             pgbP1.Visible = true;
             pgbP1.Style = ProgressBarStyle.Blocks;
-            pgbP1.Value = isMyTurn ? 100 : 0;
+            pgbP1.Value = 0;
 
             pgbP2.Visible = true;
             pgbP2.Style = ProgressBarStyle.Blocks;
-            pgbP2.Value = isMyTurn ? 0 : 100;
+            pgbP2.Value = 0;
+        }
+
+        // side vừa đi xong => lượt kế tiếp là 1 - side
+        private void ApplyTurnAfterMove(int lastMoveSide)
+        {
+            int nextSide = 1 - lastMoveSide;
+
+            ChessBoard.IsMyTurn = (nextSide == MySide);
+            TurnUIBySide(nextSide);
         }
 
         // ================= DIALOG HELPERS =================
@@ -240,7 +267,9 @@ namespace CaroGame
         {
             if (_gameEnded) return;
             _gameEnded = true;
-            TurnUI(false);
+
+            // ✅ end UI lượt
+            TurnUIEnd();
 
             bool iWon = ComputeWinByWinnerRaw(winnerRaw);
             SendGameResultOnce(iWon);
@@ -376,9 +405,10 @@ namespace CaroGame
 
             ChessBoard.resetGame();
             ChessBoard.MySide = MySide;
-            ChessBoard.IsMyTurn = (MySide == 0);
 
-            TurnUI(ChessBoard.IsMyTurn);
+            // X luôn đi trước ván mới
+            ChessBoard.IsMyTurn = (MySide == 0);
+            TurnUIBySide(0);
 
             // reset undo
             myUndoUsed = false;
@@ -430,7 +460,7 @@ namespace CaroGame
 
             try
             {
-                    tcpClient.Send("RESET_REQUEST");
+                tcpClient.Send("RESET_REQUEST");
             }
             catch { }
         }
@@ -447,7 +477,10 @@ namespace CaroGame
             _incomingResetFrom = "";
 
             ChessBoard.resetGame();
+
+            // X luôn đi trước sau reset ván
             ChessBoard.IsMyTurn = (MySide == 0);
+            TurnUIBySide(0);
 
             // Reset Undo
             myUndoUsed = false;
@@ -461,7 +494,6 @@ namespace CaroGame
 
             SetupPlayerInfo();
             SyncChessBoardNamesWithUI();
-            TurnUI(ChessBoard.IsMyTurn);
         }
 
         // ================= NETWORK =================
@@ -470,8 +502,9 @@ namespace CaroGame
             if (tcpClient != null && tcpClient.IsConnected())
                 tcpClient.SendPacket(new Packet("MOVE", point));
 
+            // mình vừa đi xong => lượt đối thủ
             ChessBoard.IsMyTurn = false;
-            TurnUI(false);
+            TurnUIBySide(1 - MySide);
         }
 
         private void HandleServerMessage(string data)
@@ -488,18 +521,21 @@ namespace CaroGame
                     switch (cmd)
                     {
                         case "MOVE":
-                            if (parts.Length < 4) return;
-                            int x = int.Parse(parts[1]);
-                            int y = int.Parse(parts[2]);
-                            int side = int.Parse(parts[3]);
-                            if (side == -1) side = ChessBoard.MoveCount % 2;
-                            ChessBoard.ProcessMove(x, y, side);
+                            {
+                                if (parts.Length < 4) return;
+                                int x = int.Parse(parts[1]);
+                                int y = int.Parse(parts[2]);
+                                int side = int.Parse(parts[3]);
 
-                            bool nowMyTurn = (side != MySide);
+                                // nếu server gửi -1 => suy ra theo move count trước khi add move
+                                if (side == -1) side = ChessBoard.MoveCount % 2;
 
-                            ChessBoard.IsMyTurn = nowMyTurn;
-                            TurnUI(true);
-                            break;
+                                ChessBoard.ProcessMove(x, y, side);
+
+                                // ✅ FIX: cập nhật lượt đúng theo X/O
+                                ApplyTurnAfterMove(side);
+                                break;
+                            }
 
                         case "CHAT":
                             if (parts.Length >= 2)
