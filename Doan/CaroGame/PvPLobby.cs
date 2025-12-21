@@ -36,6 +36,7 @@ namespace CaroGame
             ReLayoutLobbyUI();
         }
 
+        // nhận message từ server (cross-thread safe)
         public void ProcessServerMessage(string message)
         {
             if (this.InvokeRequired)
@@ -68,6 +69,7 @@ namespace CaroGame
             }
         }
 
+        // update UI khi tìm được match rồi chuyển qua game
         private void OnMatchFound(string opponentName, string sideRaw)
         {
             if (progressBar1 != null) progressBar1.Visible = false;
@@ -100,6 +102,7 @@ namespace CaroGame
             transitionTimer.Start();
         }
 
+        // tạo form PvP theo side server trả về
         private void EnterGame(string opponentName, string sideRaw)
         {
             if (_client != null)
@@ -129,7 +132,8 @@ namespace CaroGame
             gameForm.Show();
         }
 
-        // UI layout helpers
+        // ===== Layout helpers =====
+
         private void CenterLabelInPictureBox(Label lb, PictureBox pb, int yOffset = 0)
         {
             if (lb == null || pb == null) return;
@@ -152,6 +156,7 @@ namespace CaroGame
             pb.Top = top;
         }
 
+        // căn lại toàn bộ UI khi resize / đổi trạng thái
         private void ReLayoutLobbyUI()
         {
             CenterLabelInPictureBox(lb_username1, pictureBox1);
@@ -163,22 +168,17 @@ namespace CaroGame
             CenterLabelInForm(lb_status, statusTop);
             CenterProgressInForm(progressBar1, progressTop);
 
-            // Fix progressBar bị pictureBox3 che: đưa lên trên cùng
+            // tránh bị pictureBox3 che
             if (pictureBox3 != null) pictureBox3.SendToBack();
             if (lb_status != null) lb_status.BringToFront();
             if (progressBar1 != null) progressBar1.BringToFront();
 
             if (pictureBox3 != null)
             {
-                // Căn giữa theo form
                 pictureBox3.Left = (this.ClientSize.Width - pictureBox3.Width) / 2;
-
-                // Đẩy xuống thấp hơn status + progress
                 pictureBox3.Top = progressBar1.Top + progressBar1.Height + 10;
             }
-
         }
-
 
         protected override void OnResize(EventArgs e)
         {
@@ -186,6 +186,7 @@ namespace CaroGame
             ReLayoutLobbyUI();
         }
 
+        // set UI ban đầu + tự start search nếu quick match
         private void SetupUI()
         {
             if (lb_username1 != null)
@@ -226,6 +227,7 @@ namespace CaroGame
             ReLayoutLobbyUI();
         }
 
+        // gửi request tìm match + bật marquee
         private void StartSearching()
         {
             if (lb_status != null)
@@ -251,6 +253,7 @@ namespace CaroGame
             this.Close();
         }
 
+        // đóng lobby thì cancel match nếu chưa vào game
         private void PvPLobby_FormClosed(object sender, FormClosedEventArgs e)
         {
             if (_client != null)

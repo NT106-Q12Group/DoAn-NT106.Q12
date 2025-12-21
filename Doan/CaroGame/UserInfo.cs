@@ -12,9 +12,10 @@ namespace CaroGame
         private readonly PlayerView _player;
         private readonly TCPClient _client;
 
+        // tick 1 lần cho phép show password (sau khi confirm)
         private bool _allowShowPasswordTick = false;
 
-        // vì PlayerView dùng init => không sửa trực tiếp được, nên lưu bản hiển thị ở local
+        // PlayerView init-only nên giữ bản hiển thị local
         private string _email = "";
         private string _birthday = "";
 
@@ -52,17 +53,19 @@ namespace CaroGame
                 tb_password.UseSystemPasswordChar = true;
             }
 
+            // reset checkbox cho clean state
             cb_showcfpswUInfo.CheckedChanged -= cb_showcfpswUInfo_CheckedChanged;
             cb_showcfpswUInfo.Checked = false;
             cb_showcfpswUInfo.CheckedChanged += cb_showcfpswUInfo_CheckedChanged;
         }
 
-        // ===================== SHOW PASSWORD =====================
+        // Show/Hide password
 
         private void cb_showcfpswUInfo_CheckedChanged(object sender, EventArgs e)
         {
             if (cb_showcfpswUInfo.Checked)
             {
+                // chưa confirm thì bắt confirm trước
                 if (!_allowShowPasswordTick)
                 {
                     cb_showcfpswUInfo.CheckedChanged -= cb_showcfpswUInfo_CheckedChanged;
@@ -82,19 +85,22 @@ namespace CaroGame
                             return;
                         }
 
+                        // cho phép bật show 1 lần
                         _allowShowPasswordTick = true;
 
                         cb_showcfpswUInfo.CheckedChanged -= cb_showcfpswUInfo_CheckedChanged;
                         cb_showcfpswUInfo.Checked = true;
                         cb_showcfpswUInfo.CheckedChanged += cb_showcfpswUInfo_CheckedChanged;
 
-                        cb_showcfpswUInfo_CheckedChanged(cb_showcfpswUInfo, EventArgs.Empty);
+                        // show luôn sau khi confirm
+                        RevealPassword();
                     }
                     return;
                 }
 
-                _allowShowPasswordTick = false;
+                // đã confirm rồi thì cứ show
                 RevealPassword();
+                _allowShowPasswordTick = false;
                 return;
             }
 
@@ -102,6 +108,7 @@ namespace CaroGame
             MaskPassword();
         }
 
+        // verify password hiện tại với server
         private bool VerifyCurrentPassword(string currentPassword)
         {
             try
@@ -132,7 +139,7 @@ namespace CaroGame
             tb_password.UseSystemPasswordChar = true;
         }
 
-        // ===================== EDIT EMAIL / BIRTH =====================
+        // Edit email / birthday
 
         private void btnEditEmail_Click(object sender, EventArgs e)
         {
@@ -158,7 +165,6 @@ namespace CaroGame
 
                 try
                 {
-                    // ✅ gọi server
                     string resp = _client.UpdateEmail(_player.PlayerName, newEmail);
                     var p = (resp ?? "").Split('|');
 
@@ -166,6 +172,7 @@ namespace CaroGame
                     {
                         _email = newEmail;
                         if (tb_email != null) tb_email.Text = _email;
+
                         MessageBox.Show(this, "Cập nhật email thành công!", "Thành công!",
                             MessageBoxButtons.OK, MessageBoxIcon.Information);
                     }
@@ -208,6 +215,7 @@ namespace CaroGame
                     {
                         _birthday = newBirth;
                         if (tb_birthdate != null) tb_birthdate.Text = _birthday;
+
                         MessageBox.Show(this, "Cập nhật birthday thành công!", "Thành công!",
                             MessageBoxButtons.OK, MessageBoxIcon.Information);
                     }
@@ -235,9 +243,9 @@ namespace CaroGame
             catch { return false; }
         }
 
+        // validate string dd-MM-yyyy (nếu cần dùng)
         private static bool IsValidBirthday(string s)
         {
-            // bạn đang lưu string, nhưng validate theo dd-MM-yyyy cho chắc
             return DateTime.TryParseExact(
                 s,
                 "dd-MM-yyyy",
@@ -246,7 +254,7 @@ namespace CaroGame
                 out _);
         }
 
-        // ===================== SIGN OUT / OTHER =====================
+        // Sign out / other
 
         private void btn_signout_Click(object? sender, EventArgs e)
         {
@@ -311,7 +319,7 @@ namespace CaroGame
             }
         }
 
-        // ===================== DIALOGS =====================
+        // Dialogs
 
         private class ConfirmPasswordDialog : Form
         {
@@ -361,8 +369,6 @@ namespace CaroGame
                 cbShow.CheckedChanged += (s, e) =>
                 {
                     tb.UseSystemPasswordChar = !cbShow.Checked;
-
-                    // giữ caret/selection để khỏi khó chịu
                     tb.Focus();
                     tb.SelectionStart = tb.TextLength;
                 };
@@ -554,6 +560,5 @@ namespace CaroGame
                 Controls.Add(btnCancel);
             }
         }
-
     }
 }

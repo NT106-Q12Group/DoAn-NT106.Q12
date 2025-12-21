@@ -9,13 +9,12 @@ namespace CaroGame
     {
         private const string PH_USERNAME = "Username";
         private const string PH_PASSWORD = "Password";
+
         private readonly TCPClient _client;
         private bool _signingIn = false;
         private string _currentUser = "";
         private bool _pswPlaceholderActive = true;
 
-
-        // Constructor mặc định
         public SignIn() : this(new TCPClient("3.230.162.159", 25565)) { }
 
         public SignIn(TCPClient sharedClient)
@@ -24,6 +23,7 @@ namespace CaroGame
             _client = sharedClient;
 
             AcceptButton = btn_signin;
+
             SetPlaceholder(tb_username, PH_USERNAME);
             SetPswPlaceholder(tb_psw, PH_PASSWORD);
 
@@ -34,30 +34,50 @@ namespace CaroGame
                 if (char.IsWhiteSpace(e.KeyChar))
                 {
                     e.Handled = true;
-                    MessageBox.Show("Username cannot contain spaces!", "Validation", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show("Username cannot contain spaces!", "Validation",
+                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
             };
+
             tb_psw.KeyPress += (s, e) =>
             {
                 if (char.IsWhiteSpace(e.KeyChar))
                 {
                     e.Handled = true;
-                    MessageBox.Show("Password cannot contain spaces!", "Validation", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show("Password cannot contain spaces!", "Validation",
+                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
             };
         }
 
+        // mask password theo placeholder + checkbox
         private void UpdatePasswordMasking()
         {
             tb_psw.UseSystemPasswordChar = (!_pswPlaceholderActive && !cb_showpsw.Checked);
         }
 
-
         private void SetPlaceholder(TextBox tb, string text)
         {
-            tb.Text = text; tb.ForeColor = Color.Gray;
-            tb.Enter += (s, e) => { if (tb.Text == text) { tb.Text = ""; tb.ForeColor = Color.Black; } };
-            tb.Leave += (s, e) => { if (string.IsNullOrEmpty(tb.Text)) { tb.Text = text; tb.ForeColor = Color.Gray; } };
+            tb.Text = text;
+            tb.ForeColor = Color.Gray;
+
+            tb.Enter += (s, e) =>
+            {
+                if (tb.Text == text)
+                {
+                    tb.Text = "";
+                    tb.ForeColor = Color.Black;
+                }
+            };
+
+            tb.Leave += (s, e) =>
+            {
+                if (string.IsNullOrEmpty(tb.Text))
+                {
+                    tb.Text = text;
+                    tb.ForeColor = Color.Gray;
+                }
+            };
         }
 
         private void SetPswPlaceholder(TextBox tb, string text)
@@ -75,7 +95,7 @@ namespace CaroGame
                     tb.Text = "";
                     tb.ForeColor = Color.Black;
                     _pswPlaceholderActive = false;
-                    UpdatePasswordMasking(); // ✅ tôn trọng checkbox
+                    UpdatePasswordMasking();
                 }
             };
 
@@ -86,14 +106,13 @@ namespace CaroGame
                     _pswPlaceholderActive = true;
                     tb.Text = text;
                     tb.ForeColor = Color.Gray;
-                    UpdatePasswordMasking(); // ✅ placeholder luôn hiện chữ
+                    UpdatePasswordMasking();
                 }
             };
 
-            // ✅ Nếu user bắt đầu gõ (trường hợp focus/typing khác), vẫn update mask đúng theo checkbox
             tb.TextChanged += (s, e) =>
             {
-                if (_pswPlaceholderActive) return; // đang placeholder thì thôi
+                if (_pswPlaceholderActive) return;
                 UpdatePasswordMasking();
             };
         }
@@ -103,7 +122,7 @@ namespace CaroGame
             UpdatePasswordMasking();
         }
 
-
+        // login + mở dashboard
         private void btn_signin_Click(object? sender, EventArgs e)
         {
             if (_signingIn) return;
@@ -114,14 +133,16 @@ namespace CaroGame
             {
                 if (tb_username.Text == PH_USERNAME || string.IsNullOrWhiteSpace(tb_username.Text))
                 {
-                    MessageBox.Show("Please enter your username!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show("Please enter your username!", "Error",
+                        MessageBoxButtons.OK, MessageBoxIcon.Error);
                     tb_username.Focus();
                     return;
                 }
 
                 if (tb_psw.Text == PH_PASSWORD || string.IsNullOrWhiteSpace(tb_psw.Text))
                 {
-                    MessageBox.Show("Please enter your password!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show("Please enter your password!", "Error",
+                        MessageBoxButtons.OK, MessageBoxIcon.Error);
                     tb_psw.Focus();
                     return;
                 }
@@ -130,7 +151,8 @@ namespace CaroGame
                 {
                     if (!_client.Connect())
                     {
-                        MessageBox.Show("Cannot connect to server. Please check if the server is running.", "Connection Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        MessageBox.Show("Cannot connect to server. Please check if the server is running.",
+                            "Connection Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         return;
                     }
                 }
@@ -163,13 +185,12 @@ namespace CaroGame
                         SessionPassword = (tb_psw.Text == PH_PASSWORD) ? "" : tb_psw.Text
                     };
 
-
                     _client.StartListening();
 
                     var dash = new Dashboard(uname, _client);
                     dash.SetPlayer(pv);
 
-                    // ✅ QUAN TRỌNG: Dashboard đóng thì quay lại SignIn (KHÔNG Close SignIn)
+                    // dashboard đóng thì quay lại SignIn
                     dash.FormClosed += (s, _) =>
                     {
                         this.Show();
@@ -179,10 +200,10 @@ namespace CaroGame
                     this.Hide();
                     dash.Show();
 
-                    // show messagebox đính vào SignIn (khỏi bị chìm)
                     this.BeginInvoke((Action)(() =>
                     {
-                        MessageBox.Show(this, "Signed in successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        MessageBox.Show(this, "Signed in successfully!", "Success",
+                            MessageBoxButtons.OK, MessageBoxIcon.Information);
                     }));
                 }
                 else
@@ -193,7 +214,8 @@ namespace CaroGame
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Error: " + ex.Message, "Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             finally
             {
