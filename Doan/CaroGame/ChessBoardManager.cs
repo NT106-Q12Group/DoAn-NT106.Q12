@@ -210,8 +210,8 @@ namespace CaroGame
         {
             if (y < 0 || y >= matrix.Count || x < 0 || x >= matrix[0].Count) return;
 
-            // Tự tính toán phe dựa trên lịch sử nước đi để tránh tin tưởng hoàn toàn vào server
-            // Nước chẵn (0, 2, 4...) là X, lẻ là O
+            // ✅ Nên tin theo lịch sử local để đảm bảo đồng bộ vẽ (OK),
+            // nhưng không được tự đổi lượt ở đây.
             int autoSide = moveHistory.Count % 2;
 
             Button btn = matrix[y][x];
@@ -231,19 +231,8 @@ namespace CaroGame
                 return;
             }
 
-            if (CurrentGameMode == GameMode.PvP)
-            {
-                // Nếu mình vừa đánh (autoSide trùng MySide) -> Khóa lượt
-                // Nếu đối thủ vừa đánh -> Mở lượt
-                if (autoSide == MySide)
-                {
-                    IsMyTurn = false;
-                }
-                else
-                {
-                    IsMyTurn = true;
-                }
-            }
+            // ✅ IMPORTANT: PvP turn logic phải do PvP Form quản lý (server-based)
+            // => KHÔNG set IsMyTurn ở đây nữa.
         }
 
         public int MySide { get; set; } = -1; // 0: Player 1, 1: Player 2

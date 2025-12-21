@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Drawing;
-using System.Drawing.Printing;
-using System.Runtime.CompilerServices;
 using System.Windows.Forms;
 using CaroGame_TCPClient;
-using System.Reflection; // ✅ NEW: dùng để tắt toàn bộ Timer trong form
+using System.Reflection;
+using System.ComponentModel;
 
 namespace CaroGame
 {
@@ -22,8 +21,7 @@ namespace CaroGame
         private bool oppUndoUsed = false;
 
         // Names đang hiển thị theo "slot UI"
-        // QUAN TRỌNG: vì icon tĩnh: label1 luôn đứng cạnh icon X, label2 cạnh icon O
-        // => khi rematch đổi quân, ta swap 2 tên này để khớp icon
+        // label1 luôn cạnh icon X, label2 cạnh icon O
         private string player1Name; // UI slot X
         private string player2Name; // UI slot O
 
@@ -35,13 +33,16 @@ namespace CaroGame
 
         private bool _resultSent = false;
 
-        //Reset
+        // Reset
         private bool _hasIncomingResetOffer = false;
         private string _incomingResetFrom = "";
 
         // Rematch
         private bool _hasIncomingRematchOffer = false;
         private string _incomingRematchFrom = "";
+
+        // Anti spam / avoid UI desync (đang chờ server ack MOVE)
+        private bool _waitingServerAck = false;
 
         // dialogs (modeless)
         private ResultDialog _resultDialog = null;
@@ -54,7 +55,7 @@ namespace CaroGame
             this.room = room;
             this.MySide = mySide;
 
-            // ban đầu (vào game lần 1): p1 là X, p2 là O (theo UI bạn thiết kế tĩnh)
+            // ban đầu: p1 là X, p2 là O (theo UI tĩnh)
             this.player1Name = p1;
             this.player2Name = p2;
 
@@ -77,11 +78,11 @@ namespace CaroGame
         // ==========================================================
         // ✅ UNLIMITED TURN TIME (NO AUTO SWITCH)
         // ==========================================================
-        // Stop toàn bộ WinForms Timer đang tồn tại trong PvP (timer1, tmrTurn,...)
         private void DisableAllCountdownTimers()
         {
             try
             {
+                // 1) Tắt toàn bộ Timer là field trong form (timer1, tmrTurn,...)
                 var flags = BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public;
                 var fields = this.GetType().GetFields(flags);
 
@@ -93,11 +94,23 @@ namespace CaroGame
                         t.Enabled = false;
                     }
                 }
+
+                // 2) Tắt cả Timer nằm trong components container (Designer hay nhét ở đây)
+                if (components != null)
+                {
+                    foreach (IComponent c in components.Components)
+                    {
+                        if (c is System.Windows.Forms.Timer t2)
+                        {
+                            t2.Stop();
+                            t2.Enabled = false;
+                        }
+                    }
+                }
             }
             catch { }
         }
 
-        // ProgressBar chỉ làm "đèn báo lượt", không countdown
         private void MakeProgressBarsIndicatorOnly()
         {
             if (pgbP1 != null)
@@ -105,14 +118,18 @@ namespace CaroGame
                 pgbP1.Visible = true;
                 pgbP1.Style = ProgressBarStyle.Blocks;
                 pgbP1.MarqueeAnimationSpeed = 0;
+                pgbP1.Minimum = 0;
                 pgbP1.Maximum = 100;
+                pgbP1.Value = 0;
             }
             if (pgbP2 != null)
             {
                 pgbP2.Visible = true;
                 pgbP2.Style = ProgressBarStyle.Blocks;
                 pgbP2.MarqueeAnimationSpeed = 0;
+                pgbP2.Minimum = 0;
                 pgbP2.Maximum = 100;
+                pgbP2.Value = 0;
             }
         }
 
@@ -126,9 +143,7 @@ namespace CaroGame
             ChessBoard = new ChessBoardManager(pnlChessBoard, GameMode.PvP);
             ChessBoard.MySide = this.MySide;
 
-            // ✅ Mapping tên trong ChessBoard theo icon tĩnh:
-            // Player[0] là X => lấy theo label1 (player1Name)
-            // Player[1] là O => lấy theo label2 (player2Name)
+            // map tên theo icon tĩnh
             SyncChessBoardNamesWithUI();
 
             ChessBoard.PlayerClickedNode -= ChessBoard_PlayerClickedNode;
@@ -145,14 +160,14 @@ namespace CaroGame
 
             SetupPlayerInfo();
 
-            // ✅ IMPORTANT: tắt countdown/auto switch turn (vô hạn thời gian)
+            // ✅ vô hạn thời gian: tắt countdown + chỉ dùng progressbar làm đèn báo
             DisableAllCountdownTimers();
             MakeProgressBarsIndicatorOnly();
 
-            // X luôn đi trước khi bắt đầu ván mới
-            ChessBoard.IsMyTurn = (this.MySide == 0);
+            _waitingServerAck = false;
 
-            // ✅ UI lượt theo side X/O
+            // X luôn đi trước
+            ChessBoard.IsMyTurn = (this.MySide == 0);
             TurnUIBySide(0);
 
             this.Text = $"PvP - Bạn là {(this.MySide == 0 ? "X (Đi trước)" : "O (Đi sau)")}";
@@ -163,7 +178,6 @@ namespace CaroGame
         // =============== CORE UI HELPERS ===============
         private void SetupPlayerInfo()
         {
-            // label1 luôn là người cạnh icon X
             if (label1 != null) label1.Text = player1Name;
             if (label2 != null) label2.Text = player2Name;
 
@@ -178,9 +192,7 @@ namespace CaroGame
                 label2.Font = new Font(label2.Font, FontStyle.Regular);
             }
 
-            // highlight người chơi theo MySide hiện tại
-            // MySide==0 => mình là X => highlight label1
-            // MySide==1 => mình là O => highlight label2
+            // highlight theo MySide
             if (MySide == 0)
             {
                 if (label1 != null)
@@ -210,7 +222,6 @@ namespace CaroGame
 
         private void SwapNamesForStaticIcons()
         {
-            // swap tên 2 label để khớp icon tĩnh (label1 luôn X, label2 luôn O)
             string tmp = player1Name;
             player1Name = player2Name;
             player2Name = tmp;
@@ -220,26 +231,32 @@ namespace CaroGame
         }
 
         // ================= TURN UI (INDICATOR ONLY) =================
-        // 0 = lượt X (slot label1/pgbP1), 1 = lượt O (slot label2/pgbP2)
+        private void SetPgbValue(ProgressBar pgb, int value)
+        {
+            if (pgb == null) return;
+            if (value < pgb.Minimum) value = pgb.Minimum;
+            if (value > pgb.Maximum) value = pgb.Maximum;
+            pgb.Value = value;
+        }
+
+        // 0 = lượt X (label1/pgbP1), 1 = lượt O (label2/pgbP2)
         private void TurnUIBySide(int turnSide)
         {
             if (pgbP1 == null || pgbP2 == null) return;
 
             bool xTurn = (turnSide == 0);
 
-            // Chỉ báo lượt: 100 cho người đang được đi, 0 cho người còn lại
-            pgbP1.Value = xTurn ? 100 : 0;  // slot X
-            pgbP2.Value = xTurn ? 0 : 100;  // slot O
+            SetPgbValue(pgbP1, xTurn ? 100 : 0);
+            SetPgbValue(pgbP2, xTurn ? 0 : 100);
         }
 
         private void TurnUIEnd()
         {
             if (pgbP1 == null || pgbP2 == null) return;
-            pgbP1.Value = 0;
-            pgbP2.Value = 0;
+            SetPgbValue(pgbP1, 0);
+            SetPgbValue(pgbP2, 0);
         }
 
-        // side vừa đi xong => lượt kế tiếp là 1 - side
         private void ApplyTurnAfterMove(int lastMoveSide)
         {
             int nextSide = 1 - lastMoveSide;
@@ -429,6 +446,7 @@ namespace CaroGame
             _gameEnded = false;
             _waitingRematch = false;
             _resultSent = false;
+            _waitingServerAck = false;
 
             _hasIncomingRematchOffer = false;
             _incomingRematchFrom = "";
@@ -441,11 +459,11 @@ namespace CaroGame
             ChessBoard.resetGame();
             ChessBoard.MySide = MySide;
 
-            // ✅ tắt countdown/auto-switch mỗi khi rematch
+            // vô hạn thời gian
             DisableAllCountdownTimers();
             MakeProgressBarsIndicatorOnly();
 
-            // X luôn đi trước ván mới
+            // X luôn đi trước
             ChessBoard.IsMyTurn = (MySide == 0);
             TurnUIBySide(0);
 
@@ -459,7 +477,7 @@ namespace CaroGame
             if (ptbOne != null) ptbOne.Visible = true;
             if (ptbZero != null) ptbZero.Visible = false;
 
-            // ✅ icon tĩnh: label1 luôn cạnh X, label2 luôn cạnh O
+            // icon tĩnh: label1 luôn cạnh X, label2 cạnh O
             if (oldSide != MySide)
                 SwapNamesForStaticIcons();
             else
@@ -510,17 +528,18 @@ namespace CaroGame
             _gameEnded = false;
             _waitingReset = false;
             _resultSent = false;
+            _waitingServerAck = false;
 
             _hasIncomingResetOffer = false;
             _incomingResetFrom = "";
 
             ChessBoard.resetGame();
 
-            // ✅ tắt countdown/auto-switch mỗi khi reset
+            // vô hạn thời gian
             DisableAllCountdownTimers();
             MakeProgressBarsIndicatorOnly();
 
-            // X luôn đi trước sau reset ván
+            // X luôn đi trước sau reset
             ChessBoard.IsMyTurn = (MySide == 0);
             TurnUIBySide(0);
 
@@ -541,10 +560,15 @@ namespace CaroGame
         // ================= NETWORK =================
         private void ChessBoard_PlayerClickedNode(Point point)
         {
+            // chống spam khi đang chờ server xác nhận
+            if (_waitingServerAck) return;
+
             if (tcpClient != null && tcpClient.IsConnected())
                 tcpClient.SendPacket(new Packet("MOVE", point));
 
-            // ✅ chỉ đổi lượt khi có MOVE
+            _waitingServerAck = true;
+
+            // chỉ đổi "đèn báo" sau khi mình click (đợi server sẽ confirm qua MOVE)
             ChessBoard.IsMyTurn = false;
             TurnUIBySide(1 - MySide);
         }
@@ -574,7 +598,10 @@ namespace CaroGame
 
                                 ChessBoard.ProcessMove(x, y, side);
 
-                                // ✅ chỉ đổi lượt khi có MOVE
+                                // server đã confirm => mở click lại
+                                _waitingServerAck = false;
+
+                                // đổi lượt đúng theo X/O
                                 ApplyTurnAfterMove(side);
                                 break;
                             }
@@ -586,6 +613,9 @@ namespace CaroGame
 
                         case "UNDO_SUCCESS":
                             ChessBoard.ExecuteUndoPvP();
+
+                            // sau undo thì cho click lại bình thường
+                            _waitingServerAck = false;
 
                             if (isMyUndoRequest)
                             {
@@ -601,6 +631,10 @@ namespace CaroGame
                             }
 
                             isMyUndoRequest = false;
+
+                            // cập nhật lại đèn lượt theo số nước còn lại
+                            TurnUIBySide(ChessBoard.MoveCount % 2);
+                            ChessBoard.IsMyTurn = (MySide == (ChessBoard.MoveCount % 2));
                             break;
 
                         case "OPPONENT_LEFT":
@@ -714,9 +748,12 @@ namespace CaroGame
         {
             if (myUndoUsed) return;
             if (!ChessBoard.IsMyTurn) return;
+            if (_waitingServerAck) return;
             if (tcpClient == null || !tcpClient.IsConnected()) return;
 
             isMyUndoRequest = true;
+            _waitingServerAck = true;
+
             if (btnUndo != null) btnUndo.Enabled = false;
             tcpClient.Send("REQUEST_UNDO");
         }
