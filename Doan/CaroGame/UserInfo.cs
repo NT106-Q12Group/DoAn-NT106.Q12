@@ -12,13 +12,12 @@ namespace CaroGame
         private readonly PlayerView _player;
         private readonly TCPClient _client;
 
-        // tick 1 lần cho phép show password (sau khi confirm)
         private bool _allowShowPasswordTick = false;
 
-        // PlayerView init-only nên giữ bản hiển thị local
         private string _email = "";
         private string _birthday = "";
 
+        // Khởi tạo form với player + client đang dùng
         public UserInfo(PlayerView player, TCPClient client)
         {
             InitializeComponent();
@@ -28,6 +27,7 @@ namespace CaroGame
             Load += Dashboard_Load;
         }
 
+        // Nạp dữ liệu player lên UI + reset trạng thái checkbox show password
         private void Dashboard_Load(object? sender, EventArgs e)
         {
             tb_username.ForeColor = Color.Black;
@@ -53,52 +53,34 @@ namespace CaroGame
                 tb_password.UseSystemPasswordChar = true;
             }
 
-            // reset checkbox cho clean state
             cb_showcfpswUInfo.CheckedChanged -= cb_showcfpswUInfo_CheckedChanged;
             cb_showcfpswUInfo.Checked = false;
             cb_showcfpswUInfo.CheckedChanged += cb_showcfpswUInfo_CheckedChanged;
         }
 
-        // Show/Hide password
-
+        // Toggle show/hide password (bắt confirm trước khi bật)
         private void cb_showcfpswUInfo_CheckedChanged(object sender, EventArgs e)
         {
             if (cb_showcfpswUInfo.Checked)
             {
-                // chưa confirm thì bắt confirm trước
                 if (!_allowShowPasswordTick)
                 {
                     cb_showcfpswUInfo.CheckedChanged -= cb_showcfpswUInfo_CheckedChanged;
                     cb_showcfpswUInfo.Checked = false;
                     cb_showcfpswUInfo.CheckedChanged += cb_showcfpswUInfo_CheckedChanged;
 
-                    using (var dlg = new ConfirmPasswordDialog())
-                    {
-                        dlg.StartPosition = FormStartPosition.CenterParent;
-                        var dr = dlg.ShowDialog(this);
-                        if (dr != DialogResult.OK) return;
+                    if (!RequirePasswordConfirmation("Nhập mật khẩu hiện tại để hiện password")) return;
 
-                        if (!VerifyCurrentPassword(dlg.Password))
-                        {
-                            MessageBox.Show(this, "Mật khẩu không đúng.", "Xác nhận thất bại",
-                                MessageBoxButtons.OK, MessageBoxIcon.Error);
-                            return;
-                        }
+                    _allowShowPasswordTick = true;
 
-                        // cho phép bật show 1 lần
-                        _allowShowPasswordTick = true;
+                    cb_showcfpswUInfo.CheckedChanged -= cb_showcfpswUInfo_CheckedChanged;
+                    cb_showcfpswUInfo.Checked = true;
+                    cb_showcfpswUInfo.CheckedChanged += cb_showcfpswUInfo_CheckedChanged; // FIX: đúng event CheckedChanged
 
-                        cb_showcfpswUInfo.CheckedChanged -= cb_showcfpswUInfo_CheckedChanged;
-                        cb_showcfpswUInfo.Checked = true;
-                        cb_showcfpswUInfo.CheckedChanged += cb_showcfpswUInfo_CheckedChanged;
-
-                        // show luôn sau khi confirm
-                        RevealPassword();
-                    }
+                    RevealPassword();
                     return;
                 }
 
-                // đã confirm rồi thì cứ show
                 RevealPassword();
                 _allowShowPasswordTick = false;
                 return;
@@ -108,7 +90,27 @@ namespace CaroGame
             MaskPassword();
         }
 
-        // verify password hiện tại với server
+        // Popup nhập mật khẩu hiện tại và verify với server
+        private bool RequirePasswordConfirmation(string prompt)
+        {
+            using (var dlg = new ConfirmPasswordDialog(prompt))
+            {
+                dlg.StartPosition = FormStartPosition.CenterParent;
+                var dr = dlg.ShowDialog(this);
+                if (dr != DialogResult.OK) return false;
+
+                if (!VerifyCurrentPassword(dlg.Password))
+                {
+                    MessageBox.Show(this, "Mật khẩu không đúng.", "Xác nhận thất bại",
+                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return false;
+                }
+
+                return true;
+            }
+        }
+
+        // Verify password hiện tại bằng API server
         private bool VerifyCurrentPassword(string currentPassword)
         {
             try
@@ -127,22 +129,25 @@ namespace CaroGame
             }
         }
 
+        // Hiện password trong textbox
         private void RevealPassword()
         {
             if (tb_password == null) return;
             tb_password.UseSystemPasswordChar = false;
         }
 
+        // Ẩn password trong textbox
         private void MaskPassword()
         {
             if (tb_password == null) return;
             tb_password.UseSystemPasswordChar = true;
         }
 
-        // Edit email / birthday
-
+        // Đổi email: confirm mật khẩu -> validate -> gọi server update
         private void btnEditEmail_Click(object sender, EventArgs e)
         {
+            if (!RequirePasswordConfirmation("Nhập mật khẩu hiện tại để cập nhật email")) return;
+
             using (var dlg = new InputDialog("Cập nhật Email", "Nhập email mới", _email))
             {
                 dlg.StartPosition = FormStartPosition.CenterParent;
@@ -190,8 +195,11 @@ namespace CaroGame
             }
         }
 
+        // Đổi ngày sinh: confirm mật khẩu -> chọn ngày -> gọi server update
         private void btnEditBirth_Click(object sender, EventArgs e)
         {
+            if (!RequirePasswordConfirmation("Nhập mật khẩu hiện tại để cập nhật ngày sinh")) return;
+
             using (var dlg = new DatePickerDialog("Cập nhật Birthday", "Chọn ngày sinh", _birthday))
             {
                 dlg.StartPosition = FormStartPosition.CenterParent;
@@ -233,6 +241,7 @@ namespace CaroGame
             }
         }
 
+        // Check format email bằng MailAddress
         private static bool IsValidEmail(string email)
         {
             try
@@ -243,7 +252,7 @@ namespace CaroGame
             catch { return false; }
         }
 
-        // validate string dd-MM-yyyy (nếu cần dùng)
+        // Check chuỗi ngày theo dd-MM-yyyy (nếu cần)
         private static bool IsValidBirthday(string s)
         {
             return DateTime.TryParseExact(
@@ -254,8 +263,7 @@ namespace CaroGame
                 out _);
         }
 
-        // Sign out / other
-
+        // Logout: gọi server, disconnect client, quay về SignIn
         private void btn_signout_Click(object? sender, EventArgs e)
         {
             string message = "Signed out successfully!";
@@ -301,8 +309,10 @@ namespace CaroGame
             }
         }
 
+        // Back: đóng form hiện tại
         private void btnBack_Click(object sender, EventArgs e) => this.Close();
 
+        // Mở màn hình đổi mật khẩu (modal) và restore lại UserInfo sau khi đóng
         private void btnEditPassword_Click(object sender, EventArgs e)
         {
             using (var resetPsw = new ResetPassword(_client))
@@ -319,8 +329,6 @@ namespace CaroGame
             }
         }
 
-        // Dialogs
-
         private class ConfirmPasswordDialog : Form
         {
             private readonly TextBox tb;
@@ -328,9 +336,10 @@ namespace CaroGame
 
             public string Password => tb.Text;
 
-            public ConfirmPasswordDialog()
+            // Dialog xác nhận mật khẩu (1 ô nhập + toggle hiện/ẩn)
+            public ConfirmPasswordDialog(string promptText = "Nhập mật khẩu hiện tại để xác nhận")
             {
-                Text = "Xác nhận mật khẩu";
+                Text = "Xác nhận";
                 FormBorderStyle = FormBorderStyle.FixedDialog;
                 MaximizeBox = false;
                 MinimizeBox = false;
@@ -341,7 +350,7 @@ namespace CaroGame
 
                 var lbl = new Label
                 {
-                    Text = "Nhập mật khẩu hiện tại để hiện password",
+                    Text = promptText,
                     AutoSize = false,
                     Width = 400,
                     Height = 30,
@@ -414,6 +423,7 @@ namespace CaroGame
             private readonly TextBox tb;
             public string Value => tb.Text;
 
+            // Dialog nhập 1 dòng text (dùng cho email)
             public InputDialog(string title, string label, string initial)
             {
                 Text = title;
@@ -445,7 +455,6 @@ namespace CaroGame
 
                 int btnW = 150, btnH = 40, gap = 16;
                 int totalW = btnW * 2 + gap;
-
                 int startX = (ClientSize.Width - totalW) / 2;
                 int topY = 105;
 
@@ -484,6 +493,7 @@ namespace CaroGame
             private readonly DateTimePicker dtp;
             public DateTime SelectedDate => dtp.Value.Date;
 
+            // Dialog chọn ngày theo format dd-MM-yyyy
             public DatePickerDialog(string title, string label, string initial)
             {
                 Text = title;
@@ -527,7 +537,6 @@ namespace CaroGame
 
                 int btnW = 150, btnH = 40, gap = 16;
                 int totalW = btnW * 2 + gap;
-
                 int startX = (ClientSize.Width - totalW) / 2;
                 int topY = 120;
 
