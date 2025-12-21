@@ -495,6 +495,8 @@ namespace CaroGame
                             if (side == -1) side = ChessBoard.MoveCount % 2;
                             ChessBoard.ProcessMove(x, y, side);
 
+                            bool nowMyTurn = (side != MySide);
+
                             ChessBoard.IsMyTurn = true;
                             TurnUI(true);
                             break;
