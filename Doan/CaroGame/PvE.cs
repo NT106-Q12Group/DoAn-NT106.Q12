@@ -30,6 +30,7 @@ namespace CaroGame
             ChessBoard = new ChessBoardManager(pnlChessBoard, GameMode.PvE);
 
             ChessBoard.GameEnded += OnGameEnded;
+            ChessBoard.OnTurnChanged += TurnUI_PvE;
 
             ChessBoard.DrawChessBoard();
 
@@ -87,6 +88,7 @@ namespace CaroGame
         private void resetChess()
         {
             ChessBoard.resetGame();
+
             undoCount = false;
             if (ptbOne != null) ptbOne.Visible = true;
             if (ptbZero != null) ptbZero.Visible = false;
@@ -169,6 +171,23 @@ namespace CaroGame
 
             if (result == DialogResult.Yes)
                 resetChess(); ;
+        }
+
+        private void TurnUI_PvE(bool isPlayerTurn)
+        {
+            if (pgbP1 != null)
+            {
+                pgbP1.Visible = isPlayerTurn;
+                pgbP1.Style = ProgressBarStyle.Blocks;
+                pgbP1.Value = isPlayerTurn ? 100 : 0;
+            }
+
+            if (pgbP2 != null)
+            {
+                pgbP2.Visible = !isPlayerTurn;
+                pgbP1.Style = ProgressBarStyle.Blocks;
+                pgbP1.Value = isPlayerTurn ? 100 : 0;
+            }
         }
     }
 }

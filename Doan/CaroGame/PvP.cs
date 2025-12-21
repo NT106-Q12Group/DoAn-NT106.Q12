@@ -103,6 +103,9 @@ namespace CaroGame
             SetupPlayerInfo();
 
             ChessBoard.IsMyTurn = (this.MySide == 0);
+
+            TurnUI(ChessBoard.IsMyTurn);
+
             this.Text = $"PvP - Bạn là {(this.MySide == 0 ? "X (Đi trước)" : "O (Đi sau)")}";
 
             ChessBoard.DrawChessBoard();
@@ -167,6 +170,20 @@ namespace CaroGame
             SyncChessBoardNamesWithUI();
         }
 
+        // ================= TURN CHECKING =================
+        private void TurnUI(bool isMyTurn)
+        {
+            if (pgbP1 == null || pgbP2 == null) return;
+
+            pgbP1.Visible = true;
+            pgbP1.Style = ProgressBarStyle.Blocks;
+            pgbP1.Value = isMyTurn ? 100 : 0;
+
+            pgbP2.Visible = true;
+            pgbP2.Style = ProgressBarStyle.Blocks;
+            pgbP2.Value = isMyTurn ? 0 : 100;
+        }
+
         // ================= DIALOG HELPERS =================
         private void CloseResultDialog()
         {
@@ -223,6 +240,7 @@ namespace CaroGame
         {
             if (_gameEnded) return;
             _gameEnded = true;
+            TurnUI(false);
 
             bool iWon = ComputeWinByWinnerRaw(winnerRaw);
             SendGameResultOnce(iWon);
@@ -360,6 +378,8 @@ namespace CaroGame
             ChessBoard.MySide = MySide;
             ChessBoard.IsMyTurn = (MySide == 0);
 
+            TurnUI(ChessBoard.IsMyTurn);
+
             // reset undo
             myUndoUsed = false;
             oppUndoUsed = false;
@@ -441,6 +461,7 @@ namespace CaroGame
 
             SetupPlayerInfo();
             SyncChessBoardNamesWithUI();
+            TurnUI(ChessBoard.IsMyTurn);
         }
 
         // ================= NETWORK =================
@@ -448,6 +469,9 @@ namespace CaroGame
         {
             if (tcpClient != null && tcpClient.IsConnected())
                 tcpClient.SendPacket(new Packet("MOVE", point));
+
+            ChessBoard.IsMyTurn = false;
+            TurnUI(false);
         }
 
         private void HandleServerMessage(string data)
@@ -470,6 +494,9 @@ namespace CaroGame
                             int side = int.Parse(parts[3]);
                             if (side == -1) side = ChessBoard.MoveCount % 2;
                             ChessBoard.ProcessMove(x, y, side);
+
+                            ChessBoard.IsMyTurn = true;
+                            TurnUI(true);
                             break;
 
                         case "CHAT":
@@ -774,7 +801,7 @@ namespace CaroGame
                 MaximizeBox = false;
                 MinimizeBox = false;
                 StartPosition = FormStartPosition.CenterScreen;
-                Size = new Size(380, 190);
+                Size = new Size(380, 210);
                 TopMost = true;
 
                 var lbl = new Label()
@@ -825,7 +852,7 @@ namespace CaroGame
                 MaximizeBox = false;
                 MinimizeBox = false;
                 StartPosition = FormStartPosition.CenterScreen;
-                Size = new Size(380, 160);
+                Size = new Size(380, 180);
                 TopMost = true;
 
                 var lbl = new Label()
@@ -865,7 +892,7 @@ namespace CaroGame
                 MaximizeBox = false;
                 MinimizeBox = false;
                 StartPosition = FormStartPosition.CenterScreen;
-                Size = new Size(380, 160);
+                Size = new Size(380, 180);
                 TopMost = true;
 
                 var lbl = new Label()

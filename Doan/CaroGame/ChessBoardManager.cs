@@ -45,6 +45,8 @@ namespace CaroGame
         public event Action<Point> PlayerClickedNode;
         public event Action<string> GameEnded;
 
+        public Action<bool> OnTurnChanged;
+
         public Panel ChesBoard
         {
             get { return chessBoard; }
@@ -280,6 +282,9 @@ namespace CaroGame
             {
                 CurrentPlayer = 1;
                 isThinking = true;
+
+                OnTurnChanged?.Invoke(false);
+
                 await Task.Delay(100);
                 await BotPlay();
                 isThinking = false;
@@ -288,6 +293,7 @@ namespace CaroGame
 
         private void EndGame(string winnerName)
         {
+            OnTurnChanged?.Invoke(false);
             GameEnded?.Invoke(winnerName);
         }
 
@@ -329,6 +335,8 @@ namespace CaroGame
             else
             {
                 IsMyTurn = false;
+                CurrentPlayer = 0;
+                OnTurnChanged?.Invoke(true);
             }
         }
 
@@ -657,6 +665,8 @@ namespace CaroGame
             CurrentPlayer = 0;
             moveHistory.Push(btn);
             playerHistory.Push(1);
+
+            OnTurnChanged?.Invoke(true);
 
             var winCells = getWinningCells(btn);
             if (winCells != null) { HighlightWinningCells(winCells); EndGame(Player[1].Name); }
