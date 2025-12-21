@@ -48,6 +48,10 @@ namespace CaroGame
         private WaitingRematchDialog _waitingRematchDialog = null;
         private WaitingResetDialog _waitingResetDialog = null;
 
+        // ✅ Progress bar "fill full" cho lượt hiện tại (không auto switch)
+        private readonly System.Windows.Forms.Timer _turnFillTimer = new System.Windows.Forms.Timer();
+        private int _turnSide = 0; // 0: X, 1: O
+
         public PvP(Room room, int mySide, string p1, string p2, TCPClient client)
         {
             InitializeComponent();
@@ -96,6 +100,8 @@ namespace CaroGame
                 {
                     if (f.GetValue(this) is System.Windows.Forms.Timer t)
                     {
+                        // ✅ đừng kill timer nội bộ của file này
+                        if (ReferenceEquals(t, _turnFillTimer)) continue;
                         HardKillTimer(t);
                     }
                 }
@@ -107,6 +113,7 @@ namespace CaroGame
                     {
                         if (c is System.Windows.Forms.Timer t2)
                         {
+                            if (ReferenceEquals(t2, _turnFillTimer)) continue;
                             HardKillTimer(t2);
                         }
                     }
@@ -119,14 +126,11 @@ namespace CaroGame
         {
             try
             {
-                // stop + disable
                 t.Stop();
                 t.Enabled = false;
-
-                // đẩy interval cực lớn để "gần như không tick"
                 t.Interval = int.MaxValue;
 
-                // ✅ quan trọng: gỡ SẠCH mọi Tick handler để không còn logic auto-switch
+                // ✅ gỡ sạch Tick handlers (timer cũ auto-switch)
                 RemoveAllTimerTickHandlers(t);
             }
             catch { }
@@ -136,29 +140,25 @@ namespace CaroGame
         {
             try
             {
-                // WinForms Timer dùng EventHandlerList của Component
-                // Key nội bộ là Timer.EVENT_TICK (private static object)
                 var timerType = typeof(System.Windows.Forms.Timer);
                 var keyField = timerType.GetField("EVENT_TICK", BindingFlags.NonPublic | BindingFlags.Static);
                 if (keyField == null) return;
 
                 object tickKey = keyField.GetValue(null);
 
-                // Component.Events (protected) => EventHandlerList
                 var eventsProp = typeof(Component).GetProperty("Events", BindingFlags.NonPublic | BindingFlags.Instance);
                 if (eventsProp == null) return;
 
                 var list = eventsProp.GetValue(timer) as EventHandlerList;
                 if (list == null) return;
 
-                // set handlers = null
                 list.RemoveHandler(tickKey, list[tickKey]);
             }
             catch { }
         }
 
         // ==========================================================
-        // ✅ PROGRESSBAR INDICATOR (RUN FOREVER UNTIL MOVE)
+        // ✅ PROGRESSBAR "FILL FULL" UNTIL MOVE (NO AUTO SWITCH)
         // ==========================================================
         private void SetupProgressBars()
         {
@@ -169,7 +169,6 @@ namespace CaroGame
                 pgbP1.Maximum = 100;
                 pgbP1.Value = 0;
                 pgbP1.Style = ProgressBarStyle.Blocks;
-                pgbP1.MarqueeAnimationSpeed = 0;
             }
 
             if (pgbP2 != null)
@@ -179,49 +178,67 @@ namespace CaroGame
                 pgbP2.Maximum = 100;
                 pgbP2.Value = 0;
                 pgbP2.Style = ProgressBarStyle.Blocks;
-                pgbP2.MarqueeAnimationSpeed = 0;
             }
+
+            // Timer fill bar: chạy tới 100 rồi đứng yên, KHÔNG đổi lượt
+            _turnFillTimer.Stop();
+            _turnFillTimer.Interval = 30; // tốc độ fill
+            _turnFillTimer.Tick -= TurnFillTimer_Tick;
+            _turnFillTimer.Tick += TurnFillTimer_Tick;
+            _turnFillTimer.Start();
+        }
+
+        private void TurnFillTimer_Tick(object sender, EventArgs e)
+        {
+            try
+            {
+                if (_gameEnded) return;
+
+                // đang lượt ai thì fill bar đó tới 100
+                if (_turnSide == 0)
+                {
+                    if (pgbP1 != null && pgbP1.Value < 100) pgbP1.Value++;
+                    if (pgbP2 != null) pgbP2.Value = 0;
+                }
+                else
+                {
+                    if (pgbP2 != null && pgbP2.Value < 100) pgbP2.Value++;
+                    if (pgbP1 != null) pgbP1.Value = 0;
+                }
+            }
+            catch { }
         }
 
         // 0 = lượt X (pgbP1), 1 = lượt O (pgbP2)
         private void TurnUIBySide(int turnSide)
         {
-            if (pgbP1 == null || pgbP2 == null) return;
+            _turnSide = (turnSide == 0) ? 0 : 1;
 
-            // ✅ chạy vô hạn: dùng Marquee
-            if (turnSide == 0)
+            // reset bar lượt mới về 0 để fill lại
+            try
             {
-                // X turn
-                pgbP1.Style = ProgressBarStyle.Marquee;
-                pgbP1.MarqueeAnimationSpeed = 30;
-
-                pgbP2.Style = ProgressBarStyle.Blocks;
-                pgbP2.MarqueeAnimationSpeed = 0;
-                pgbP2.Value = 0;
+                if (_turnSide == 0)
+                {
+                    if (pgbP1 != null) pgbP1.Value = 0;
+                    if (pgbP2 != null) pgbP2.Value = 0;
+                }
+                else
+                {
+                    if (pgbP2 != null) pgbP2.Value = 0;
+                    if (pgbP1 != null) pgbP1.Value = 0;
+                }
             }
-            else
-            {
-                // O turn
-                pgbP2.Style = ProgressBarStyle.Marquee;
-                pgbP2.MarqueeAnimationSpeed = 30;
-
-                pgbP1.Style = ProgressBarStyle.Blocks;
-                pgbP1.MarqueeAnimationSpeed = 0;
-                pgbP1.Value = 0;
-            }
+            catch { }
         }
 
         private void TurnUIEnd()
         {
-            if (pgbP1 == null || pgbP2 == null) return;
-
-            pgbP1.Style = ProgressBarStyle.Blocks;
-            pgbP1.MarqueeAnimationSpeed = 0;
-            pgbP1.Value = 0;
-
-            pgbP2.Style = ProgressBarStyle.Blocks;
-            pgbP2.MarqueeAnimationSpeed = 0;
-            pgbP2.Value = 0;
+            try
+            {
+                if (pgbP1 != null) pgbP1.Value = 0;
+                if (pgbP2 != null) pgbP2.Value = 0;
+            }
+            catch { }
         }
 
         private void ApplyTurnAfterMove(int lastMoveSide)
@@ -260,20 +277,20 @@ namespace CaroGame
 
             SetupPlayerInfo();
 
-            // ✅ HARD kill timer countdown cũ
+            // ✅ kill timer countdown cũ
             DisableAllCountdownTimersHard();
 
-            // ✅ Progress bar: chạy vô hạn cho tới khi MOVE
+            // ✅ Progress bar: fill full rồi đứng, chỉ MOVE mới đổi lượt
             SetupProgressBars();
 
             _waitingServerAck = false;
+            _gameEnded = false;
 
             // X luôn đi trước
             ChessBoard.IsMyTurn = (this.MySide == 0);
             TurnUIBySide(0);
 
             this.Text = $"PvP - Bạn là {(this.MySide == 0 ? "X (Đi trước)" : "O (Đi sau)")}";
-
             ChessBoard.DrawChessBoard();
         }
 
@@ -604,10 +621,10 @@ namespace CaroGame
 
             _waitingServerAck = true;
 
-            // chỉ khóa lượt + đổi UI tạm thời, đợi server confirm MOVE
+            // khoá lượt cho tới khi server trả MOVE
             ChessBoard.IsMyTurn = false;
-            // (Optional) vẫn để marquee chạy ở bên đối thủ sau click
-            TurnUIBySide(1 - MySide);
+
+            // ❗ KHÔNG đổi lượt ở đây. Chỉ MOVE mới đổi lượt.
         }
 
         private void HandleServerMessage(string data)
@@ -666,7 +683,6 @@ namespace CaroGame
 
                                 isMyUndoRequest = false;
 
-                                // update lượt theo move count
                                 int nextSide = ChessBoard.MoveCount % 2;
                                 TurnUIBySide(nextSide);
                                 ChessBoard.IsMyTurn = (MySide == nextSide);
@@ -926,6 +942,13 @@ namespace CaroGame
         protected override void OnFormClosing(FormClosingEventArgs e)
         {
             CloseAllPopups();
+
+            try
+            {
+                _turnFillTimer.Stop();
+                _turnFillTimer.Tick -= TurnFillTimer_Tick;
+            }
+            catch { }
 
             if (tcpClient != null)
                 tcpClient.OnMessageReceived -= HandleServerMessage;

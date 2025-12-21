@@ -208,31 +208,34 @@ namespace CaroGame
 
         public void ProcessMove(int x, int y, int playerSide)
         {
+            if (matrix == null || matrix.Count == 0) return;
             if (y < 0 || y >= matrix.Count || x < 0 || x >= matrix[0].Count) return;
-
-            // ✅ Nên tin theo lịch sử local để đảm bảo đồng bộ vẽ (OK),
-            // nhưng không được tự đổi lượt ở đây.
-            int autoSide = moveHistory.Count % 2;
 
             Button btn = matrix[y][x];
             if (btn.BackgroundImage != null) return;
 
-            btn.BackgroundImage = Player[autoSide].Mark;
+            // ✅ Ưu tiên side do SERVER gửi về
+            // Nếu server gửi -1 thì mới tự suy ra theo lịch sử
+            int side = (playerSide == 0 || playerSide == 1)
+                ? playerSide
+                : (moveHistory.Count % 2);
+
+            btn.BackgroundImage = Player[side].Mark;
 
             HighlightMove(btn);
             moveHistory.Push(btn);
-            playerHistory.Push(autoSide);
+            playerHistory.Push(side);
 
             var winCells = getWinningCells(btn);
             if (winCells != null)
             {
                 HighlightWinningCells(winCells);
-                EndGame(Player[autoSide].Name);
+                EndGame(Player[side].Name);
                 return;
             }
 
-            // ✅ IMPORTANT: PvP turn logic phải do PvP Form quản lý (server-based)
-            // => KHÔNG set IsMyTurn ở đây nữa.
+            // ❌ QUAN TRỌNG: ĐỪNG tự chỉnh IsMyTurn ở đây trong PvP nữa
+            // Turn do PvP Form điều khiển bằng ApplyTurnAfterMove(side)
         }
 
         public int MySide { get; set; } = -1; // 0: Player 1, 1: Player 2
