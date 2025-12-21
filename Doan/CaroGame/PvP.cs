@@ -4,6 +4,7 @@ using System.Drawing.Printing;
 using System.Runtime.CompilerServices;
 using System.Windows.Forms;
 using CaroGame_TCPClient;
+using System.Reflection; // ✅ NEW: dùng để tắt toàn bộ Timer trong form
 
 namespace CaroGame
 {
@@ -73,6 +74,48 @@ namespace CaroGame
             InitGame();
         }
 
+        // ==========================================================
+        // ✅ UNLIMITED TURN TIME (NO AUTO SWITCH)
+        // ==========================================================
+        // Stop toàn bộ WinForms Timer đang tồn tại trong PvP (timer1, tmrTurn,...)
+        private void DisableAllCountdownTimers()
+        {
+            try
+            {
+                var flags = BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public;
+                var fields = this.GetType().GetFields(flags);
+
+                foreach (var f in fields)
+                {
+                    if (f.GetValue(this) is System.Windows.Forms.Timer t)
+                    {
+                        t.Stop();
+                        t.Enabled = false;
+                    }
+                }
+            }
+            catch { }
+        }
+
+        // ProgressBar chỉ làm "đèn báo lượt", không countdown
+        private void MakeProgressBarsIndicatorOnly()
+        {
+            if (pgbP1 != null)
+            {
+                pgbP1.Visible = true;
+                pgbP1.Style = ProgressBarStyle.Blocks;
+                pgbP1.MarqueeAnimationSpeed = 0;
+                pgbP1.Maximum = 100;
+            }
+            if (pgbP2 != null)
+            {
+                pgbP2.Visible = true;
+                pgbP2.Style = ProgressBarStyle.Blocks;
+                pgbP2.MarqueeAnimationSpeed = 0;
+                pgbP2.Maximum = 100;
+            }
+        }
+
         private void InitGame()
         {
             CheckForIllegalCrossThreadCalls = false;
@@ -102,10 +145,14 @@ namespace CaroGame
 
             SetupPlayerInfo();
 
+            // ✅ IMPORTANT: tắt countdown/auto switch turn (vô hạn thời gian)
+            DisableAllCountdownTimers();
+            MakeProgressBarsIndicatorOnly();
+
             // X luôn đi trước khi bắt đầu ván mới
             ChessBoard.IsMyTurn = (this.MySide == 0);
 
-            // ✅ UI lượt phải theo side X/O, không theo "lượt mình"
+            // ✅ UI lượt theo side X/O
             TurnUIBySide(0);
 
             this.Text = $"PvP - Bạn là {(this.MySide == 0 ? "X (Đi trước)" : "O (Đi sau)")}";
@@ -172,7 +219,7 @@ namespace CaroGame
             SyncChessBoardNamesWithUI();
         }
 
-        // ================= TURN UI (FIXED) =================
+        // ================= TURN UI (INDICATOR ONLY) =================
         // 0 = lượt X (slot label1/pgbP1), 1 = lượt O (slot label2/pgbP2)
         private void TurnUIBySide(int turnSide)
         {
@@ -180,25 +227,15 @@ namespace CaroGame
 
             bool xTurn = (turnSide == 0);
 
-            pgbP1.Visible = true;
-            pgbP1.Style = ProgressBarStyle.Blocks;
-            pgbP1.Value = xTurn ? 100 : 0;
-
-            pgbP2.Visible = true;
-            pgbP2.Style = ProgressBarStyle.Blocks;
-            pgbP2.Value = xTurn ? 0 : 100;
+            // Chỉ báo lượt: 100 cho người đang được đi, 0 cho người còn lại
+            pgbP1.Value = xTurn ? 100 : 0;  // slot X
+            pgbP2.Value = xTurn ? 0 : 100;  // slot O
         }
 
         private void TurnUIEnd()
         {
             if (pgbP1 == null || pgbP2 == null) return;
-
-            pgbP1.Visible = true;
-            pgbP1.Style = ProgressBarStyle.Blocks;
             pgbP1.Value = 0;
-
-            pgbP2.Visible = true;
-            pgbP2.Style = ProgressBarStyle.Blocks;
             pgbP2.Value = 0;
         }
 
@@ -206,7 +243,6 @@ namespace CaroGame
         private void ApplyTurnAfterMove(int lastMoveSide)
         {
             int nextSide = 1 - lastMoveSide;
-
             ChessBoard.IsMyTurn = (nextSide == MySide);
             TurnUIBySide(nextSide);
         }
@@ -268,7 +304,6 @@ namespace CaroGame
             if (_gameEnded) return;
             _gameEnded = true;
 
-            // ✅ end UI lượt
             TurnUIEnd();
 
             bool iWon = ComputeWinByWinnerRaw(winnerRaw);
@@ -406,6 +441,10 @@ namespace CaroGame
             ChessBoard.resetGame();
             ChessBoard.MySide = MySide;
 
+            // ✅ tắt countdown/auto-switch mỗi khi rematch
+            DisableAllCountdownTimers();
+            MakeProgressBarsIndicatorOnly();
+
             // X luôn đi trước ván mới
             ChessBoard.IsMyTurn = (MySide == 0);
             TurnUIBySide(0);
@@ -421,7 +460,6 @@ namespace CaroGame
             if (ptbZero != null) ptbZero.Visible = false;
 
             // ✅ icon tĩnh: label1 luôn cạnh X, label2 luôn cạnh O
-            // => nếu side của mình đổi so với ván trước thì swap tên hiển thị để khớp icon
             if (oldSide != MySide)
                 SwapNamesForStaticIcons();
             else
@@ -478,6 +516,10 @@ namespace CaroGame
 
             ChessBoard.resetGame();
 
+            // ✅ tắt countdown/auto-switch mỗi khi reset
+            DisableAllCountdownTimers();
+            MakeProgressBarsIndicatorOnly();
+
             // X luôn đi trước sau reset ván
             ChessBoard.IsMyTurn = (MySide == 0);
             TurnUIBySide(0);
@@ -502,7 +544,7 @@ namespace CaroGame
             if (tcpClient != null && tcpClient.IsConnected())
                 tcpClient.SendPacket(new Packet("MOVE", point));
 
-            // mình vừa đi xong => lượt đối thủ
+            // ✅ chỉ đổi lượt khi có MOVE
             ChessBoard.IsMyTurn = false;
             TurnUIBySide(1 - MySide);
         }
@@ -511,7 +553,7 @@ namespace CaroGame
         {
             if (IsDisposed || !IsHandleCreated) return;
 
-            BeginInvoke((MethodInvoker)delegate
+            BeginInvoke((System.Windows.Forms.MethodInvoker)delegate
             {
                 try
                 {
@@ -532,7 +574,7 @@ namespace CaroGame
 
                                 ChessBoard.ProcessMove(x, y, side);
 
-                                // ✅ FIX: cập nhật lượt đúng theo X/O
+                                // ✅ chỉ đổi lượt khi có MOVE
                                 ApplyTurnAfterMove(side);
                                 break;
                             }
@@ -556,7 +598,6 @@ namespace CaroGame
                             else
                             {
                                 oppUndoUsed = true;
-                                // nếu bạn có UI undo của đối thủ thì update ở đây
                             }
 
                             isMyUndoRequest = false;
@@ -606,7 +647,6 @@ namespace CaroGame
                             break;
 
                         case "REMATCH_SENT":
-                            // server confirm đã gửi
                             break;
 
                         case "RESET_OFFER":
