@@ -4,6 +4,7 @@ using System.Windows.Forms;
 using CaroGame_TCPClient;
 using System.Reflection;
 using System.ComponentModel;
+using System.Diagnostics;
 
 namespace CaroGame
 {
@@ -246,6 +247,28 @@ namespace CaroGame
             int nextSide = 1 - lastMoveSide;
             ChessBoard.IsMyTurn = (nextSide == MySide);
             TurnUIBySide(nextSide);
+        }
+
+        // ==========================================================
+        // ✅ FIX CORE: Normalize SIDE from server
+        // ==========================================================
+        // Nhiều server gửi "side của lượt tiếp theo" thay vì "side của nước vừa đánh"
+        // => Nếu tin parts[3] sẽ vẽ sai quân và khóa turn vĩnh viễn.
+        private int GetMoverSideFromServer(int receivedSide)
+        {
+            // mover side dựa trên số nước đã có trước khi add move mới
+            int expectedMover = ChessBoard.MoveCount % 2; // 0:X, 1:O
+
+            // server gửi -1 / rác
+            if (receivedSide != 0 && receivedSide != 1)
+                return expectedMover;
+
+            // server gửi đúng mover side
+            if (receivedSide == expectedMover)
+                return receivedSide;
+
+            // server gửi next-turn side (bị lệch) => mover side chính là expected
+            return expectedMover;
         }
 
         // ==========================================================
@@ -645,16 +668,20 @@ namespace CaroGame
                                 if (parts.Length < 4) return;
                                 int x = int.Parse(parts[1]);
                                 int y = int.Parse(parts[2]);
-                                int side = int.Parse(parts[3]);
+                                int receivedSide = int.Parse(parts[3]);
 
-                                if (side == -1) side = ChessBoard.MoveCount % 2;
+                                // DEBUG nếu muốn:
+                                // Debug.WriteLine($"MOVE raw: x={x}, y={y}, receivedSide={receivedSide}, moveCountBefore={ChessBoard.MoveCount}");
 
-                                ChessBoard.ProcessMove(x, y, side);
+                                // ✅ FIX: normalize -> mover side
+                                int moverSide = GetMoverSideFromServer(receivedSide);
+
+                                ChessBoard.ProcessMove(x, y, moverSide);
 
                                 _waitingServerAck = false;
 
-                                // ✅ chỉ MOVE mới đổi lượt
-                                ApplyTurnAfterMove(side);
+                                // ✅ chỉ MOVE mới đổi lượt (dựa trên moverSide)
+                                ApplyTurnAfterMove(moverSide);
                                 break;
                             }
 
