@@ -185,8 +185,8 @@ namespace CaroGame
             if (pgbP2 != null)
             {
                 pgbP2.Visible = !isPlayerTurn;
-                pgbP1.Style = ProgressBarStyle.Blocks;
-                pgbP1.Value = isPlayerTurn ? 100 : 0;
+                pgbP2.Style = ProgressBarStyle.Blocks;
+                pgbP2.Value = isPlayerTurn ? 100 : 0;
             }
         }
     }
