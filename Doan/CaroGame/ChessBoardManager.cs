@@ -7,6 +7,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Drawing;
 
 namespace CaroGame
 {
@@ -23,10 +24,12 @@ namespace CaroGame
         PvE,
         PvP
     }
+
     public class Tile
     {
         public Image BackgroundImage { get; set; }
 
+        // init tile trống
         public Tile()
         {
             BackgroundImage = null;
@@ -61,6 +64,7 @@ namespace CaroGame
             get { return player; }
             set { player = value; }
         }
+
         private int currentPlayer;
         public int CurrentPlayer
         {
@@ -77,6 +81,7 @@ namespace CaroGame
         #endregion
 
         #region Initialize
+        // setup board manager + load mark images (fallback nếu thiếu file)
         public ChessBoardManager(Panel chessBoard, GameMode mode = GameMode.PvE)
         {
             this.chessBoard = chessBoard;
@@ -104,6 +109,7 @@ namespace CaroGame
             CurrentPlayer = 0;
         }
 
+        // tạo ảnh X/O đơn giản nếu không load được resource
         private Image CreateFallbackImage(Color color, string text)
         {
             Bitmap bmp = new Bitmap(Cons.CHESS_WIDTH, Cons.CHESS_HEIGHT);
@@ -141,22 +147,22 @@ namespace CaroGame
         private Color lastMoveColor = Color.Yellow;
 
         public DifficultyLevel Difficulty { get; set; } = DifficultyLevel.Easy;
+
+        // vẽ lại bàn cờ + reset state/history
         public void DrawChessBoard()
         {
             chessBoard.SuspendLayout();
 
-            chessBoard.Controls.Clear(); // <- quan trọng: xóa bàn cũ
+            chessBoard.Controls.Clear();
             matrix = new List<List<Button>>();
 
-            // reset history 1 lần thôi
             moveHistory.Clear();
             playerHistory.Clear();
             undoAlready = false;
             undoUsedInBot = false;
             lastMoveBtn = null;
 
-            // Resize panel cho đúng 20x20 ô
-            chessBoard.AutoScroll = false; // hoặc true nếu panel bị nhỏ
+            chessBoard.AutoScroll = false;
             chessBoard.Width = Cons.CHESS_BOARD_WIDTH * Cons.CHESS_WIDTH;
             chessBoard.Height = Cons.CHESS_BOARD_HEIGHT * Cons.CHESS_HEIGHT;
 
@@ -170,7 +176,7 @@ namespace CaroGame
                     {
                         Width = Cons.CHESS_WIDTH,
                         Height = Cons.CHESS_HEIGHT,
-                        Location = new Point(j * Cons.CHESS_WIDTH, i * Cons.CHESS_HEIGHT), // đơn giản + đúng
+                        Location = new Point(j * Cons.CHESS_WIDTH, i * Cons.CHESS_HEIGHT),
                         BackgroundImageLayout = ImageLayout.Stretch,
                         Tag = i.ToString(),
                         BackColor = defaultColor,
@@ -189,6 +195,7 @@ namespace CaroGame
             chessBoard.ResumeLayout();
         }
 
+        // tô viền/đổi màu để dễ thấy nước đi gần nhất
         private void HighlightMove(Button btn)
         {
             if (lastMoveBtn != null)
@@ -206,6 +213,7 @@ namespace CaroGame
 
         private bool isThinking = false;
 
+        // PvP: nhận move từ server rồi vẽ (side ưu tiên theo server)
         public void ProcessMove(int x, int y, int playerSide)
         {
             if (matrix == null || matrix.Count == 0) return;
@@ -214,8 +222,6 @@ namespace CaroGame
             Button btn = matrix[y][x];
             if (btn.BackgroundImage != null) return;
 
-            // ✅ Ưu tiên side do SERVER gửi về
-            // Nếu server gửi -1 thì mới tự suy ra theo lịch sử
             int side = (playerSide == 0 || playerSide == 1)
                 ? playerSide
                 : (moveHistory.Count % 2);
@@ -233,14 +239,12 @@ namespace CaroGame
                 EndGame(Player[side].Name);
                 return;
             }
-
-            // ❌ QUAN TRỌNG: ĐỪNG tự chỉnh IsMyTurn ở đây trong PvP nữa
-            // Turn do PvP Form điều khiển bằng ApplyTurnAfterMove(side)
         }
 
         public int MySide { get; set; } = -1; // 0: Player 1, 1: Player 2
         public bool IsMyTurn { get; set; } = false;
 
+        // handle click: PvP thì bắn tọa độ, PvE thì đánh + gọi bot
         private async void Btn_Click(object? sender, EventArgs e)
         {
             Button btn = sender as Button;
@@ -254,13 +258,12 @@ namespace CaroGame
                 if (!IsMyTurn) return;
 
                 Point p = getChessPoint(btn);
-                PlayerClickedNode?.Invoke(p); // Gửi tọa độ lên Server
+                PlayerClickedNode?.Invoke(p);
 
-                IsMyTurn = false; // Khóa ngay lập tức, đợi Server phản hồi mới vẽ
+                IsMyTurn = false;
                 return;
             }
 
-            // PVE LOGIC
             int markIndex = 0;
             btn.BackgroundImage = Player[markIndex].Mark;
             HighlightMove(btn);
@@ -283,12 +286,14 @@ namespace CaroGame
             }
         }
 
+        // kết thúc game và bắn event ra UI
         private void EndGame(string winnerName)
         {
             OnTurnChanged?.Invoke(false);
             GameEnded?.Invoke(winnerName);
         }
 
+        // reset bàn + reset lượt/undo theo mode
         public void resetGame()
         {
             if (lastMoveBtn != null)
@@ -332,6 +337,7 @@ namespace CaroGame
             }
         }
 
+        // undo 1 nước (nội bộ), dùng chung PvP/PvE
         public void undoLastMove()
         {
             if (moveHistory.Count == 0) return;
@@ -356,6 +362,7 @@ namespace CaroGame
             }
         }
 
+        // PvP undo: rollback 2 nước (nếu đủ) và set lại IsMyTurn theo lịch sử
         public void ExecuteUndoPvP()
         {
             if (moveHistory.Count == 0) return;
@@ -363,8 +370,7 @@ namespace CaroGame
             if (moveHistory.Count == 1)
             {
                 undoLastMove();
-                // Sau undo, lượt phụ thuộc vào số nước còn lại
-                int nextSide = moveHistory.Count % 2; // 0: X, 1: O
+                int nextSide = moveHistory.Count % 2;
                 IsMyTurn = (MySide == nextSide);
                 return;
             }
@@ -376,6 +382,7 @@ namespace CaroGame
             IsMyTurn = (MySide == next);
         }
 
+        // PvE undo: rollback 2 nước (player + bot), chỉ cho 1 lần
         public bool undoTurnPvE()
         {
             if (moveHistory.Count < 2 || undoUsedInBot) return false;
@@ -385,6 +392,7 @@ namespace CaroGame
             return true;
         }
 
+        // kiểm tra thắng theo 4 hướng, trả về list ô thắng để highlight
         private List<Button> getWinningCells(Button btn)
         {
             List<Button> win;
@@ -395,6 +403,7 @@ namespace CaroGame
             return null;
         }
 
+        // lấy tọa độ (x,y) của button trong matrix
         private Point getChessPoint(Button btn)
         {
             int column = Convert.ToInt32(btn.Tag);
@@ -402,6 +411,7 @@ namespace CaroGame
             return new Point(row, column);
         }
 
+        // quét 5 quân liên tiếp theo hàng ngang
         private List<Button> getHorizontalCells(Button btn)
         {
             Point point = getChessPoint(btn);
@@ -421,6 +431,7 @@ namespace CaroGame
             return cells.GetRange(0, 5);
         }
 
+        // quét 5 quân liên tiếp theo cột dọc
         private List<Button> getVerticalCells(Button btn)
         {
             Point point = getChessPoint(btn);
@@ -440,12 +451,12 @@ namespace CaroGame
             return cells.GetRange(0, 5);
         }
 
+        // quét 5 quân liên tiếp theo đường chéo chính (\)
         private List<Button> getMainDiagonalCells(Button btn)
         {
             Point point = getChessPoint(btn);
             List<Button> cells = new List<Button>();
 
-            // lên-trái
             for (int i = 0; ; i++)
             {
                 int x = point.X - i;
@@ -455,7 +466,6 @@ namespace CaroGame
                 else break;
             }
 
-            // xuống-phải
             for (int i = 1; ; i++)
             {
                 int x = point.X + i;
@@ -469,12 +479,12 @@ namespace CaroGame
             return cells.GetRange(0, 5);
         }
 
+        // quét 5 quân liên tiếp theo đường chéo phụ (/)
         private List<Button> getSecondaryDiagonalCells(Button btn)
         {
             Point point = getChessPoint(btn);
             List<Button> cells = new List<Button>();
 
-            // lên-phải
             for (int i = 0; ; i++)
             {
                 int x = point.X + i;
@@ -484,7 +494,6 @@ namespace CaroGame
                 else break;
             }
 
-            // xuống-trái
             for (int i = 1; ; i++)
             {
                 int x = point.X - i;
@@ -498,6 +507,7 @@ namespace CaroGame
             return cells.GetRange(0, 5);
         }
 
+        // highlight các ô thắng
         private void HighlightWinningCells(List<Button> cells)
         {
             foreach (var b in cells)
@@ -516,9 +526,10 @@ namespace CaroGame
         const int HUMAN = 1;
         const int BOT = 2;
 
+        // bot chọn nước đi: win ngay -> chặn -> minimax theo depth/time
         private async Task BotPlay()
         {
-            int[,] board = GetIntBoard(); // size = matrix size thật
+            int[,] board = GetIntBoard();
 
             if (IsBoardEmpty(board))
             {
@@ -568,8 +579,6 @@ namespace CaroGame
                         if (botTimer.ElapsedMilliseconds > timeLimitMillis) { isTimeOut = true; break; }
 
                         Point move = orderedMoves[i];
-
-                        // chặn biên tuyệt đối
                         if (!InBounds(move.X, move.Y, board)) continue;
 
                         board[move.X, move.Y] = BOT;
@@ -587,14 +596,13 @@ namespace CaroGame
                 return currentFinalMove;
             });
 
-            // chặn lần cuối
             if (bestMove.X != -1 && bestMove.Y != -1 && InBounds(bestMove.X, bestMove.Y, board))
             {
                 MakeMove(bestMove.X, bestMove.Y);
             }
         }
 
-        // Kiểm tra nhanh xem có đủ 5 quân liên tiếp không
+        // check nhanh thắng 5 theo 4 hướng
         private bool CheckWin(int r, int c, int[,] board, int player)
         {
             if (CountConsecutive(r, c, 1, 0, board, player) >= 5) return true;
@@ -604,6 +612,7 @@ namespace CaroGame
             return false;
         }
 
+        // đếm số quân liên tiếp (2 phía) theo hướng dr/dc
         private int CountConsecutive(int r, int c, int dr, int dc, int[,] board, int player)
         {
             int count = 1;
@@ -627,8 +636,7 @@ namespace CaroGame
             return count;
         }
 
-
-        // Sắp xếp nước đi dựa trên điểm heuristic sơ bộ
+        // sort move theo heuristic (atk + def) để giảm nhánh minimax
         private List<Point> SortMoves(List<Point> moves, int[,] board)
         {
             List<KeyValuePair<Point, long>> rankedMoves = new List<KeyValuePair<Point, long>>();
@@ -644,6 +652,7 @@ namespace CaroGame
             return result;
         }
 
+        // đặt quân bot lên UI + check win + trả lượt về player
         private void MakeMove(int r, int c)
         {
             if (r < 0 || r >= matrix.Count || c < 0 || c >= matrix[0].Count) return;
@@ -664,7 +673,7 @@ namespace CaroGame
             if (winCells != null) { HighlightWinningCells(winCells); EndGame(Player[1].Name); }
         }
 
-
+        // convert UI matrix sang board int cho bot tính
         private int[,] GetIntBoard()
         {
             int rows = matrix.Count;
@@ -684,14 +693,14 @@ namespace CaroGame
             return board;
         }
 
-
+        // check board rỗng để bot đánh giữa
         private bool IsBoardEmpty(int[,] board)
         {
             foreach (int cell in board) if (cell != EMPTY) return false;
             return true;
         }
 
-        // Candidate Generation: Chỉ lấy các ô trống lân cận các quân cờ đã đánh
+        // sinh candidate: chỉ lấy ô trống quanh các quân đã đánh
         private List<Point> GetPossibleMoves(int[,] board)
         {
             List<Point> moves = new List<Point>();
@@ -707,9 +716,9 @@ namespace CaroGame
                     if (board[i, j] != EMPTY)
                     {
                         int startR = Math.Max(0, i - 2);
-                        int endR = Math.Min(h - 1, i + 2); // Đảm bảo không vượt quá h-1
+                        int endR = Math.Min(h - 1, i + 2);
                         int startC = Math.Max(0, j - 2);
-                        int endC = Math.Min(w - 1, j + 2); // Đảm bảo không vượt quá w-1
+                        int endC = Math.Min(w - 1, j + 2);
 
                         for (int r = startR; r <= endR; r++)
                         {
@@ -732,22 +741,22 @@ namespace CaroGame
             return moves;
         }
 
+        // minimax alpha-beta + timeout để bot không đứng hình
         private long Minimax(int[,] board, int depth, long alpha, long beta, bool isMaximizing)
         {
-            // Kiểm tra timeout để ngắt sớm
             if (isTimeOut || botTimer.ElapsedMilliseconds > timeLimitMillis) { isTimeOut = true; return 0; }
 
             long currentScore = EvaluateBoard(board);
-            if (Math.Abs(currentScore) > 5000000) return currentScore; // Đã có người thắng/thua
+            if (Math.Abs(currentScore) > 5000000) return currentScore;
             if (depth == 0) return currentScore;
 
             var moves = GetPossibleMoves(board);
             if (moves.Count == 0) return currentScore;
 
             var orderedMoves = SortMoves(moves, board);
-            int movesCheckLimit = 20; // Giới hạn số nhánh để tăng tốc
+            int movesCheckLimit = 20;
 
-            if (isMaximizing) // Lượt Bot
+            if (isMaximizing)
             {
                 long maxScore = long.MinValue;
                 for (int i = 0; i < Math.Min(orderedMoves.Count, movesCheckLimit); i++)
@@ -762,11 +771,11 @@ namespace CaroGame
                     if (isTimeOut) return 0;
                     maxScore = Math.Max(maxScore, score);
                     alpha = Math.Max(alpha, score);
-                    if (beta <= alpha) break; // Alpha-Beta Pruning
+                    if (beta <= alpha) break;
                 }
                 return maxScore;
             }
-            else // Lượt Human
+            else
             {
                 long minScore = long.MaxValue;
                 for (int i = 0; i < Math.Min(orderedMoves.Count, movesCheckLimit); i++)
@@ -781,21 +790,20 @@ namespace CaroGame
                     if (isTimeOut) return 0;
                     minScore = Math.Min(minScore, score);
                     beta = Math.Min(beta, score);
-                    if (beta <= alpha) break; // Alpha-Beta Pruning
+                    if (beta <= alpha) break;
                 }
                 return minScore;
             }
         }
 
+        // heuristic tổng: bot cộng điểm, human trừ điểm
         private long EvaluateBoard(int[,] board)
         {
             long score = 0;
 
-            // SỬA: Lấy kích thước thực tế từ mảng board đang xét
             int rows = board.GetLength(0);
             int cols = board.GetLength(1);
 
-            // Chạy vòng lặp theo rows/cols vừa lấy, KHÔNG dùng Cons
             for (int i = 0; i < rows; i++)
             {
                 for (int j = 0; j < cols; j++)
@@ -807,6 +815,7 @@ namespace CaroGame
             return score;
         }
 
+        // tính “mức nguy hiểm” của human để bot ưu tiên chặn
         long DiemTanCongCuaDich(int r, int c, int[,] board)
         {
             long score = 0;
@@ -817,7 +826,7 @@ namespace CaroGame
             return score;
         }
 
-        // Tính điểm tấn công của Human (mối đe dọa với Bot)
+        // điểm tấn công của human theo 1 hướng (đếm quân + block)
         long CheckAtkOfHuman(int r, int c, int dr, int dc, int[,] board)
         {
             int ta = 0;
@@ -856,6 +865,7 @@ namespace CaroGame
             return score;
         }
 
+        // điểm tấn công của bot (tự tạo chuỗi)
         long DiemTanCong(int r, int c, int[,] board)
         {
             long score = 0;
@@ -866,6 +876,7 @@ namespace CaroGame
             return score;
         }
 
+        // điểm phòng thủ (ưu tiên chặn chuỗi human)
         long DiemPhongThu(int r, int c, int[,] board)
         {
             long score = 0;
@@ -876,6 +887,7 @@ namespace CaroGame
             return score;
         }
 
+        // điểm tấn công của bot theo 1 hướng (đếm bot + block)
         long CheckAtk(int r, int c, int dr, int dc, int[,] board)
         {
             int ta = 0;
@@ -914,6 +926,7 @@ namespace CaroGame
             return score;
         }
 
+        // điểm phòng thủ theo 1 hướng (đếm human + block)
         long CheckDef(int r, int c, int dr, int dc, int[,] board)
         {
             int dich = 0;
@@ -950,6 +963,7 @@ namespace CaroGame
             return score;
         }
 
+        // check biên theo size thật của board đang xét
         bool InBounds(int r, int c, int[,] board)
         {
             return r >= 0 && r < board.GetLength(0) &&

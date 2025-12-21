@@ -4,7 +4,6 @@ using System.Windows.Forms;
 using CaroGame_TCPClient;
 using System.Reflection;
 using System.ComponentModel;
-using System.Diagnostics;
 
 namespace CaroGame
 {
@@ -13,45 +12,41 @@ namespace CaroGame
         private ChessBoardManager ChessBoard;
         public Room room;
 
-        // 0: X, 1: O
-        public int MySide { get; set; }
+        public int MySide { get; set; } // 0: X, 1: O
 
-        // Undo
         private bool isMyUndoRequest = false;
         private bool myUndoUsed = false;
         private bool oppUndoUsed = false;
 
-        // label1 luôn cạnh icon X, label2 cạnh icon O
-        private string player1Name; // UI slot X
-        private string player2Name; // UI slot O
+        // label1 đứng cạnh icon X, label2 đứng cạnh icon O (UI cố định)
+        private string player1Name; // X slot
+        private string player2Name; // O slot
 
         private TCPClient tcpClient;
 
         private bool _gameEnded = false;
         private bool _waitingRematch = false;
         private bool _waitingReset = false;
-
         private bool _resultSent = false;
 
-        // Reset
         private bool _hasIncomingResetOffer = false;
         private string _incomingResetFrom = "";
 
-        // Rematch
         private bool _hasIncomingRematchOffer = false;
         private string _incomingRematchFrom = "";
 
-        // Anti spam / avoid UI desync (đang chờ server ack MOVE)
+        // chờ server trả MOVE để tránh tự vẽ gây lệch
         private bool _waitingServerAck = false;
 
-        // dialogs (modeless)
         private ResultDialog _resultDialog = null;
         private WaitingRematchDialog _waitingRematchDialog = null;
         private WaitingResetDialog _waitingResetDialog = null;
 
-        // ✅ Progress bar "fill full" cho lượt hiện tại (không auto switch)
         private readonly System.Windows.Forms.Timer _turnFillTimer = new System.Windows.Forms.Timer();
         private int _turnSide = 0; // 0: X, 1: O
+
+        // tooltip để hover thấy full name (khi bị ... )
+        private readonly ToolTip _nameTip = new ToolTip();
 
         public PvP(Room room, int mySide, string p1, string p2, TCPClient client)
         {
@@ -59,19 +54,20 @@ namespace CaroGame
             this.room = room;
             this.MySide = mySide;
 
-            this.player1Name = p1; // X slot
-            this.player2Name = p2; // O slot
+            this.player1Name = p1;
+            this.player2Name = p2;
 
             this.tcpClient = client;
 
-            // ✅ chặn timer countdown cũ bị Start trong Load/Shown
             this.Load += (_, __) => DisableAllCountdownTimersHard();
             this.Shown += (_, __) => DisableAllCountdownTimersHard();
+
+            // tên dài thì resize lại cho không bị che
+            this.Resize += (_, __) => EnsureNameLabelsLayout();
 
             InitGame();
         }
 
-        // Offline/Fallback
         public PvP(Room room, int playerNumber)
         {
             InitializeComponent();
@@ -83,17 +79,16 @@ namespace CaroGame
             this.Load += (_, __) => DisableAllCountdownTimersHard();
             this.Shown += (_, __) => DisableAllCountdownTimersHard();
 
+            this.Resize += (_, __) => EnsureNameLabelsLayout();
+
             InitGame();
         }
 
-        // ==========================================================
-        // ✅ HARD DISABLE ALL WINFORMS TIMERS + REMOVE ALL TICK HANDLERS
-        // ==========================================================
+        // dọn timer cũ để khỏi bị countdown/auto-switch lạc quẻ
         private void DisableAllCountdownTimersHard()
         {
             try
             {
-                // 1) stop/disable timers là field
                 var flags = BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public;
                 var fields = this.GetType().GetFields(flags);
 
@@ -101,13 +96,11 @@ namespace CaroGame
                 {
                     if (f.GetValue(this) is System.Windows.Forms.Timer t)
                     {
-                        // ✅ đừng kill timer nội bộ của file này
                         if (ReferenceEquals(t, _turnFillTimer)) continue;
                         HardKillTimer(t);
                     }
                 }
 
-                // 2) stop/disable timers nằm trong components container
                 if (components != null)
                 {
                     foreach (IComponent c in components.Components)
@@ -123,6 +116,7 @@ namespace CaroGame
             catch { }
         }
 
+        // stop/disable + gỡ Tick handler cho chắc
         private void HardKillTimer(System.Windows.Forms.Timer t)
         {
             try
@@ -130,13 +124,12 @@ namespace CaroGame
                 t.Stop();
                 t.Enabled = false;
                 t.Interval = int.MaxValue;
-
-                // ✅ gỡ sạch Tick handlers (timer cũ auto-switch)
                 RemoveAllTimerTickHandlers(t);
             }
             catch { }
         }
 
+        // gỡ sạch Tick event
         private void RemoveAllTimerTickHandlers(System.Windows.Forms.Timer timer)
         {
             try
@@ -158,9 +151,7 @@ namespace CaroGame
             catch { }
         }
 
-        // ==========================================================
-        // ✅ PROGRESSBAR "FILL FULL" UNTIL MOVE (NO AUTO SWITCH)
-        // ==========================================================
+        // setup progress bar: fill tới 100 rồi đứng, đổi lượt chỉ khi có MOVE
         private void SetupProgressBars()
         {
             if (pgbP1 != null)
@@ -181,9 +172,8 @@ namespace CaroGame
                 pgbP2.Style = ProgressBarStyle.Blocks;
             }
 
-            // Timer fill bar: chạy tới 100 rồi đứng yên, KHÔNG đổi lượt
             _turnFillTimer.Stop();
-            _turnFillTimer.Interval = 30; // tốc độ fill
+            _turnFillTimer.Interval = 30;
             _turnFillTimer.Tick -= TurnFillTimer_Tick;
             _turnFillTimer.Tick += TurnFillTimer_Tick;
             _turnFillTimer.Start();
@@ -195,7 +185,6 @@ namespace CaroGame
             {
                 if (_gameEnded) return;
 
-                // đang lượt ai thì fill bar đó tới 100
                 if (_turnSide == 0)
                 {
                     if (pgbP1 != null && pgbP1.Value < 100) pgbP1.Value++;
@@ -210,24 +199,14 @@ namespace CaroGame
             catch { }
         }
 
-        // 0 = lượt X (pgbP1), 1 = lượt O (pgbP2)
+        // set UI theo lượt
         private void TurnUIBySide(int turnSide)
         {
             _turnSide = (turnSide == 0) ? 0 : 1;
-
-            // reset bar lượt mới về 0 để fill lại
             try
             {
-                if (_turnSide == 0)
-                {
-                    if (pgbP1 != null) pgbP1.Value = 0;
-                    if (pgbP2 != null) pgbP2.Value = 0;
-                }
-                else
-                {
-                    if (pgbP2 != null) pgbP2.Value = 0;
-                    if (pgbP1 != null) pgbP1.Value = 0;
-                }
+                if (pgbP1 != null) pgbP1.Value = 0;
+                if (pgbP2 != null) pgbP2.Value = 0;
             }
             catch { }
         }
@@ -242,6 +221,7 @@ namespace CaroGame
             catch { }
         }
 
+        // sau MOVE thì đổi lượt
         private void ApplyTurnAfterMove(int lastMoveSide)
         {
             int nextSide = 1 - lastMoveSide;
@@ -249,31 +229,16 @@ namespace CaroGame
             TurnUIBySide(nextSide);
         }
 
-        // ==========================================================
-        // ✅ FIX CORE: Normalize SIDE from server
-        // ==========================================================
-        // Nhiều server gửi "side của lượt tiếp theo" thay vì "side của nước vừa đánh"
-        // => Nếu tin parts[3] sẽ vẽ sai quân và khóa turn vĩnh viễn.
+        // normalize side (nhiều server gửi side của lượt kế)
         private int GetMoverSideFromServer(int receivedSide)
         {
-            // mover side dựa trên số nước đã có trước khi add move mới
             int expectedMover = ChessBoard.MoveCount % 2; // 0:X, 1:O
-
-            // server gửi -1 / rác
-            if (receivedSide != 0 && receivedSide != 1)
-                return expectedMover;
-
-            // server gửi đúng mover side
-            if (receivedSide == expectedMover)
-                return receivedSide;
-
-            // server gửi next-turn side (bị lệch) => mover side chính là expected
+            if (receivedSide != 0 && receivedSide != 1) return expectedMover;
+            if (receivedSide == expectedMover) return receivedSide;
             return expectedMover;
         }
 
-        // ==========================================================
-        // INIT
-        // ==========================================================
+        // init game + bind event
         private void InitGame()
         {
             CheckForIllegalCrossThreadCalls = false;
@@ -299,17 +264,14 @@ namespace CaroGame
             }
 
             SetupPlayerInfo();
+            EnsureNameLabelsLayout();
 
-            // ✅ kill timer countdown cũ
             DisableAllCountdownTimersHard();
-
-            // ✅ Progress bar: fill full rồi đứng, chỉ MOVE mới đổi lượt
             SetupProgressBars();
 
             _waitingServerAck = false;
             _gameEnded = false;
 
-            // X luôn đi trước
             ChessBoard.IsMyTurn = (this.MySide == 0);
             TurnUIBySide(0);
 
@@ -317,9 +279,7 @@ namespace CaroGame
             ChessBoard.DrawChessBoard();
         }
 
-        // ==========================================================
-        // UI HELPERS
-        // ==========================================================
+        // setup tên + tô đậm đúng người
         private void SetupPlayerInfo()
         {
             if (label1 != null) label1.Text = player1Name;
@@ -352,14 +312,17 @@ namespace CaroGame
                     label2.Font = new Font(label2.Font, FontStyle.Bold);
                 }
             }
+
+            // cập nhật layout tên sau khi đổi text/font
+            EnsureNameLabelsLayout();
         }
 
         private void SyncChessBoardNamesWithUI()
         {
             if (ChessBoard?.Player != null && ChessBoard.Player.Count >= 2)
             {
-                ChessBoard.Player[0].Name = player1Name; // X
-                ChessBoard.Player[1].Name = player2Name; // O
+                ChessBoard.Player[0].Name = player1Name;
+                ChessBoard.Player[1].Name = player2Name;
             }
         }
 
@@ -373,32 +336,54 @@ namespace CaroGame
             SyncChessBoardNamesWithUI();
         }
 
-        // ==========================================================
-        // DIALOG HELPERS
-        // ==========================================================
-        private void CloseResultDialog()
+        // FIX: tên dài không bị PictureBox che + có ... + tooltip
+        private void EnsureNameLabelsLayout()
         {
-            try { if (_resultDialog != null && !_resultDialog.IsDisposed) _resultDialog.Close(); } catch { }
-            _resultDialog = null;
+            try
+            {
+                FixOneNameLabel(label1);
+                FixOneNameLabel(label2);
+            }
+            catch { }
         }
 
-        private void CloseWaitingRematchDialog()
+        private void FixOneNameLabel(Label lbl)
         {
-            try { if (_waitingRematchDialog != null && !_waitingRematchDialog.IsDisposed) _waitingRematchDialog.Close(); } catch { }
-            _waitingRematchDialog = null;
-        }
+            if (lbl == null) return;
 
-        private void CloseWaitingResetDialog()
-        {
-            try { if (_waitingResetDialog != null && !_waitingResetDialog.IsDisposed) _waitingResetDialog.Close(); } catch { }
-            _waitingResetDialog = null;
+            // luôn nổi lên trên icon/picturebox
+            lbl.BringToFront();
+
+            lbl.AutoEllipsis = true;
+            lbl.AutoSize = false;
+            lbl.TextAlign = ContentAlignment.MiddleLeft;
+
+            // nếu có parent thì bó width theo khoảng trống còn lại
+            if (lbl.Parent != null)
+            {
+                int paddingRight = 12;
+                int maxWidth = lbl.Parent.ClientSize.Width - lbl.Left - paddingRight;
+                if (maxWidth < 80) maxWidth = 80; // tối thiểu cho đỡ “bí”
+
+                lbl.Width = maxWidth;
+
+                // giữ cho label co giãn theo form
+                lbl.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            }
+
+            // hover để xem full name
+            _nameTip.SetToolTip(lbl, lbl.Text ?? "");
         }
 
         private void CloseAllPopups()
         {
-            CloseResultDialog();
-            CloseWaitingRematchDialog();
-            CloseWaitingResetDialog();
+            try { if (_resultDialog != null && !_resultDialog.IsDisposed) _resultDialog.Close(); } catch { }
+            try { if (_waitingRematchDialog != null && !_waitingRematchDialog.IsDisposed) _waitingRematchDialog.Close(); } catch { }
+            try { if (_waitingResetDialog != null && !_waitingResetDialog.IsDisposed) _waitingResetDialog.Close(); } catch { }
+
+            _resultDialog = null;
+            _waitingRematchDialog = null;
+            _waitingResetDialog = null;
         }
 
         private void ShowOpponentLeftAndExit()
@@ -409,9 +394,6 @@ namespace CaroGame
             ExitMatch(sendSurrenderIfNeeded: false);
         }
 
-        // ==========================================================
-        // GAME END
-        // ==========================================================
         private void ChessBoard_GameEnded(string winnerRaw)
         {
             if (_gameEnded) return;
@@ -428,13 +410,15 @@ namespace CaroGame
 
             _resultDialog.RematchClicked += () =>
             {
-                CloseResultDialog();
+                try { if (_resultDialog != null && !_resultDialog.IsDisposed) _resultDialog.Close(); } catch { }
+                _resultDialog = null;
                 RematchFlow();
             };
 
             _resultDialog.ExitClicked += () =>
             {
-                CloseResultDialog();
+                try { if (_resultDialog != null && !_resultDialog.IsDisposed) _resultDialog.Close(); } catch { }
+                _resultDialog = null;
                 ExitMatch(sendSurrenderIfNeeded: false);
             };
 
@@ -465,9 +449,6 @@ namespace CaroGame
                 tcpClient.Send($"GAME_RESULT|{(iWon ? "WIN" : "LOSE")}");
         }
 
-        // ==========================================================
-        // REMATCH / RESET
-        // ==========================================================
         private void RematchFlow()
         {
             if (tcpClient == null || !tcpClient.IsConnected()) return;
@@ -508,7 +489,9 @@ namespace CaroGame
             _waitingRematchDialog = new WaitingRematchDialog();
             _waitingRematchDialog.CancelClicked += () =>
             {
-                CloseWaitingRematchDialog();
+                try { if (_waitingRematchDialog != null && !_waitingRematchDialog.IsDisposed) _waitingRematchDialog.Close(); } catch { }
+                _waitingRematchDialog = null;
+
                 try
                 {
                     if (tcpClient != null && tcpClient.IsConnected())
@@ -569,6 +552,7 @@ namespace CaroGame
                 SyncChessBoardNamesWithUI();
             }
 
+            EnsureNameLabelsLayout();
             this.Text = $"PvP - Rematch ({(MySide == 0 ? "X" : "O")})";
         }
 
@@ -583,7 +567,9 @@ namespace CaroGame
             _waitingResetDialog = new WaitingResetDialog();
             _waitingResetDialog.CancelClicked += () =>
             {
-                CloseWaitingResetDialog();
+                try { if (_waitingResetDialog != null && !_waitingResetDialog.IsDisposed) _waitingResetDialog.Close(); } catch { }
+                _waitingResetDialog = null;
+
                 _waitingReset = false;
 
                 try
@@ -630,11 +616,9 @@ namespace CaroGame
 
             SetupPlayerInfo();
             SyncChessBoardNamesWithUI();
+            EnsureNameLabelsLayout();
         }
 
-        // ==========================================================
-        // NETWORK
-        // ==========================================================
         private void ChessBoard_PlayerClickedNode(Point point)
         {
             if (_waitingServerAck) return;
@@ -643,11 +627,7 @@ namespace CaroGame
                 tcpClient.SendPacket(new Packet("MOVE", point));
 
             _waitingServerAck = true;
-
-            // khoá lượt cho tới khi server trả MOVE
             ChessBoard.IsMyTurn = false;
-
-            // ❗ KHÔNG đổi lượt ở đây. Chỉ MOVE mới đổi lượt.
         }
 
         private void HandleServerMessage(string data)
@@ -670,17 +650,11 @@ namespace CaroGame
                                 int y = int.Parse(parts[2]);
                                 int receivedSide = int.Parse(parts[3]);
 
-                                // DEBUG nếu muốn:
-                                // Debug.WriteLine($"MOVE raw: x={x}, y={y}, receivedSide={receivedSide}, moveCountBefore={ChessBoard.MoveCount}");
-
-                                // ✅ FIX: normalize -> mover side
                                 int moverSide = GetMoverSideFromServer(receivedSide);
 
                                 ChessBoard.ProcessMove(x, y, moverSide);
 
                                 _waitingServerAck = false;
-
-                                // ✅ chỉ MOVE mới đổi lượt (dựa trên moverSide)
                                 ApplyTurnAfterMove(moverSide);
                                 break;
                             }
@@ -817,9 +791,6 @@ namespace CaroGame
             Close();
         }
 
-        // ==========================================================
-        // UI HANDLERS
-        // ==========================================================
         private void btnUndo_Click(object sender, EventArgs e)
         {
             if (myUndoUsed) return;
@@ -894,9 +865,6 @@ namespace CaroGame
             rtbChat.ScrollToCaret();
         }
 
-        // ==========================================================
-        // EMOJI
-        // ==========================================================
         private readonly string[] _emoticons = new string[] {
             "😀","😃","😄","😁","😆","😅","😂","🤣","🥲","☺️","😊","😇",
             "🙂","🙃","😉","😌","😍","🥰","😘","😗","😋","😛","😝","😜",
@@ -983,9 +951,6 @@ namespace CaroGame
             base.OnFormClosing(e);
         }
 
-        // ==========================================================
-        // NESTED DIALOG CLASSES
-        // ==========================================================
         private class ResultDialog : Form
         {
             public event Action RematchClicked;

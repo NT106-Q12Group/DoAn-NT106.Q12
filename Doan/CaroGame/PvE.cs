@@ -7,19 +7,18 @@ namespace CaroGame
 {
     public partial class PvE : Form
     {
-        #region Properties
-        ChessBoardManager ChessBoard;
+        private ChessBoardManager ChessBoard;
         private string botDifficulty;
         private string _playerName;
         private bool undoCount = false;
 
-        private TCPClient tcpClient; // NEW
-        #endregion
+        private TCPClient tcpClient;
 
-        // NEW: nhận thêm TCPClient để report lên server
+        // nhận TCPClient để gửi kết quả PvE lên server (nếu có)
         public PvE(string difficulty, string playerName, TCPClient client = null)
         {
             InitializeComponent();
+
             _playerName = playerName;
             tcpClient = client;
 
@@ -37,6 +36,7 @@ namespace CaroGame
             SetBotDifficulty(botDifficulty);
         }
 
+        // map string difficulty -> enum
         private void SetBotDifficulty(string difficulty)
         {
             switch (difficulty)
@@ -49,6 +49,7 @@ namespace CaroGame
             }
         }
 
+        // gửi kết quả PvE cho server (nếu đang connect)
         private void ReportPvEResultToServer(bool isWin)
         {
             try
@@ -62,11 +63,13 @@ namespace CaroGame
             catch { }
         }
 
+        // end game: show win/lose form + rematch/exit
         private void OnGameEnded(string winner)
         {
-            bool isWin = (ChessBoard.Player != null && ChessBoard.Player.Count > 0 && winner == ChessBoard.Player[0].Name);
+            bool isWin =
+                (ChessBoard.Player != null && ChessBoard.Player.Count > 0 &&
+                 winner == ChessBoard.Player[0].Name);
 
-            // NEW: báo kết quả lên server
             ReportPvEResultToServer(isWin);
 
             Form resultForm = isWin ? new WinMatch() : new LoseMatch();
@@ -85,6 +88,7 @@ namespace CaroGame
             resultForm.Show();
         }
 
+        // reset bàn + reset undo UI
         private void resetChess()
         {
             ChessBoard.resetGame();
@@ -109,10 +113,11 @@ namespace CaroGame
 
         private void btnChat_Click(object sender, EventArgs e)
         {
-            if (panelChat != null) 
+            if (panelChat != null)
                 panelChat.Visible = !panelChat.Visible;
         }
 
+        // chat giả lập bot reply sau 1 giây
         private void btnSend_Click(object sender, EventArgs e)
         {
             string text = txtMessage.Text.Trim();
@@ -136,16 +141,19 @@ namespace CaroGame
         private void AppendMessage(string sender, string message, Color color)
         {
             if (rtbChat == null) return;
+
             rtbChat.SelectionStart = rtbChat.TextLength;
             rtbChat.SelectionColor = color;
             rtbChat.SelectionFont = new Font("Segoe UI", 10, FontStyle.Bold);
             rtbChat.AppendText($"{sender}: ");
+
             rtbChat.SelectionFont = new Font("Segoe UI", 10, FontStyle.Regular);
             rtbChat.SelectionColor = Color.Black;
             rtbChat.AppendText(message + Environment.NewLine + Environment.NewLine);
             rtbChat.ScrollToCaret();
         }
 
+        // undo 1 lần (player) trong PvE
         private void btnUndo_Click(object sender, EventArgs e)
         {
             bool undoSuccess = ChessBoard.undoTurnPvE();
@@ -170,9 +178,10 @@ namespace CaroGame
             );
 
             if (result == DialogResult.Yes)
-                resetChess(); ;
+                resetChess();
         }
 
+        // cập nhật progressbar theo lượt
         private void TurnUI_PvE(bool isPlayerTurn)
         {
             if (pgbP1 != null)
