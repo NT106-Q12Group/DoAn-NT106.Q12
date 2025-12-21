@@ -497,7 +497,7 @@ namespace CaroGame
 
                             bool nowMyTurn = (side != MySide);
 
-                            ChessBoard.IsMyTurn = true;
+                            ChessBoard.IsMyTurn = nowMyTurn;
                             TurnUI(true);
                             break;
 
