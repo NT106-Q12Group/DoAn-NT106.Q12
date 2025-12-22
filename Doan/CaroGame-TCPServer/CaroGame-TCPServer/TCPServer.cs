@@ -19,6 +19,7 @@ namespace CaroGame_TCPServer
         private static Dictionary<string, TcpClient> OnlineUsers = new Dictionary<string, TcpClient>();
         private static Dictionary<string, TcpClient> WaitingQueue = new Dictionary<string, TcpClient>(); // Quick Match
         private static Dictionary<string, string> ActiveMatches = new Dictionary<string, string>();
+        private static Dictionary<string, string> UndoWaiting = new Dictionary<string, string>();
         private static Dictionary<string, int> PlayerSides = new Dictionary<string, int>(); // 1=X, 2=O
 
         private static HashSet<string> RematchWaiting = new HashSet<string>();
@@ -266,7 +267,6 @@ namespace CaroGame_TCPServer
                         HandleCancelMatch(parts[1]);
                         return null;
 
-                    // Custom Room
                     case "CREATE_ROOM":
                         HandleCreateRoom(parts[1], client);
                         return null;
@@ -276,21 +276,27 @@ namespace CaroGame_TCPServer
                         return null;
 
                     case "READY":
-                        // READY|username|roomId|1/0
                         HandleReady(parts[1], parts[2], parts[3]);
                         return null;
 
-                    // Game
+                    case "UNDO_REQUEST":
+                        HandleUndoOffer(currentUsername);
+                        return null;
+
+                    case "UNDO_ACCEPT":
+                        HandleUndoAccept(currentUsername);
+                        return null;
+
+                    case "UNDO_DECLINE":
+                        HandleUndoDecline(currentUsername);
+                        return null;
+
                     case "MOVE":
                         HandleMove(parts, currentUsername);
                         return null;
 
                     case "CHAT":
                         HandleChat(parts, currentUsername);
-                        return null;
-
-                    case "REQUEST_UNDO":
-                        HandleUndoRequest(currentUsername);
                         return null;
 
                     case "SURRENDER":
@@ -577,7 +583,7 @@ namespace CaroGame_TCPServer
             }
         }
 
-        private void HandleUndoRequest(string sender)
+        private void HandleUndoOffer(string sender)
         {
             lock (lockObj)
             {
@@ -586,10 +592,49 @@ namespace CaroGame_TCPServer
 
                 string opponent = ActiveMatches[sender];
 
-                SendToPlayer(sender, "UNDO_SUCCESS");
-                SendToPlayer(opponent, "UNDO_SUCCESS");
+                // chống spam: nếu opponent đang có pending offer thì bỏ
+                if (UndoWaiting.ContainsKey(opponent)) return;
+
+                UndoWaiting[opponent] = sender;
+
+                SendToPlayer(opponent, $"UNDO_OFFER|{sender}");
+                SendToPlayer(sender, "UNDO_SENT");
             }
         }
+
+        private void HandleUndoAccept(string receiver)
+        {
+            lock (lockObj)
+            {
+                if (string.IsNullOrEmpty(receiver)) return;
+                if (!UndoWaiting.ContainsKey(receiver)) return;
+
+                string requester = UndoWaiting[receiver];
+                UndoWaiting.Remove(receiver);
+
+                if (string.IsNullOrEmpty(requester)) return;
+                if (!ActiveMatches.ContainsKey(receiver) || !ActiveMatches.ContainsKey(requester)) return;
+
+                SendToPlayer(receiver, "UNDO_SUCCESS");
+                SendToPlayer(requester, "UNDO_SUCCESS");
+            }
+        }
+
+        private void HandleUndoDecline(string receiver)
+        {
+            lock (lockObj)
+            {
+                if (string.IsNullOrEmpty(receiver)) return;
+                if (!UndoWaiting.ContainsKey(receiver)) return;
+
+                string requester = UndoWaiting[receiver];
+                UndoWaiting.Remove(receiver);
+
+                if (!string.IsNullOrEmpty(requester))
+                    SendToPlayer(requester, "UNDO_DECLINED");
+            }
+        }
+
 
         private void HandleChat(string[] parts, string sender)
         {
