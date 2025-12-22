@@ -858,9 +858,19 @@ namespace CaroGame_TCPServer
         private string HandleRegister(string[] parts)
         {
             if (parts.Length < 5) return "Error|Missing info";
+
             var newPlayer = new Player.Player(parts[1], parts[2], parts[3], parts[4]);
-            if (PlayerADO.RegisterPlayer(newPlayer)) return "Success|Registered successfully.";
-            return "Error|Username exists";
+
+            if (PlayerADO.PlayerExists(newPlayer.PlayerName))
+                return "Error|Username exists";
+
+            if (!string.IsNullOrWhiteSpace(newPlayer.Email) && PlayerADO.EmailExists(newPlayer.Email))
+                return "Error|Email exists";
+
+            if (PlayerADO.RegisterPlayer(newPlayer))
+                return "Success|Registered successfully.";
+
+            return "Error|Register failed";
         }
 
         private string HandleGetPlayer(string[] parts)
