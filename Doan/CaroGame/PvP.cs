@@ -401,10 +401,18 @@ namespace CaroGame
                     rightLimit = Math.Min(rightLimit, c.Left - padding);
             }
 
-            // 4) set Width + clamp
+            // 4) set Width: tên ngắn thì fit content, tên dài thì maxWidth + ellipsis
             int maxWidth = rightLimit - lbl.Left;
-            if (maxWidth < 120) maxWidth = 120; // clamp to avoid “mất label”
-            lbl.Width = maxWidth;
+            if (maxWidth < 120) maxWidth = 120;
+
+            // đo text width (cộng thêm chút đệm)
+            int textW = TextRenderer.MeasureText(lbl.Text ?? "", lbl.Font).Width + 12;
+
+            // label width = min(textW, maxWidth) nhưng không nhỏ hơn 120
+            int desiredW = Math.Min(textW, maxWidth);
+            if (desiredW < 120) desiredW = 120;
+
+            lbl.Width = desiredW;
 
             // 5) set Height theo font
             int needH = TextRenderer.MeasureText("Ag", lbl.Font).Height + 2;
