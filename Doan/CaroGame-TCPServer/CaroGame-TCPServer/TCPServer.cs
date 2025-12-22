@@ -900,7 +900,14 @@ namespace CaroGame_TCPServer
         private string HandleUpdateEmail(string[] parts)
         {
             if (parts.Length < 3) return "Error|Missing data";
-            bool ok = PlayerADO.UpdateEmail(parts[1], parts[2]);
+
+            string username = parts[1];
+            string newEmail = parts[2];
+
+            if (!string.IsNullOrWhiteSpace(newEmail) && PlayerADO.EmailExists(newEmail, excludePlayerName: username))
+                return "Error|Email exists";
+
+            bool ok = PlayerADO.UpdateEmail(username, newEmail);
             if (ok) return "Success|Updated";
             return "Error|Update failed";
         }
@@ -909,26 +916,10 @@ namespace CaroGame_TCPServer
         {
             if (string.IsNullOrEmpty(username)) return;
 
-            string r = (resultRaw ?? "").Trim().ToUpperInvariant();      // WIN / LOSE
-            string diff = (difficultyRaw ?? "").Trim();                  // Easy/Medium/Hard/Extremely Hard
+            string r = (resultRaw ?? "").Trim().ToUpperInvariant();
+            string diff = (difficultyRaw ?? "").Trim();
 
             Console.WriteLine($"[PVE_RESULT] {username}: {r} | Diff={diff}");
-
-            // TODO: update leaderboard PvE
-            // Gợi ý:
-            // - Win mới tính điểm, Lose không tính (tùy bạn)
-            // - Difficulty càng cao điểm càng nhiều
-            //
-            // Ví dụ pseudo:
-            // int score = 0;
-            // if (r == "WIN")
-            // {
-            //     score = diff == "Easy" ? 1 :
-            //             diff == "Medium" ? 2 :
-            //             diff == "Hard" ? 3 :
-            //             diff == "Extremely Hard" ? 5 : 1;
-            //     PlayerADO.AddPvEScore(username, score); // bạn tự implement
-            // }
         }
 
 
