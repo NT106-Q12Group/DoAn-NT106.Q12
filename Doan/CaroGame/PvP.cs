@@ -18,7 +18,7 @@ namespace CaroGame
         private bool myUndoUsed = false;
         private bool oppUndoUsed = false;
 
-        // label1 đứng cạnh icon X, label2 đứng cạnh icon O (UI cố định)
+        // label1 cạnh icon X, label2 cạnh icon O (UI cố định)
         private string player1Name; // X slot
         private string player2Name; // O slot
 
@@ -35,7 +35,6 @@ namespace CaroGame
         private bool _hasIncomingRematchOffer = false;
         private string _incomingRematchFrom = "";
 
-        // chờ server trả MOVE để tránh tự vẽ gây lệch
         private bool _waitingServerAck = false;
 
         private ResultDialog _resultDialog = null;
@@ -45,7 +44,6 @@ namespace CaroGame
         private readonly System.Windows.Forms.Timer _turnFillTimer = new System.Windows.Forms.Timer();
         private int _turnSide = 0; // 0: X, 1: O
 
-        // tooltip để hover thấy full name (khi bị ... )
         private readonly ToolTip _nameTip = new ToolTip();
 
         public PvP(Room room, int mySide, string p1, string p2, TCPClient client)
@@ -62,7 +60,6 @@ namespace CaroGame
             this.Load += (_, __) => DisableAllCountdownTimersHard();
             this.Shown += (_, __) => DisableAllCountdownTimersHard();
 
-            // tên dài thì resize lại cho không bị che
             this.Resize += (_, __) => EnsureNameLabelsLayout();
 
             InitGame();
@@ -84,7 +81,6 @@ namespace CaroGame
             InitGame();
         }
 
-        // dọn timer cũ để khỏi bị countdown/auto-switch lạc quẻ
         private void DisableAllCountdownTimersHard()
         {
             try
@@ -116,7 +112,6 @@ namespace CaroGame
             catch { }
         }
 
-        // stop/disable + gỡ Tick handler cho chắc
         private void HardKillTimer(System.Windows.Forms.Timer t)
         {
             try
@@ -129,7 +124,6 @@ namespace CaroGame
             catch { }
         }
 
-        // gỡ sạch Tick event
         private void RemoveAllTimerTickHandlers(System.Windows.Forms.Timer timer)
         {
             try
@@ -151,7 +145,6 @@ namespace CaroGame
             catch { }
         }
 
-        // setup progress bar: fill tới 100 rồi đứng, đổi lượt chỉ khi có MOVE
         private void SetupProgressBars()
         {
             if (pgbP1 != null)
@@ -199,7 +192,6 @@ namespace CaroGame
             catch { }
         }
 
-        // set UI theo lượt
         private void TurnUIBySide(int turnSide)
         {
             _turnSide = (turnSide == 0) ? 0 : 1;
@@ -221,7 +213,6 @@ namespace CaroGame
             catch { }
         }
 
-        // sau MOVE thì đổi lượt
         private void ApplyTurnAfterMove(int lastMoveSide)
         {
             int nextSide = 1 - lastMoveSide;
@@ -229,7 +220,6 @@ namespace CaroGame
             TurnUIBySide(nextSide);
         }
 
-        // normalize side (nhiều server gửi side của lượt kế)
         private int GetMoverSideFromServer(int receivedSide)
         {
             int expectedMover = ChessBoard.MoveCount % 2; // 0:X, 1:O
@@ -238,7 +228,6 @@ namespace CaroGame
             return expectedMover;
         }
 
-        // init game + bind event
         private void InitGame()
         {
             CheckForIllegalCrossThreadCalls = false;
@@ -279,7 +268,6 @@ namespace CaroGame
             ChessBoard.DrawChessBoard();
         }
 
-        // setup tên + tô đậm đúng người
         private void SetupPlayerInfo()
         {
             if (label1 != null) label1.Text = player1Name;
@@ -313,7 +301,6 @@ namespace CaroGame
                 }
             }
 
-            // cập nhật layout tên sau khi đổi text/font
             EnsureNameLabelsLayout();
         }
 
@@ -336,7 +323,6 @@ namespace CaroGame
             SyncChessBoardNamesWithUI();
         }
 
-        // FIX: tên dài không bị PictureBox che + có ... + tooltip
         private void EnsureNameLabelsLayout()
         {
             try
@@ -351,17 +337,14 @@ namespace CaroGame
         {
             if (lbl == null) return;
 
-            // nhìn cho sạch + ellipsis
             lbl.AutoSize = false;
             lbl.AutoEllipsis = true;
             lbl.TextAlign = ContentAlignment.MiddleLeft;
-            lbl.UseCompatibleTextRendering = true; // ellipsis ổn hơn
+            lbl.UseCompatibleTextRendering = true;
 
-            // giữ label luôn đủ cao để không bị "trắng dòng" do clip chiều cao
             int needH = TextRenderer.MeasureText("Ag", lbl.Font).Height + 2;
             if (lbl.Height < needH) lbl.Height = needH;
 
-            // giới hạn width: chỉ tới trước control nằm bên phải (đang che label)
             if (lbl.Parent != null)
             {
                 int padding = 8;
@@ -371,7 +354,6 @@ namespace CaroGame
                 {
                     if (c == lbl || !c.Visible) continue;
 
-                    // chỉ xét control nằm bên phải và có overlap theo chiều dọc
                     bool overlapY = c.Top < lbl.Bottom && c.Bottom > lbl.Top;
                     if (!overlapY) continue;
 
@@ -386,10 +368,7 @@ namespace CaroGame
                 lbl.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             }
 
-            // tooltip full name
             _nameTip.SetToolTip(lbl, lbl.Text ?? "");
-
-            // nếu cùng parent thì đẩy lên trên cùng
             lbl.BringToFront();
         }
 
@@ -407,7 +386,7 @@ namespace CaroGame
         private void ShowOpponentLeftAndExit()
         {
             CloseAllPopups();
-            MessageBox.Show("Đối thủ đã thoát. Trận đấu sẽ kết thúc.", "Thông báo",
+            MessageBox.Show("Đối thủ đã thoát. Bạn đã chiến tháng! Trận đấu sẽ kết thúc.", "Thông báo",
                 MessageBoxButtons.OK, MessageBoxIcon.Information);
             ExitMatch(sendSurrenderIfNeeded: false);
         }
@@ -678,9 +657,45 @@ namespace CaroGame
                             }
 
                         case "CHAT":
-                            if (parts.Length >= 2)
-                                AppendMessage(parts.Length > 2 ? parts[2] : "Opponent", parts[1], Color.Red);
-                            break;
+                            {
+                                if (parts.Length >= 2)
+                                    AppendMessage(parts.Length > 2 ? parts[2] : "Opponent", parts[1], Color.Red);
+                                break;
+                            }
+
+                        // Undo fair play
+                        case "UNDO_OFFER":
+                            {
+                                string from = (parts.Length >= 2) ? parts[1] : "Opponent";
+
+                                DialogResult res = MessageBox.Show(
+                                    $"{from} muốn Undo 1 nước.\nBạn có đồng ý không?",
+                                    "Undo request",
+                                    MessageBoxButtons.YesNo,
+                                    MessageBoxIcon.Question
+                                );
+
+                                if (res == DialogResult.Yes) tcpClient.Send("UNDO_ACCEPT");
+                                else tcpClient.Send("UNDO_DECLINE");
+                                break;
+                            }
+
+                        case "UNDO_DECLINED":
+                            {
+                                _waitingServerAck = false;
+                                isMyUndoRequest = false;
+
+                                if (!myUndoUsed && btnUndo != null) btnUndo.Enabled = true;
+
+                                MessageBox.Show("Đối thủ từ chối Undo.", "Undo",
+                                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                                break;
+                            }
+
+                        case "UNDO_SENT":
+                            {
+                                break;
+                            }
 
                         case "UNDO_SUCCESS":
                             {
@@ -698,6 +713,7 @@ namespace CaroGame
                                 else
                                 {
                                     oppUndoUsed = true;
+                                    if (!myUndoUsed && btnUndo != null) btnUndo.Enabled = true;
                                 }
 
                                 isMyUndoRequest = false;
@@ -709,8 +725,10 @@ namespace CaroGame
                             }
 
                         case "OPPONENT_LEFT":
-                            ShowOpponentLeftAndExit();
-                            break;
+                            {
+                                ShowOpponentLeftAndExit();
+                                break;
+                            }
 
                         case "REMATCH_OFFER":
                             {
@@ -739,18 +757,22 @@ namespace CaroGame
                             }
 
                         case "REMATCH_START":
-                            CloseAllPopups();
-                            if (parts.Length >= 2) StartRematch(parts[1]);
-                            break;
+                            {
+                                CloseAllPopups();
+                                if (parts.Length >= 2) StartRematch(parts[1]);
+                                break;
+                            }
 
                         case "REMATCH_DECLINED":
-                            CloseAllPopups();
-                            MessageBox.Show("Đối thủ từ chối Rematch. Trận sẽ thoát.", "Rematch");
-                            _waitingRematch = false;
-                            _hasIncomingRematchOffer = false;
-                            _incomingRematchFrom = "";
-                            ExitMatch(sendSurrenderIfNeeded: false);
-                            break;
+                            {
+                                CloseAllPopups();
+                                MessageBox.Show("Đối thủ từ chối Rematch. Trận đấu kết thúc!", "Rematch");
+                                _waitingRematch = false;
+                                _hasIncomingRematchOffer = false;
+                                _incomingRematchFrom = "";
+                                ExitMatch(sendSurrenderIfNeeded: false);
+                                break;
+                            }
 
                         case "RESET_OFFER":
                             {
@@ -761,7 +783,7 @@ namespace CaroGame
 
                                 DialogResult response = MessageBox.Show(
                                     $"{_incomingResetFrom} muốn reset ván đấu.\nBạn có đồng ý không?",
-                                    "Reset",
+                                    "Reset Game",
                                     MessageBoxButtons.YesNo,
                                     MessageBoxIcon.Question
                                 );
@@ -775,17 +797,21 @@ namespace CaroGame
                             }
 
                         case "RESET_EXECUTE":
-                            CloseAllPopups();
-                            StartReset();
-                            break;
+                            {
+                                CloseAllPopups();
+                                StartReset();
+                                break;
+                            }
 
                         case "RESET_DECLINED":
-                            CloseAllPopups();
-                            MessageBox.Show("Đối thủ từ chối Reset. Trận đấu tiếp tục...", "Reset Game");
-                            _waitingReset = false;
-                            _hasIncomingResetOffer = false;
-                            _incomingResetFrom = "";
-                            break;
+                            {
+                                CloseAllPopups();
+                                MessageBox.Show("Đối thủ từ chối Reset. Trận đấu tiếp tục...", "Reset Game");
+                                _waitingReset = false;
+                                _hasIncomingResetOffer = false;
+                                _incomingResetFrom = "";
+                                break;
+                            }
                     }
                 }
                 catch { }
@@ -820,7 +846,8 @@ namespace CaroGame
             _waitingServerAck = true;
 
             if (btnUndo != null) btnUndo.Enabled = false;
-            tcpClient.Send("REQUEST_UNDO");
+
+            tcpClient.Send("UNDO_REQUEST");
         }
 
         private void btnSend_Click(object sender, EventArgs e)
@@ -842,7 +869,7 @@ namespace CaroGame
             }
 
             DialogResult result = MessageBox.Show(
-                "Bạn có chắc chắn muốn thoát trận đấu?\nThoát giữa trận sẽ bị xử thua.",
+                "Bạn có chắc chắn muốn thoát trận đấu?\nThoát giữa trận sẽ bị xử thua!",
                 "Xác nhận thoát",
                 MessageBoxButtons.YesNo,
                 MessageBoxIcon.Warning
