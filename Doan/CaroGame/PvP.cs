@@ -351,28 +351,46 @@ namespace CaroGame
         {
             if (lbl == null) return;
 
-            // luôn nổi lên trên icon/picturebox
-            lbl.BringToFront();
-
-            lbl.AutoEllipsis = true;
+            // nhìn cho sạch + ellipsis
             lbl.AutoSize = false;
+            lbl.AutoEllipsis = true;
             lbl.TextAlign = ContentAlignment.MiddleLeft;
+            lbl.UseCompatibleTextRendering = true; // ellipsis ổn hơn
 
-            // nếu có parent thì bó width theo khoảng trống còn lại
+            // giữ label luôn đủ cao để không bị "trắng dòng" do clip chiều cao
+            int needH = TextRenderer.MeasureText("Ag", lbl.Font).Height + 2;
+            if (lbl.Height < needH) lbl.Height = needH;
+
+            // giới hạn width: chỉ tới trước control nằm bên phải (đang che label)
             if (lbl.Parent != null)
             {
-                int paddingRight = 12;
-                int maxWidth = lbl.Parent.ClientSize.Width - lbl.Left - paddingRight;
-                if (maxWidth < 80) maxWidth = 80; // tối thiểu cho đỡ “bí”
+                int padding = 8;
+                int rightLimit = lbl.Parent.ClientSize.Width - padding;
 
+                foreach (Control c in lbl.Parent.Controls)
+                {
+                    if (c == lbl || !c.Visible) continue;
+
+                    // chỉ xét control nằm bên phải và có overlap theo chiều dọc
+                    bool overlapY = c.Top < lbl.Bottom && c.Bottom > lbl.Top;
+                    if (!overlapY) continue;
+
+                    if (c.Left > lbl.Left)
+                        rightLimit = Math.Min(rightLimit, c.Left - padding);
+                }
+
+                int maxWidth = rightLimit - lbl.Left;
+                if (maxWidth < 80) maxWidth = 80;
                 lbl.Width = maxWidth;
 
-                // giữ cho label co giãn theo form
                 lbl.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             }
 
-            // hover để xem full name
+            // tooltip full name
             _nameTip.SetToolTip(lbl, lbl.Text ?? "");
+
+            // nếu cùng parent thì đẩy lên trên cùng
+            lbl.BringToFront();
         }
 
         private void CloseAllPopups()
