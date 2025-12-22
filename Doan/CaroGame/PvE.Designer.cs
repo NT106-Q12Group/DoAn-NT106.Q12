@@ -45,6 +45,7 @@
             ptbZero = new PictureBox();
             btnUndo = new Button();
             panelChat = new Panel();
+            btn_emoji = new Button();
             btnSend = new Button();
             txtMessage = new TextBox();
             rtbChat = new RichTextBox();
@@ -163,6 +164,7 @@
             btnChat.Size = new Size(60, 60);
             btnChat.TabIndex = 7;
             btnChat.UseVisualStyleBackColor = false;
+            btnChat.Click += btnChat_Click;
             // 
             // btnNew
             // 
@@ -278,6 +280,7 @@
             // 
             panelChat.BackColor = Color.DeepSkyBlue;
             panelChat.BorderStyle = BorderStyle.Fixed3D;
+            panelChat.Controls.Add(btn_emoji);
             panelChat.Controls.Add(btnSend);
             panelChat.Controls.Add(txtMessage);
             panelChat.Controls.Add(rtbChat);
@@ -286,6 +289,17 @@
             panelChat.Size = new Size(449, 284);
             panelChat.TabIndex = 3;
             panelChat.Visible = false;
+            // 
+            // btn_emoji
+            // 
+            btn_emoji.Cursor = Cursors.Hand;
+            btn_emoji.Location = new Point(291, 233);
+            btn_emoji.Name = "btn_emoji";
+            btn_emoji.Size = new Size(38, 39);
+            btn_emoji.TabIndex = 5;
+            btn_emoji.Text = "😊";
+            btn_emoji.UseVisualStyleBackColor = true;
+            btn_emoji.Click += btn_emoji_Click;
             // 
             // btnSend
             // 
@@ -296,13 +310,14 @@
             btnSend.TabIndex = 2;
             btnSend.Text = "Send";
             btnSend.UseVisualStyleBackColor = true;
+            btnSend.Click += btnSend_Click;
             // 
             // txtMessage
             // 
             txtMessage.Location = new Point(6, 228);
             txtMessage.Multiline = true;
             txtMessage.Name = "txtMessage";
-            txtMessage.Size = new Size(324, 49);
+            txtMessage.Size = new Size(279, 49);
             txtMessage.TabIndex = 1;
             // 
             // rtbChat
@@ -365,5 +380,6 @@
         private RichTextBox rtbChat;
         private PictureBox ptbOne;
         private PictureBox ptbZero;
+        private Button btn_emoji;
     }
 }

@@ -14,7 +14,29 @@ namespace CaroGame
 
         private TCPClient tcpClient;
 
-        // nhận TCPClient để gửi kết quả PvE lên server (nếu có)
+        // Emoji panel runtime (không cần design)
+        private Panel _pnlEmojiPicker;
+
+        private readonly string[] _emoticons = new string[] {
+            "😀","😃","😄","😁","😆","😅","😂","🤣","🥲","☺️","😊","😇",
+            "🙂","🙃","😉","😌","😍","🥰","😘","😗","😋","😛","😝","😜",
+            "🤪","🤨","🧐","🤓","😎","🥸","🤩","🥳","😏","😒","😞","😔",
+            "😟","😕","🙁","☹️","😣","😖","😫","😩","🥺","😢","😭","😤",
+            "😠","😡","🤬","🤯","😳","🥵","🥶","😱","😨","😰","😥","😓",
+            "🤗","🤔","🤭","🤫","🤥","😶","😐","😑","😬","🙄","😯","😦",
+            "😧","😮","😲","🥱","😴","🤤","😪","😵","🤐","🥴","🤢","🤮",
+            "🤧","😷","🤒","🤕","🤑","🤠","😈","👿","👹","👺","🤡","💩",
+            "👻","💀","☠️","👽","👾","🤖","🎃",
+            "😺","😸","😹","😻","😼","😽","🙀","😿","😾",
+            "👋","🤚","🖐","✋","🖖","👌","🤌","🤏","✌️","🤞","🤟","🤘",
+            "🤙","👈","👉","👆","👇","☝️","👍","👎","✊","👊","🤛","🤜",
+            "👏","🙌","👐","🤲","🤝","🙏","💪","💅","🤳",
+            "❤️","🧡","💛","💚","💙","💜","🖤","🤍","🤎","💔","❣️","💕",
+            "💞","💓","💗","💖","💘","💝","💋","💌",
+            "👀","👁","🧠","🔥","✨","🌟","💫","💥","💢","💦","💤","🎵",
+            "🎶","✅","❌","💯","⚠️","⛔️","🎉","🎈","🎁"
+        };
+
         public PvE(string difficulty, string playerName, TCPClient client = null)
         {
             InitializeComponent();
@@ -27,16 +49,19 @@ namespace CaroGame
             botDifficulty = difficulty;
 
             ChessBoard = new ChessBoardManager(pnlChessBoard, GameMode.PvE);
-
             ChessBoard.GameEnded += OnGameEnded;
             ChessBoard.OnTurnChanged += TurnUI_PvE;
 
             ChessBoard.DrawChessBoard();
-
             SetBotDifficulty(botDifficulty);
+
+            if (panelChat != null) panelChat.Visible = false;
+
+            CreateEmojiPickerRuntime();
+            this.Shown += (_, __) => EnsureEmojiPickerLayout();
+            this.Resize += (_, __) => EnsureEmojiPickerLayout();
         }
 
-        // map string difficulty -> enum
         private void SetBotDifficulty(string difficulty)
         {
             switch (difficulty)
@@ -49,7 +74,6 @@ namespace CaroGame
             }
         }
 
-        // gửi kết quả PvE cho server (nếu đang connect)
         private void ReportPvEResultToServer(bool isWin)
         {
             try
@@ -63,7 +87,6 @@ namespace CaroGame
             catch { }
         }
 
-        // end game: show win/lose form + rematch/exit
         private void OnGameEnded(string winner)
         {
             bool isWin =
@@ -88,7 +111,6 @@ namespace CaroGame
             resultForm.Show();
         }
 
-        // reset bàn + reset undo UI
         private void resetChess()
         {
             ChessBoard.resetGame();
@@ -96,6 +118,9 @@ namespace CaroGame
             undoCount = false;
             if (ptbOne != null) ptbOne.Visible = true;
             if (ptbZero != null) ptbZero.Visible = false;
+
+            if (panelChat != null) panelChat.Visible = false;
+            HideEmojiPicker();
         }
 
         private void btnExit_Click(object sender, EventArgs e)
@@ -109,33 +134,6 @@ namespace CaroGame
 
             if (result == DialogResult.Yes)
                 this.Close();
-        }
-
-        private void btnChat_Click(object sender, EventArgs e)
-        {
-            if (panelChat != null)
-                panelChat.Visible = !panelChat.Visible;
-        }
-
-        // chat giả lập bot reply sau 1 giây
-        private void btnSend_Click(object sender, EventArgs e)
-        {
-            string text = txtMessage.Text.Trim();
-            if (string.IsNullOrWhiteSpace(text)) return;
-
-            AppendMessage("You", text, Color.Blue);
-            txtMessage.Clear();
-
-            System.Windows.Forms.Timer t = new System.Windows.Forms.Timer();
-            t.Interval = 1000;
-            t.Tick += (s, ev) =>
-            {
-                t.Stop();
-                string[] botReplies = { "Suy nghĩ kỹ đi!", "Nước cờ hay đấy!", "Đừng hòng thắng tôi.", "..." };
-                Random r = new Random();
-                AppendMessage("Bot", botReplies[r.Next(botReplies.Length)], Color.Green);
-            };
-            t.Start();
         }
 
         private void AppendMessage(string sender, string message, Color color)
@@ -153,20 +151,45 @@ namespace CaroGame
             rtbChat.ScrollToCaret();
         }
 
-        // undo 1 lần (player) trong PvE
         private void btnUndo_Click(object sender, EventArgs e)
         {
+            if (undoCount)
+            {
+                MessageBox.Show("Bạn đã dùng Undo rồi.", "Undo",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            // Điều kiện giống PvP: cả 2 bên phải đi ít nhất 1 nước => tổng >= 2
+            if (ChessBoard.MoveCount < 2)
+            {
+                MessageBox.Show("Chưa thể Undo: cả 2 bên phải đi ít nhất 1 nước cờ trước.", "Undo",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            DialogResult confirm = MessageBox.Show(
+                "Bạn có chắc chắn muốn Undo 1 nước cờ không?",
+                "Xác nhận Undo",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question
+            );
+
+            if (confirm != DialogResult.Yes) return;
+
             bool undoSuccess = ChessBoard.undoTurnPvE();
-            if (undoSuccess && !undoCount)
+            if (undoSuccess)
             {
                 if (ptbOne != null) ptbOne.Visible = false;
                 if (ptbZero != null) ptbZero.Visible = true;
                 undoCount = true;
             }
+            else
+            {
+                MessageBox.Show("Undo thất bại.", "Undo",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
         }
-
-        private void Form1_Load(object sender, EventArgs e) { }
-        private void pnlChessBoard_Paint(object sender, PaintEventArgs e) { }
 
         private void btnNew_Click(object sender, EventArgs e)
         {
@@ -181,7 +204,6 @@ namespace CaroGame
                 resetChess();
         }
 
-        // cập nhật progressbar theo lượt
         private void TurnUI_PvE(bool isPlayerTurn)
         {
             if (pgbP1 != null)
@@ -198,5 +220,181 @@ namespace CaroGame
                 pgbP2.Value = isPlayerTurn ? 0 : 100;
             }
         }
+
+        // ===================== EMOJI (RUNTIME) =====================
+
+        private void CreateEmojiPickerRuntime()
+        {
+            if (_pnlEmojiPicker != null) return;
+
+            _pnlEmojiPicker = new Panel();
+            _pnlEmojiPicker.Name = "pnlEmojiPicker_Runtime";
+            _pnlEmojiPicker.Visible = false;
+            _pnlEmojiPicker.AutoScroll = true;
+            _pnlEmojiPicker.BorderStyle = BorderStyle.FixedSingle;
+
+            // Ưu tiên gắn vào panelChat để giống PvP
+            if (panelChat != null)
+            {
+                panelChat.Controls.Add(_pnlEmojiPicker);
+                _pnlEmojiPicker.BringToFront();
+            }
+            else
+            {
+                this.Controls.Add(_pnlEmojiPicker);
+                _pnlEmojiPicker.BringToFront();
+            }
+
+            BuildEmojiButtons();
+            EnsureEmojiPickerLayout();
+        }
+
+        private void BuildEmojiButtons()
+        {
+            if (_pnlEmojiPicker == null) return;
+
+            _pnlEmojiPicker.Controls.Clear();
+
+            int btnSize = 32, cols = 8, spacing = 4;
+
+            for (int i = 0; i < _emoticons.Length; i++)
+            {
+                var btn = new Button();
+                btn.Font = new Font("Segoe UI Emoji", 16F, FontStyle.Regular);
+                btn.Text = _emoticons[i];
+                btn.Width = btn.Height = btnSize;
+
+                int col = i % cols;
+                int row = i / cols;
+                btn.Left = col * (btnSize + spacing);
+                btn.Top = row * (btnSize + spacing);
+
+                btn.Click += (s, e) =>
+                {
+                    if (txtMessage == null) return;
+                    txtMessage.Text += ((Button)s).Text;
+                    txtMessage.SelectionStart = txtMessage.Text.Length;
+                    txtMessage.Focus();
+                };
+
+                _pnlEmojiPicker.Controls.Add(btn);
+            }
+        }
+
+        private void EnsureEmojiPickerLayout()
+        {
+            if (_pnlEmojiPicker == null) return;
+
+            // Nếu chat tắt thì emoji cũng tắt
+            if (panelChat != null && !panelChat.Visible)
+            {
+                _pnlEmojiPicker.Visible = false;
+                return;
+            }
+
+            Control host = panelChat ?? (Control)this;
+
+            // Default size
+            int w = Math.Min(300, host.ClientSize.Width - 10);
+            int h = 200;
+
+            _pnlEmojiPicker.Width = Math.Max(200, w);
+            _pnlEmojiPicker.Height = h;
+
+            // Đặt panel emoji nằm trên ô nhập (txtMessage) nếu có
+            if (txtMessage != null && txtMessage.Parent == host)
+            {
+                int pad = 6;
+                int x = txtMessage.Left;
+                int y = txtMessage.Top - _pnlEmojiPicker.Height - pad;
+
+                // Nếu bị âm thì kéo xuống dưới txtMessage
+                if (y < 0) y = txtMessage.Bottom + pad;
+
+                // Clamp
+                if (x + _pnlEmojiPicker.Width > host.ClientSize.Width)
+                    x = host.ClientSize.Width - _pnlEmojiPicker.Width - pad;
+                if (x < pad) x = pad;
+
+                _pnlEmojiPicker.Left = x;
+                _pnlEmojiPicker.Top = y;
+            }
+            else
+            {
+                // Fallback: góc dưới trái host
+                _pnlEmojiPicker.Left = 6;
+                _pnlEmojiPicker.Top = Math.Max(6, host.ClientSize.Height - _pnlEmojiPicker.Height - 6);
+            }
+
+            _pnlEmojiPicker.BringToFront();
+        }
+
+        private void ShowEmojiPicker()
+        {
+            CreateEmojiPickerRuntime();
+
+            if (panelChat != null && !panelChat.Visible)
+            {
+                MessageBox.Show("Chat đang tắt. Bấm nút Chat để mở.", "Emoji",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            _pnlEmojiPicker.Visible = !_pnlEmojiPicker.Visible;
+            if (_pnlEmojiPicker.Visible) EnsureEmojiPickerLayout();
+        }
+
+        private void HideEmojiPicker()
+        {
+            if (_pnlEmojiPicker != null) _pnlEmojiPicker.Visible = false;
+        }
+
+        private void Form1_Load(object sender, EventArgs e) { }
+
+        private void pnlChessBoard_Paint(object sender, PaintEventArgs e) { }
+        private void btnChat_Click(object sender, EventArgs e)
+        {
+            if (panelChat == null) return;
+
+            if (panelChat.Visible)
+            {
+                panelChat.Visible = false;
+                HideEmojiPicker();
+                return;
+            }
+
+            DialogResult res = MessageBox.Show(
+                "Vì đây là PvE nên tính năng chat không khả dụng.\n" +
+                "Nhưng nếu bạn là một người tự kỷ thì bạn có thể mở chat lên và chat một mình.\n\n" +
+                "Bạn có muốn mở chat không?",
+                "PvE Chat",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Information
+            );
+
+            panelChat.Visible = (res == DialogResult.Yes);
+
+            if (!panelChat.Visible) HideEmojiPicker();
+            EnsureEmojiPickerLayout();
+        }
+
+        private void btnSend_Click(object sender, EventArgs e)
+        {
+            if (panelChat != null && !panelChat.Visible)
+            {
+                MessageBox.Show("Chat đang tắt. Bấm nút Chat để mở.", "Chat",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            string text = txtMessage?.Text.Trim();
+            if (string.IsNullOrWhiteSpace(text)) return;
+
+            AppendMessage("You", text, Color.Blue);
+            txtMessage.Clear();
+            txtMessage.Focus();
+        }
+
+        private void btn_emoji_Click(object sender, EventArgs e) => ShowEmojiPicker();
     }
 }

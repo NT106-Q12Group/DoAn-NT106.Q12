@@ -760,7 +760,7 @@ namespace CaroGame
                                 string from = (parts.Length >= 2) ? parts[1] : "Opponent";
 
                                 DialogResult res = MessageBox.Show(
-                                    $"{from} muốn Undo 1 nước.\nBạn có đồng ý không?",
+                                    $"{from} muốn Undo 1 nước cờ.\nBạn có đồng ý không?",
                                     "Undo request",
                                     MessageBoxButtons.YesNo,
                                     MessageBoxIcon.Question
@@ -968,10 +968,9 @@ namespace CaroGame
             if (_waitingServerAck) return;
             if (tcpClient == null || !tcpClient.IsConnected()) return;
 
-            // Luật: cả 2 bên phải đi ít nhất 1 nước (tổng >= 2)
             if (ChessBoard.MoveCount < 2)
             {
-                MessageBox.Show("Chưa thể Undo: cả 2 bên phải đi ít nhất 1 nước trước.", "Undo",
+                MessageBox.Show("Chưa thể Undo: cả 2 bên phải đi ít nhất 1 nước cờ trước.", "Undo",
                     MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
@@ -981,7 +980,6 @@ namespace CaroGame
 
             if (btnUndo != null) btnUndo.Enabled = false;
 
-            // show “đã gửi yêu cầu undo, đang chờ phản hồi…”
             ShowUndoWaitingDialog();
 
             tcpClient.Send("UNDO_REQUEST");
