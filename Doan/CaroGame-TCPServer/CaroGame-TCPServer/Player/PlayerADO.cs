@@ -29,6 +29,38 @@ namespace CaroGame_TCPServer.Player
             }
         }
 
+        public static bool EmailExists(string email, string excludePlayerName = null)
+        {
+            if (string.IsNullOrWhiteSpace(email)) return false;
+
+            const string sql = @"
+                    SELECT 1
+                    FROM Player
+                    WHERE TRIM(Email) <> ''
+                      AND Email = @email COLLATE NOCASE
+                      AND (@exclude IS NULL OR PlayerName <> @exclude)
+                    LIMIT 1;
+                    ";
+
+            try
+            {
+                using var conn = Databases.Databases.GetConnection();
+                conn.Open();
+
+                using var cmd = new SQLiteCommand(sql, conn);
+                cmd.Parameters.AddWithValue("@email", email.Trim());
+                cmd.Parameters.AddWithValue("@exclude", (object)excludePlayerName ?? DBNull.Value);
+
+                var result = cmd.ExecuteScalar();
+                return result != null;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[{Now()}] [ERROR] EmailExists failed: {ex.Message}");
+                return false;
+            }
+        }
+
         public static bool RegisterPlayer(Player player)
         {
             if (player is null ||
@@ -44,6 +76,12 @@ namespace CaroGame_TCPServer.Player
                 if (PlayerExists(player.PlayerName))
                 {
                     Console.WriteLine($"[{Now()}] [ERROR] Username already exists: '{player.PlayerName}'.");
+                    return false;
+                }
+
+                if (!string.IsNullOrWhiteSpace(player.Email) && EmailExists(player.Email))
+                {
+                    Console.WriteLine($"[{Now()}] [WARN] Email already exists: {player.Email}");
                     return false;
                 }
 
