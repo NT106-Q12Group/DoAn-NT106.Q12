@@ -349,57 +349,71 @@ namespace CaroGame
         private void FixOneNameLabel(Label lbl)
         {
             if (lbl == null) return;
+            if (lbl.Parent == null) return;
 
+            lbl.Visible = true;                 // đảm bảo không bị hide
             lbl.AutoSize = false;
             lbl.AutoEllipsis = true;
             lbl.TextAlign = ContentAlignment.MiddleLeft;
             lbl.UseCompatibleTextRendering = true;
 
-            // giúp “không che icon” nếu lỡ overlap
-            lbl.BackColor = Color.Transparent;
+            int padding = 8;
 
+            // 1) tìm icon PictureBox nằm bên trái label (icon X/O)
+            PictureBox leftIcon = null;
+
+            foreach (Control c in lbl.Parent.Controls)
+            {
+                if (!c.Visible) continue;
+                if (c is PictureBox pb)
+                {
+                    // ưu tiên picturebox nào nằm cùng hàng (overlap theo Y) và gần bên trái label
+                    bool overlapY = pb.Top < lbl.Bottom && pb.Bottom > lbl.Top;
+
+                    if (!overlapY) continue;
+
+                    // pb nằm bên trái label
+                    if (pb.Right <= lbl.Left + 30) // +30 để bắt trường hợp label đang bị kéo lệch
+                    {
+                        if (leftIcon == null || pb.Right > leftIcon.Right)
+                            leftIcon = pb;
+                    }
+                }
+            }
+
+            // 2) đặt Left của label theo icon (nếu tìm thấy)
+            if (leftIcon != null)
+            {
+                lbl.Left = leftIcon.Right + padding;
+            }
+
+            // 3) tính right limit: không đè lên control bên phải
+            int rightLimit = lbl.Parent.ClientSize.Width - padding;
+
+            foreach (Control c in lbl.Parent.Controls)
+            {
+                if (c == lbl || !c.Visible) continue;
+
+                bool overlapY = c.Top < lbl.Bottom && c.Bottom > lbl.Top;
+                if (!overlapY) continue;
+
+                if (c.Left > lbl.Left)
+                    rightLimit = Math.Min(rightLimit, c.Left - padding);
+            }
+
+            // 4) set Width + clamp
+            int maxWidth = rightLimit - lbl.Left;
+            if (maxWidth < 120) maxWidth = 120; // clamp to avoid “mất label”
+            lbl.Width = maxWidth;
+
+            // 5) set Height theo font
             int needH = TextRenderer.MeasureText("Ag", lbl.Font).Height + 2;
             if (lbl.Height < needH) lbl.Height = needH;
 
-            if (lbl.Parent != null)
-            {
-                int padding = 8;
+            // 6) luôn nổi lên trên
+            lbl.BringToFront();
 
-                // 1) nếu label đang đè lên 1 picturebox bên trái -> đẩy Left qua phải
-                var overlappedLeft = lbl.Parent.Controls
-                    .OfType<Control>()
-                    .Where(c => c.Visible && c != lbl)
-                    .Where(c => c is PictureBox)
-                    .Where(c => c.Bounds.IntersectsWith(lbl.Bounds))
-                    .OrderByDescending(c => c.Right)
-                    .FirstOrDefault();
-
-                if (overlappedLeft != null && overlappedLeft.Right > lbl.Left)
-                {
-                    lbl.Left = overlappedLeft.Right + padding;
-                }
-
-                // 2) tính rightLimit để label không chạy qua icon/picturebox bên phải
-                int rightLimit = lbl.Parent.ClientSize.Width - padding;
-
-                foreach (Control c in lbl.Parent.Controls)
-                {
-                    if (c == lbl || !c.Visible) continue;
-
-                    bool overlapY = c.Top < lbl.Bottom && c.Bottom > lbl.Top;
-                    if (!overlapY) continue;
-
-                    if (c.Left > lbl.Left)
-                        rightLimit = Math.Min(rightLimit, c.Left - padding);
-                }
-
-                int maxWidth = rightLimit - lbl.Left;
-                if (maxWidth < 80) maxWidth = 80;
-                lbl.Width = maxWidth;
-
-                lbl.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            }
-
+            // tooltip
             _nameTip.SetToolTip(lbl, lbl.Text ?? "");
         }
 
