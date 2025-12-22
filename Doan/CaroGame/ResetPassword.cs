@@ -54,8 +54,8 @@ namespace CaroGame
         public static bool SendOtp(string toEmail, string otp, out string errorMessage)
         {
             errorMessage = "";
-            string fromEmail = "xuanninaa123@gmail.com";
-            string appPassword = "ktctntyubgmyndgc";
+            string fromEmail = "5k1b1d12kar6@gmail.com";
+            string appPassword = "scsskjtobxigpczp";
 
             try
             {
