@@ -18,12 +18,15 @@ namespace CaroGame_TCPServer
 
         private static Dictionary<string, TcpClient> OnlineUsers = new Dictionary<string, TcpClient>();
         private static Dictionary<string, TcpClient> WaitingQueue = new Dictionary<string, TcpClient>(); // Quick Match
-        private static Dictionary<string, string> ActiveMatches = new Dictionary<string, string>();
-        private static Dictionary<string, string> UndoWaiting = new Dictionary<string, string>();
-        private static Dictionary<string, int> PlayerSides = new Dictionary<string, int>(); // 1=X, 2=O
+        private static Dictionary<string, string> ActiveMatches = new Dictionary<string, string>();      // username -> opponent
+        private static Dictionary<string, string> UndoWaiting = new Dictionary<string, string>();        // receiver -> requester
+        private static Dictionary<string, int> PlayerSides = new Dictionary<string, int>();              // 1=X, 2=O
 
         private static HashSet<string> RematchWaiting = new HashSet<string>();
         private static HashSet<string> ResetWaiting = new HashSet<string>();
+
+        // Move count per match (để enforce luật: cả 2 bên đã đi >= 1 nước mới được Undo)
+        private static Dictionary<string, int> MatchMoveCount = new Dictionary<string, int>();
 
         // ===== Custom Room State =====
         private class CustomRoomState
@@ -154,6 +157,22 @@ namespace CaroGame_TCPServer
                     OnlineUsers.Remove(username);
                     WaitingQueue.Remove(username);
                     RematchWaiting.Remove(username);
+                    ResetWaiting.Remove(username);
+
+                    // clear undo pending (receiver key)
+                    if (UndoWaiting.ContainsKey(username)) UndoWaiting.Remove(username);
+
+                    // clear undo pending (requester value)
+                    string receiverToRemove = null;
+                    foreach (var kv in UndoWaiting)
+                    {
+                        if (kv.Value == username)
+                        {
+                            receiverToRemove = kv.Key;
+                            break;
+                        }
+                    }
+                    if (receiverToRemove != null) UndoWaiting.Remove(receiverToRemove);
 
                     // Remove khỏi custom rooms nếu là host/guest
                     string removeRoomId = null;
@@ -194,9 +213,13 @@ namespace CaroGame_TCPServer
                     {
                         string opponent = ActiveMatches[username];
 
+                        // remove match move counter
+                        RemoveMatchCounter(username, opponent);
+
                         ActiveMatches.Remove(username);
                         PlayerSides.Remove(username);
                         RematchWaiting.Remove(opponent);
+                        ResetWaiting.Remove(opponent);
 
                         SendToPlayer(opponent, "OPPONENT_LEFT|Your opponent disconnected.");
 
@@ -258,7 +281,6 @@ namespace CaroGame_TCPServer
                         }
 
                     // --- GAME LOGIC ---
-                    // Quick Match
                     case "FIND_MATCH":
                         HandleFindMatch(parts[1], client);
                         return null;
@@ -289,6 +311,10 @@ namespace CaroGame_TCPServer
 
                     case "UNDO_DECLINE":
                         HandleUndoDecline(currentUsername);
+                        return null;
+
+                    case "UNDO_CANCEL":
+                        HandleUndoCancel(currentUsername);
                         return null;
 
                     case "MOVE":
@@ -330,7 +356,7 @@ namespace CaroGame_TCPServer
                     case "GAME_RESULT":
                         HandleGameResult(currentUsername, parts.Length > 1 ? parts[1] : "");
                         return null;
-                    
+
                     case "PVE_RESULT":
                         HandlePvEResult(currentUsername,
                             parts.Length > 1 ? parts[1] : "",
@@ -351,6 +377,46 @@ namespace CaroGame_TCPServer
             {
                 return $"Error|Exception: {ex.Message}";
             }
+        }
+
+        // ===================== MATCH KEY / MOVE COUNT =====================
+
+        private string MakeMatchKey(string a, string b)
+        {
+            a = a ?? "";
+            b = b ?? "";
+            return string.CompareOrdinal(a, b) <= 0 ? $"{a}|{b}" : $"{b}|{a}";
+        }
+
+        private void StartMatchCounter(string a, string b)
+        {
+            string key = MakeMatchKey(a, b);
+            MatchMoveCount[key] = 0;
+        }
+
+        private int GetMatchMoves(string a, string b)
+        {
+            string key = MakeMatchKey(a, b);
+            return MatchMoveCount.ContainsKey(key) ? MatchMoveCount[key] : 0;
+        }
+
+        private void IncMatchMoves(string a, string b)
+        {
+            string key = MakeMatchKey(a, b);
+            if (!MatchMoveCount.ContainsKey(key)) MatchMoveCount[key] = 0;
+            MatchMoveCount[key]++;
+        }
+
+        private void ResetMatchMoves(string a, string b)
+        {
+            string key = MakeMatchKey(a, b);
+            MatchMoveCount[key] = 0;
+        }
+
+        private void RemoveMatchCounter(string a, string b)
+        {
+            string key = MakeMatchKey(a, b);
+            if (MatchMoveCount.ContainsKey(key)) MatchMoveCount.Remove(key);
         }
 
         // ===================== CUSTOM ROOM =====================
@@ -463,7 +529,6 @@ namespace CaroGame_TCPServer
                             if (r.HostClient == null || r.GuestClient == null) return;
                             if (!r.HostClient.Connected || !r.GuestClient.Connected) return;
 
-                            // Nếu trong lúc đếm mà ai đó unready
                             if (!r.HostReady || !r.GuestReady) { r.IsStarting = false; return; }
 
                             ActiveMatches[r.HostName] = r.GuestName;
@@ -474,14 +539,15 @@ namespace CaroGame_TCPServer
 
                             RematchWaiting.Remove(r.HostName);
                             RematchWaiting.Remove(r.GuestName);
+                            ResetWaiting.Remove(r.HostName);
+                            ResetWaiting.Remove(r.GuestName);
+
+                            StartMatchCounter(r.HostName, r.GuestName);
 
                             SendDirect(r.HostClient, $"MATCH_FOUND|{r.GuestName}|X");
                             SendDirect(r.GuestClient, $"MATCH_FOUND|{r.HostName}|O");
 
                             Console.WriteLine($"[MATCH] Custom start: {r.HostName}(X) vs {r.GuestName}(O)");
-
-                            // Optional: xóa phòng để không join lại
-                            // CustomRooms.Remove(roomId);
                         }
                     })
                     { IsBackground = true }.Start();
@@ -542,6 +608,10 @@ namespace CaroGame_TCPServer
 
                 RematchWaiting.Remove(username);
                 RematchWaiting.Remove(opponentName);
+                ResetWaiting.Remove(username);
+                ResetWaiting.Remove(opponentName);
+
+                StartMatchCounter(username, opponentName);
 
                 Console.WriteLine($"[MATCH] Found: {opponentName} vs {username}");
 
@@ -578,8 +648,12 @@ namespace CaroGame_TCPServer
 
                 int side = PlayerSides.ContainsKey(sender) ? PlayerSides[sender] : -1;
 
+                // broadcast
                 SendToPlayer(opponent, $"MOVE|{x}|{y}|{side}");
                 SendToPlayer(sender, $"MOVE|{x}|{y}|{side}");
+
+                // count move (để enforce Undo rule)
+                IncMatchMoves(sender, opponent);
             }
         }
 
@@ -591,6 +665,14 @@ namespace CaroGame_TCPServer
                 if (!ActiveMatches.ContainsKey(sender)) return;
 
                 string opponent = ActiveMatches[sender];
+
+                // Enforce: cả 2 bên đã đi ít nhất 1 nước => total moves >= 2
+                int moves = GetMatchMoves(sender, opponent);
+                if (moves < 2)
+                {
+                    SendToPlayer(sender, "UNDO_NOT_AVAILABLE|Chưa đủ điều kiện Undo (cả 2 bên phải đi ít nhất 1 nước).");
+                    return;
+                }
 
                 // chống spam: nếu opponent đang có pending offer thì bỏ
                 if (UndoWaiting.ContainsKey(opponent)) return;
@@ -615,6 +697,14 @@ namespace CaroGame_TCPServer
                 if (string.IsNullOrEmpty(requester)) return;
                 if (!ActiveMatches.ContainsKey(receiver) || !ActiveMatches.ContainsKey(requester)) return;
 
+                // Enforce lại lần nữa cho chắc
+                int moves = GetMatchMoves(receiver, requester);
+                if (moves < 2)
+                {
+                    SendToPlayer(requester, "UNDO_NOT_AVAILABLE|Chưa đủ điều kiện Undo (cả 2 bên phải đi ít nhất 1 nước).");
+                    return;
+                }
+
                 SendToPlayer(receiver, "UNDO_SUCCESS");
                 SendToPlayer(requester, "UNDO_SUCCESS");
             }
@@ -635,6 +725,31 @@ namespace CaroGame_TCPServer
             }
         }
 
+        // requester huỷ request (để đóng dialog “đang chờ…”)
+        private void HandleUndoCancel(string requester)
+        {
+            lock (lockObj)
+            {
+                if (string.IsNullOrEmpty(requester)) return;
+
+                string receiverToRemove = null;
+                foreach (var kv in UndoWaiting)
+                {
+                    if (kv.Value == requester)
+                    {
+                        receiverToRemove = kv.Key;
+                        break;
+                    }
+                }
+
+                if (receiverToRemove != null)
+                {
+                    UndoWaiting.Remove(receiverToRemove);
+                    SendToPlayer(receiverToRemove, $"UNDO_CANCELLED|{requester}");
+                    SendToPlayer(requester, "UNDO_CANCELLED_SELF");
+                }
+            }
+        }
 
         private void HandleChat(string[] parts, string sender)
         {
@@ -658,15 +773,20 @@ namespace CaroGame_TCPServer
 
                 string opponent = ActiveMatches[sender];
 
+                RemoveMatchCounter(sender, opponent);
+
                 SendToPlayer(opponent, "OPPONENT_LEFT|Đối thủ đã thoát / đầu hàng. Bạn thắng!");
                 PlayerADO.AddScore(opponent, 1); // Thắng +1 điểm
+
                 ActiveMatches.Remove(sender);
                 PlayerSides.Remove(sender);
                 RematchWaiting.Remove(sender);
+                ResetWaiting.Remove(sender);
 
                 if (ActiveMatches.ContainsKey(opponent)) ActiveMatches.Remove(opponent);
                 if (PlayerSides.ContainsKey(opponent)) PlayerSides.Remove(opponent);
                 RematchWaiting.Remove(opponent);
+                ResetWaiting.Remove(opponent);
             }
         }
 
@@ -709,6 +829,9 @@ namespace CaroGame_TCPServer
                 if (PlayerSides.ContainsKey(sender)) PlayerSides[sender] = (PlayerSides[sender] == 1) ? 2 : 1;
                 if (PlayerSides.ContainsKey(opponent)) PlayerSides[opponent] = (PlayerSides[opponent] == 1) ? 2 : 1;
 
+                // reset move counter for new game
+                ResetMatchMoves(sender, opponent);
+
                 string senderSide = PlayerSides.ContainsKey(sender) ? (PlayerSides[sender] == 1 ? "X" : "O") : "O";
                 string oppSide = PlayerSides.ContainsKey(opponent) ? (PlayerSides[opponent] == 1 ? "X" : "O") : "X";
 
@@ -735,6 +858,7 @@ namespace CaroGame_TCPServer
         }
 
         // ===================== RESET =====================
+
         private void HandleResetRequest(string sender)
         {
             lock (lockObj)
@@ -764,6 +888,9 @@ namespace CaroGame_TCPServer
 
                 ResetWaiting.Remove(opponent);
 
+                // reset move counter for new game
+                ResetMatchMoves(sender, opponent);
+
                 SendToPlayer(sender, $"RESET_EXECUTE|{sender}");
                 SendToPlayer(opponent, $"RESET_EXECUTE|{sender}");
                 Console.WriteLine($"[RESET] {opponent} accepted reset from {sender}");
@@ -790,39 +917,22 @@ namespace CaroGame_TCPServer
         private string HandleVerifyPassword(string[] parts)
         {
             if (parts.Length < 3) return "Error|Missing info";
-
-            // chỉ verify đúng/sai, không trả thông tin user
             var player = PlayerADO.Authenticate(parts[1], parts[2]);
             if (player != null) return "Success|OK";
             return "Error|Invalid password";
         }
 
-
         // ===================== LEADERBOARD (stub) =====================
 
         private void HandleGameResult(string username, string resultRaw)
         {
-            // TODO: update DB leaderboard theo username + WIN/LOSE
-            // resultRaw: "WIN" / "LOSE"
             if (string.IsNullOrEmpty(username)) return;
 
             string r = (resultRaw ?? "").Trim().ToUpperInvariant();
             Console.WriteLine($"[RESULT] {username}: {r}");
 
-            // Hàm cộng điểm
-
-            if (r == "WIN")
-            {
-                PlayerADO.AddScore(username, 1); // Thắng +1 điểm
-            }
-            else if (r == "LOSE")
-            {
-                PlayerADO.AddScore(username, 0); // Thua +0 điểm
-            }
-
-            // Ví dụ:
-            // if (r == "WIN") PlayerADO.AddWin(username);
-            // else if (r == "LOSE") PlayerADO.AddLose(username);
+            if (r == "WIN") PlayerADO.AddScore(username, 1);
+            else if (r == "LOSE") PlayerADO.AddScore(username, 0);
         }
 
         // ===================== SEND HELPERS =====================
@@ -870,7 +980,10 @@ namespace CaroGame_TCPServer
                     ActiveMatches.Clear();
                     PlayerSides.Clear();
                     RematchWaiting.Clear();
+                    ResetWaiting.Clear();
                     CustomRooms.Clear();
+                    UndoWaiting.Clear();
+                    MatchMoveCount.Clear();
                 }
 
                 lock (Clients)
@@ -966,7 +1079,6 @@ namespace CaroGame_TCPServer
 
             Console.WriteLine($"[PVE_RESULT] {username}: {r} | Diff={diff}");
         }
-
 
         private string HandleUpdateBirthday(string[] parts)
         {

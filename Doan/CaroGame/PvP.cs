@@ -4,6 +4,7 @@ using System.Windows.Forms;
 using CaroGame_TCPClient;
 using System.Reflection;
 using System.ComponentModel;
+using System.Linq;
 
 namespace CaroGame
 {
@@ -41,6 +42,10 @@ namespace CaroGame
         private WaitingRematchDialog _waitingRematchDialog = null;
         private WaitingResetDialog _waitingResetDialog = null;
 
+        // Undo waiting UI
+        private bool _waitingUndo = false;
+        private WaitingUndoDialog _waitingUndoDialog = null;
+
         private readonly System.Windows.Forms.Timer _turnFillTimer = new System.Windows.Forms.Timer();
         private int _turnSide = 0; // 0: X, 1: O
 
@@ -58,7 +63,11 @@ namespace CaroGame
             this.tcpClient = client;
 
             this.Load += (_, __) => DisableAllCountdownTimersHard();
-            this.Shown += (_, __) => DisableAllCountdownTimersHard();
+            this.Shown += (_, __) =>
+            {
+                DisableAllCountdownTimersHard();
+                EnsureNameLabelsLayout();
+            };
 
             this.Resize += (_, __) => EnsureNameLabelsLayout();
 
@@ -74,7 +83,11 @@ namespace CaroGame
             this.player2Name = "Player 2";
 
             this.Load += (_, __) => DisableAllCountdownTimersHard();
-            this.Shown += (_, __) => DisableAllCountdownTimersHard();
+            this.Shown += (_, __) =>
+            {
+                DisableAllCountdownTimersHard();
+                EnsureNameLabelsLayout();
+            };
 
             this.Resize += (_, __) => EnsureNameLabelsLayout();
 
@@ -342,12 +355,31 @@ namespace CaroGame
             lbl.TextAlign = ContentAlignment.MiddleLeft;
             lbl.UseCompatibleTextRendering = true;
 
+            // giúp “không che icon” nếu lỡ overlap
+            lbl.BackColor = Color.Transparent;
+
             int needH = TextRenderer.MeasureText("Ag", lbl.Font).Height + 2;
             if (lbl.Height < needH) lbl.Height = needH;
 
             if (lbl.Parent != null)
             {
                 int padding = 8;
+
+                // 1) nếu label đang đè lên 1 picturebox bên trái -> đẩy Left qua phải
+                var overlappedLeft = lbl.Parent.Controls
+                    .OfType<Control>()
+                    .Where(c => c.Visible && c != lbl)
+                    .Where(c => c is PictureBox)
+                    .Where(c => c.Bounds.IntersectsWith(lbl.Bounds))
+                    .OrderByDescending(c => c.Right)
+                    .FirstOrDefault();
+
+                if (overlappedLeft != null && overlappedLeft.Right > lbl.Left)
+                {
+                    lbl.Left = overlappedLeft.Right + padding;
+                }
+
+                // 2) tính rightLimit để label không chạy qua icon/picturebox bên phải
                 int rightLimit = lbl.Parent.ClientSize.Width - padding;
 
                 foreach (Control c in lbl.Parent.Controls)
@@ -369,7 +401,6 @@ namespace CaroGame
             }
 
             _nameTip.SetToolTip(lbl, lbl.Text ?? "");
-            lbl.BringToFront();
         }
 
         private void CloseAllPopups()
@@ -377,16 +408,27 @@ namespace CaroGame
             try { if (_resultDialog != null && !_resultDialog.IsDisposed) _resultDialog.Close(); } catch { }
             try { if (_waitingRematchDialog != null && !_waitingRematchDialog.IsDisposed) _waitingRematchDialog.Close(); } catch { }
             try { if (_waitingResetDialog != null && !_waitingResetDialog.IsDisposed) _waitingResetDialog.Close(); } catch { }
+            try { if (_waitingUndoDialog != null && !_waitingUndoDialog.IsDisposed) _waitingUndoDialog.Close(); } catch { }
 
             _resultDialog = null;
             _waitingRematchDialog = null;
             _waitingResetDialog = null;
+            _waitingUndoDialog = null;
+
+            _waitingUndo = false;
+        }
+
+        private void CloseUndoPopupOnly()
+        {
+            try { if (_waitingUndoDialog != null && !_waitingUndoDialog.IsDisposed) _waitingUndoDialog.Close(); } catch { }
+            _waitingUndoDialog = null;
+            _waitingUndo = false;
         }
 
         private void ShowOpponentLeftAndExit()
         {
             CloseAllPopups();
-            MessageBox.Show("Đối thủ đã thoát. Bạn đã chiến tháng! Trận đấu sẽ kết thúc.", "Thông báo",
+            MessageBox.Show("Đối thủ đã thoát. Bạn đã chiến thắng! Trận đấu sẽ kết thúc.", "Thông báo",
                 MessageBoxButtons.OK, MessageBoxIcon.Information);
             ExitMatch(sendSurrenderIfNeeded: false);
         }
@@ -627,6 +669,34 @@ namespace CaroGame
             ChessBoard.IsMyTurn = false;
         }
 
+        private void ShowUndoWaitingDialog()
+        {
+            if (_waitingUndoDialog != null && !_waitingUndoDialog.IsDisposed) return;
+
+            _waitingUndo = true;
+            _waitingUndoDialog = new WaitingUndoDialog();
+            _waitingUndoDialog.CancelClicked += () =>
+            {
+                // huỷ pending trên server
+                try { if (tcpClient != null && tcpClient.IsConnected()) tcpClient.Send("UNDO_CANCEL"); } catch { }
+
+                _waitingServerAck = false;
+                isMyUndoRequest = false;
+                _waitingUndo = false;
+
+                try { if (_waitingUndoDialog != null && !_waitingUndoDialog.IsDisposed) _waitingUndoDialog.Close(); } catch { }
+                _waitingUndoDialog = null;
+
+                if (!myUndoUsed && btnUndo != null) btnUndo.Enabled = true;
+            };
+            _waitingUndoDialog.FormClosed += (s, e) =>
+            {
+                _waitingUndoDialog = null;
+                _waitingUndo = false;
+            };
+            _waitingUndoDialog.Show(this);
+        }
+
         private void HandleServerMessage(string data)
         {
             if (IsDisposed || !IsHandleCreated) return;
@@ -663,7 +733,6 @@ namespace CaroGame
                                 break;
                             }
 
-                        // Undo fair play
                         case "UNDO_OFFER":
                             {
                                 string from = (parts.Length >= 2) ? parts[1] : "Opponent";
@@ -680,8 +749,30 @@ namespace CaroGame
                                 break;
                             }
 
+                        case "UNDO_SENT":
+                            {
+                                // requester side: show waiting UI (nếu chưa show)
+                                if (isMyUndoRequest) ShowUndoWaitingDialog();
+                                break;
+                            }
+
+                        case "UNDO_NOT_AVAILABLE":
+                            {
+                                CloseUndoPopupOnly();
+                                _waitingServerAck = false;
+                                isMyUndoRequest = false;
+
+                                if (!myUndoUsed && btnUndo != null) btnUndo.Enabled = true;
+
+                                string msg = parts.Length >= 2 ? parts[1] : "Chưa đủ điều kiện Undo.";
+                                MessageBox.Show(msg, "Undo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                                break;
+                            }
+
                         case "UNDO_DECLINED":
                             {
+                                CloseUndoPopupOnly();
+
                                 _waitingServerAck = false;
                                 isMyUndoRequest = false;
 
@@ -692,13 +783,26 @@ namespace CaroGame
                                 break;
                             }
 
-                        case "UNDO_SENT":
+                        case "UNDO_CANCELLED":
                             {
+                                // receiver side được báo requester đã huỷ
+                                // parts[1] = requester
+                                MessageBox.Show("Đối thủ đã huỷ yêu cầu Undo.", "Undo",
+                                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                                break;
+                            }
+
+                        case "UNDO_CANCELLED_SELF":
+                            {
+                                // requester side: server confirm đã huỷ
+                                CloseUndoPopupOnly();
                                 break;
                             }
 
                         case "UNDO_SUCCESS":
                             {
+                                CloseUndoPopupOnly();
+
                                 ChessBoard.ExecuteUndoPvP();
                                 _waitingServerAck = false;
 
@@ -842,10 +946,21 @@ namespace CaroGame
             if (_waitingServerAck) return;
             if (tcpClient == null || !tcpClient.IsConnected()) return;
 
+            // Luật: cả 2 bên phải đi ít nhất 1 nước (tổng >= 2)
+            if (ChessBoard.MoveCount < 2)
+            {
+                MessageBox.Show("Chưa thể Undo: cả 2 bên phải đi ít nhất 1 nước trước.", "Undo",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
             isMyUndoRequest = true;
             _waitingServerAck = true;
 
             if (btnUndo != null) btnUndo.Enabled = false;
+
+            // show “đã gửi yêu cầu undo, đang chờ phản hồi…”
+            ShowUndoWaitingDialog();
 
             tcpClient.Send("UNDO_REQUEST");
         }
@@ -1119,6 +1234,46 @@ namespace CaroGame
                     Height = 34,
                     Left = 110,
                     Top = 80
+                };
+
+                btnCancel.Click += (s, e) => CancelClicked?.Invoke();
+
+                Controls.Add(lbl);
+                Controls.Add(btnCancel);
+            }
+        }
+
+        private class WaitingUndoDialog : Form
+        {
+            public event Action CancelClicked;
+
+            public WaitingUndoDialog()
+            {
+                Text = "Undo";
+                FormBorderStyle = FormBorderStyle.FixedDialog;
+                MaximizeBox = false;
+                MinimizeBox = false;
+                StartPosition = FormStartPosition.CenterScreen;
+                Size = new Size(380, 170);
+                TopMost = true;
+
+                var lbl = new Label()
+                {
+                    AutoSize = false,
+                    Dock = DockStyle.Top,
+                    Height = 70,
+                    TextAlign = ContentAlignment.MiddleCenter,
+                    Font = new Font("Segoe UI", 10, FontStyle.Regular),
+                    Text = "Đã gửi yêu cầu Undo.\nĐang chờ phản hồi từ đối thủ..."
+                };
+
+                var btnCancel = new Button()
+                {
+                    Text = "Hủy",
+                    Width = 120,
+                    Height = 34,
+                    Left = 130,
+                    Top = 85
                 };
 
                 btnCancel.Click += (s, e) => CancelClicked?.Invoke();
