@@ -14,7 +14,6 @@ namespace CaroGame
 
         private TCPClient tcpClient;
 
-        // Emoji panel runtime (không cần design)
         private Panel _pnlEmojiPicker;
 
         private readonly string[] _emoticons = new string[] {
@@ -221,8 +220,6 @@ namespace CaroGame
             }
         }
 
-        // ===================== EMOJI (RUNTIME) =====================
-
         private void CreateEmojiPickerRuntime()
         {
             if (_pnlEmojiPicker != null) return;
@@ -233,7 +230,6 @@ namespace CaroGame
             _pnlEmojiPicker.AutoScroll = true;
             _pnlEmojiPicker.BorderStyle = BorderStyle.FixedSingle;
 
-            // Ưu tiên gắn vào panelChat để giống PvP
             if (panelChat != null)
             {
                 panelChat.Controls.Add(_pnlEmojiPicker);
@@ -285,7 +281,6 @@ namespace CaroGame
         {
             if (_pnlEmojiPicker == null) return;
 
-            // Nếu chat tắt thì emoji cũng tắt
             if (panelChat != null && !panelChat.Visible)
             {
                 _pnlEmojiPicker.Visible = false;
@@ -294,24 +289,20 @@ namespace CaroGame
 
             Control host = panelChat ?? (Control)this;
 
-            // Default size
             int w = Math.Min(300, host.ClientSize.Width - 10);
             int h = 200;
 
             _pnlEmojiPicker.Width = Math.Max(200, w);
             _pnlEmojiPicker.Height = h;
 
-            // Đặt panel emoji nằm trên ô nhập (txtMessage) nếu có
             if (txtMessage != null && txtMessage.Parent == host)
             {
                 int pad = 6;
                 int x = txtMessage.Left;
                 int y = txtMessage.Top - _pnlEmojiPicker.Height - pad;
 
-                // Nếu bị âm thì kéo xuống dưới txtMessage
                 if (y < 0) y = txtMessage.Bottom + pad;
 
-                // Clamp
                 if (x + _pnlEmojiPicker.Width > host.ClientSize.Width)
                     x = host.ClientSize.Width - _pnlEmojiPicker.Width - pad;
                 if (x < pad) x = pad;
@@ -321,7 +312,6 @@ namespace CaroGame
             }
             else
             {
-                // Fallback: góc dưới trái host
                 _pnlEmojiPicker.Left = 6;
                 _pnlEmojiPicker.Top = Math.Max(6, host.ClientSize.Height - _pnlEmojiPicker.Height - 6);
             }
