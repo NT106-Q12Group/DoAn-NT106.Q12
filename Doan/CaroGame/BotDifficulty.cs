@@ -44,15 +44,13 @@ namespace CaroGame
 
             this.Hide();
 
-            // [QUAN TRỌNG] Khi PvE đóng -> Đóng luôn form này để kích hoạt sự kiện FormClosed bên Dashboard
             gameForm.FormClosed += (s, args) => this.Close();
-
             gameForm.Show();
         }
 
         private void btnExit_Click(object sender, EventArgs e)
         {
-            this.Close(); // Dashboard sẽ tự hiện lại nhờ sự kiện FormClosed
+            this.Close();
         }
     }
 }
