@@ -16,8 +16,6 @@ namespace CaroGame_TCPClient
         private readonly object _reqLock = new object();
         private volatile bool _pauseListening = false;
 
-
-        // Sự kiện bắn tin nhắn từ Server ra ngoài Form
         public event Action<string>? OnMessageReceived;
 
         private Thread? listenerThread;
@@ -65,14 +63,11 @@ namespace CaroGame_TCPClient
             client = null;
         }
 
-        // Trong class TCPClient
         public void RequestLeaderboard()
         {
             Send("GET_LEADERBOARD");
         }
 
-        // --- HÀM 1: Gửi Request và Chờ Phản Hồi (Sync) ---
-        // Dùng cho: Login, Register, GetInfo (khi chưa vào bàn chơi)
         private string SendRequest(string request)
         {
             lock (_reqLock)
@@ -84,15 +79,15 @@ namespace CaroGame_TCPClient
                         if (!Connect()) return "ERROR|Cannot connect to server";
                     }
 
-                    _pauseListening = true;   // ✅ pause trước khi write/read
-                    Thread.Sleep(30);         // ✅ nhường cho listener thoát vòng loop (do timeout)
+                    _pauseListening = true;
+                    Thread.Sleep(30);
 
                     byte[] data = Encoding.UTF8.GetBytes(request);
                     stream!.Write(data, 0, data.Length);
                     stream!.Flush();
 
                     byte[] buffer = new byte[4096];
-                    int bytesRead = stream!.Read(buffer, 0, buffer.Length); // read response của request này
+                    int bytesRead = stream!.Read(buffer, 0, buffer.Length);
 
                     if (bytesRead == 0)
                     {
@@ -109,7 +104,7 @@ namespace CaroGame_TCPClient
                 }
                 finally
                 {
-                    _pauseListening = false; // ✅ bật lại listener
+                    _pauseListening = false;
                 }
             }
         }
@@ -141,9 +136,6 @@ namespace CaroGame_TCPClient
             }
         }
 
-
-        // --- HÀM 2: Gửi Nhanh (Async - Fire & Forget) ---
-        // Dùng cho: Trong trận đấu (Move, Chat, Undo)
         public void Send(string data)
         {
             try
@@ -162,8 +154,6 @@ namespace CaroGame_TCPClient
             }
         }
 
-        // --- HÀM 3: Luồng Lắng Nghe (Core Loop) ---
-        // Chạy ngầm liên tục để hứng tin nhắn từ Server
         public void StartListening()
         {
             if (listenerThread != null && listenerThread.IsAlive) return;
@@ -182,7 +172,7 @@ namespace CaroGame_TCPClient
                             continue;
                         }
 
-                        int bytesRead = stream.Read(buffer, 0, buffer.Length); // có timeout
+                        int bytesRead = stream.Read(buffer, 0, buffer.Length);
                         if (bytesRead == 0)
                         {
                             Disconnect();
@@ -195,7 +185,6 @@ namespace CaroGame_TCPClient
                     }
                     catch (IOException)
                     {
-                        // timeout -> loop tiếp, không disconnect
                         continue;
                     }
                     catch
@@ -210,8 +199,6 @@ namespace CaroGame_TCPClient
             listenerThread.IsBackground = true;
             listenerThread.Start();
         }
-
-        // --- CÁC HÀM NGHIỆP VỤ (API) ---
 
         public string Register(string username, string password, string email, string birthday)
         {
@@ -260,7 +247,6 @@ namespace CaroGame_TCPClient
 
         public bool IsConnected() => isConnected;
 
-        // --- CÁC HÀM GAME ---
 
         public void FindMatch(string username)
         {
@@ -272,7 +258,6 @@ namespace CaroGame_TCPClient
             Send($"CANCEL_MATCH|{username}");
         }
 
-        // Trong class TCPClient
         public void CreateRoom(string username)
         {
             Send($"CREATE_ROOM|{username}");
@@ -283,19 +268,16 @@ namespace CaroGame_TCPClient
             Send($"JOIN_ROOM|{username}|{roomId}");
         }
 
-        // Hàm này ít dùng trực tiếp, thường dùng SendPacket
         public void SendMove(int x, int y, int roomId)
         {
             Send($"MOVE|{x}|{y}|{roomId}");
         }
 
-        // Hàm Undo
         public void RequestUndo()
         {
             Send("REQUEST_UNDO");
         }
 
-        // Hàm Reset Game
         public void RequestReset()
         {
             Send("REQUEST_RESET");
@@ -305,7 +287,6 @@ namespace CaroGame_TCPClient
         {
             string data = "";
             if (packet.Command == "MOVE")
-                // Gửi tọa độ nước đi (Server sẽ tự điền Side)
                 data = $"MOVE|{packet.Point.X}|{packet.Point.Y}";
             else if (packet.Command == "CHAT")
                 data = $"CHAT|{packet.Message}";
